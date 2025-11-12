@@ -30,7 +30,6 @@ if (supabaseUrl) {
 }
 
 const nextConfig = {
-  output: 'standalone',  // Para SSR y APIs dinámicas en Workers
   images: {
     remotePatterns
   }
