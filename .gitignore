@@ -1,0 +1,32 @@
+# Dependencias y builds
+node_modules
+.next
+out
+build
+
+# Env y secretos
+.env
+.env.local
+.env*.local
+
+# Misc
+.DS_Store
+*.log
+.vercel  # Ya que tenías config para Vercel
+
+# Cloudflare
+.wrangler
+.open-next
+
+# Testing
+coverage
+.nyc_output
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+Thumbs.db

@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Helvetica Neue', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-feature-settings: 'liga' on, 'kern' on;
+  }
+
+  body {
+    @apply bg-white text-neutral-900 antialiased;
+  }
+
+  a {
+    @apply transition-colors duration-200;
+  }
+
+  h1, h2, h3 {
+    font-family: 'Playfair Display', 'Georgia', serif;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-full border border-neutral-900 px-6 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-neutral-900 transition-colors duration-200 hover:bg-neutral-900 hover:text-white;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-full border border-neutral-300 px-6 py-3 text-xs font-semibold uppercase tracking-[0.25em] text-neutral-600 transition-colors duration-200 hover:border-neutral-900 hover:text-neutral-900;
+  }
+
+  .article-content {
+    @apply space-y-6 text-base leading-relaxed text-neutral-700;
+  }
+
+  .article-content h2,
+  .article-content h3,
+  .article-content h4 {
+    @apply font-serif text-2xl text-neutral-900;
+  }
+
+  .article-content h3 {
+    @apply text-xl;
+  }
+
+  .article-content p {
+    @apply text-sm leading-relaxed text-neutral-700;
+  }
+
+  .article-content ul {
+    @apply list-disc space-y-2 pl-6 text-sm text-neutral-700;
+  }
+
+  .article-content blockquote {
+    @apply border-l-2 border-neutral-300 pl-4 italic text-neutral-600;
+  }
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

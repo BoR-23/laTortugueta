@@ -1,0 +1,2 @@
+export const DEFAULT_PRODUCT_PRIORITY = 1000
+

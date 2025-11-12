@@ -1,0 +1,586 @@
+[
+  {
+    "id": "header-archive",
+    "scope": "header",
+    "name": "Archivo completo",
+    "tagKey": null,
+    "parentId": null,
+    "order": 0
+  },
+  {
+    "id": "header-calces-de-ratlles-0",
+    "scope": "header",
+    "name": "Calces De Ratlles",
+    "tagKey": "Calces De Ratlles",
+    "parentId": "c6d8e55d-c311-437b-92d9-b52fa1cbb916",
+    "order": 0
+  },
+  {
+    "id": "header-calces-mostraribrodades-1",
+    "scope": "header",
+    "name": "Calces Mostraribrodades",
+    "tagKey": "Calces Mostraribrodades",
+    "parentId": null,
+    "order": 1
+  },
+  {
+    "id": "header-calces-llisses-2",
+    "scope": "header",
+    "name": "Calces Llisses",
+    "tagKey": "Calces Llisses",
+    "parentId": "c6d8e55d-c311-437b-92d9-b52fa1cbb916",
+    "order": 1
+  },
+  {
+    "id": "header-de-dos-colors-3",
+    "scope": "header",
+    "name": "De Dos Colors",
+    "tagKey": "De Dos Colors",
+    "parentId": null,
+    "order": 2
+  },
+  {
+    "id": "header-calces-sense-calats-5",
+    "scope": "header",
+    "name": "Calces Sense Calats",
+    "tagKey": "Calces Sense Calats",
+    "parentId": null,
+    "order": 3
+  },
+  {
+    "id": "header-de-tres-colors-6",
+    "scope": "header",
+    "name": "De Tres Colors",
+    "tagKey": "De Tres Colors",
+    "parentId": null,
+    "order": 4
+  },
+  {
+    "id": "filter-calces-de-ratlles-0",
+    "scope": "filter",
+    "name": "Calces De Ratlles",
+    "tagKey": "Calces De Ratlles",
+    "parentId": null,
+    "order": 0
+  },
+  {
+    "id": "filter-calces-mostraribrodades-1",
+    "scope": "filter",
+    "name": "Calces Mostraribrodades",
+    "tagKey": "Calces Mostraribrodades",
+    "parentId": null,
+    "order": 1
+  },
+  {
+    "id": "filter-calces-llisses-2",
+    "scope": "filter",
+    "name": "Calces Llisses",
+    "tagKey": "Calces Llisses",
+    "parentId": null,
+    "order": 2
+  },
+  {
+    "id": "filter-de-dos-colors-3",
+    "scope": "filter",
+    "name": "De Dos Colors",
+    "tagKey": "De Dos Colors",
+    "parentId": null,
+    "order": 3
+  },
+  {
+    "id": "filter-color-100-4",
+    "scope": "filter",
+    "name": "Color 100",
+    "tagKey": "Color 100",
+    "parentId": "filter-colors-group",
+    "order": 100
+  },
+  {
+    "id": "filter-calces-sense-calats-5",
+    "scope": "filter",
+    "name": "Calces Sense Calats",
+    "tagKey": "Calces Sense Calats",
+    "parentId": null,
+    "order": 5
+  },
+  {
+    "id": "filter-de-tres-colors-6",
+    "scope": "filter",
+    "name": "De Tres Colors",
+    "tagKey": "De Tres Colors",
+    "parentId": null,
+    "order": 6
+  },
+  {
+    "id": "filter-color-199-7",
+    "scope": "filter",
+    "name": "Color 199",
+    "tagKey": "Color 199",
+    "parentId": "filter-colors-group",
+    "order": 199
+  },
+  {
+    "id": "filter-dibuix-vertical-8",
+    "scope": "filter",
+    "name": "Dibuix Vertical",
+    "tagKey": "Dibuix Vertical",
+    "parentId": null,
+    "order": 8
+  },
+  {
+    "id": "filter-color-118-9",
+    "scope": "filter",
+    "name": "Color 118",
+    "tagKey": "Color 118",
+    "parentId": "filter-colors-group",
+    "order": 118
+  },
+  {
+    "id": "filter-de-home-10",
+    "scope": "filter",
+    "name": "De Hombre",
+    "tagKey": "De Home",
+    "parentId": null,
+    "order": 10
+  },
+  {
+    "id": "filter-color-110-11",
+    "scope": "filter",
+    "name": "Color 110",
+    "tagKey": "Color 110",
+    "parentId": "filter-colors-group",
+    "order": 110
+  },
+  {
+    "id": "filter-color-189-12",
+    "scope": "filter",
+    "name": "Color 189",
+    "tagKey": "Color 189",
+    "parentId": "filter-colors-group",
+    "order": 189
+  },
+  {
+    "id": "filter-color-190-13",
+    "scope": "filter",
+    "name": "Color 190",
+    "tagKey": "Color 190",
+    "parentId": "filter-colors-group",
+    "order": 190
+  },
+  {
+    "id": "filter-color-119-14",
+    "scope": "filter",
+    "name": "Color 119",
+    "tagKey": "Color 119",
+    "parentId": "filter-colors-group",
+    "order": 119
+  },
+  {
+    "id": "filter-brodats-grandots-16",
+    "scope": "filter",
+    "name": "Brodats Grandots",
+    "tagKey": "Brodats Grandots",
+    "parentId": null,
+    "order": 16
+  },
+  {
+    "id": "filter-calces-brodades-a-ma-17",
+    "scope": "filter",
+    "name": "Calces Brodades A Ma",
+    "tagKey": "Calces Brodades A Ma",
+    "parentId": null,
+    "order": 17
+  },
+  {
+    "id": "filter-color-127-18",
+    "scope": "filter",
+    "name": "Color 127",
+    "tagKey": "Color 127",
+    "parentId": "filter-colors-group",
+    "order": 127
+  },
+  {
+    "id": "filter-color-151-19",
+    "scope": "filter",
+    "name": "Color 151",
+    "tagKey": "Color 151",
+    "parentId": "filter-colors-group",
+    "order": 151
+  },
+  {
+    "id": "filter-color-185-20",
+    "scope": "filter",
+    "name": "Color 185",
+    "tagKey": "Color 185",
+    "parentId": "filter-colors-group",
+    "order": 185
+  },
+  {
+    "id": "filter-color-122-21",
+    "scope": "filter",
+    "name": "Color 122",
+    "tagKey": "Color 122",
+    "parentId": "filter-colors-group",
+    "order": 122
+  },
+  {
+    "id": "filter-color-148-22",
+    "scope": "filter",
+    "name": "Color 148",
+    "tagKey": "Color 148",
+    "parentId": "filter-colors-group",
+    "order": 148
+  },
+  {
+    "id": "filter-color-150-23",
+    "scope": "filter",
+    "name": "Color 150",
+    "tagKey": "Color 150",
+    "parentId": "filter-colors-group",
+    "order": 150
+  },
+  {
+    "id": "filter-color-195-24",
+    "scope": "filter",
+    "name": "Color 195",
+    "tagKey": "Color 195",
+    "parentId": "filter-colors-group",
+    "order": 195
+  },
+  {
+    "id": "filter-brodats-en-el-teler-26",
+    "scope": "filter",
+    "name": "Brodats En El Teler",
+    "tagKey": "Brodats En El Teler",
+    "parentId": null,
+    "order": 26
+  },
+  {
+    "id": "filter-brodats-menudes-i-mes-barats-27",
+    "scope": "filter",
+    "name": "Brodats Menudes I Mes Barats",
+    "tagKey": "Brodats Menudes I Mes Barats",
+    "parentId": null,
+    "order": 27
+  },
+  {
+    "id": "filter-calces-posades-28",
+    "scope": "filter",
+    "name": "Calces Posades",
+    "tagKey": "Calces Posades",
+    "parentId": null,
+    "order": 28
+  },
+  {
+    "id": "filter-color-109-29",
+    "scope": "filter",
+    "name": "Color 109",
+    "tagKey": "Color 109",
+    "parentId": "filter-colors-group",
+    "order": 109
+  },
+  {
+    "id": "filter-color-116-30",
+    "scope": "filter",
+    "name": "Color 116",
+    "tagKey": "Color 116",
+    "parentId": "filter-colors-group",
+    "order": 116
+  },
+  {
+    "id": "filter-color-140-31",
+    "scope": "filter",
+    "name": "Color 140",
+    "tagKey": "Color 140",
+    "parentId": "filter-colors-group",
+    "order": 140
+  },
+  {
+    "id": "filter-color-142-32",
+    "scope": "filter",
+    "name": "Color 142",
+    "tagKey": "Color 142",
+    "parentId": "filter-colors-group",
+    "order": 142
+  },
+  {
+    "id": "filter-color-146-33",
+    "scope": "filter",
+    "name": "Color 146",
+    "tagKey": "Color 146",
+    "parentId": "filter-colors-group",
+    "order": 146
+  },
+  {
+    "id": "filter-color-161-34",
+    "scope": "filter",
+    "name": "Color 161",
+    "tagKey": "Color 161",
+    "parentId": "filter-colors-group",
+    "order": 161
+  },
+  {
+    "id": "filter-color-163-35",
+    "scope": "filter",
+    "name": "Color 163",
+    "tagKey": "Color 163",
+    "parentId": "filter-colors-group",
+    "order": 163
+  },
+  {
+    "id": "filter-color-175-36",
+    "scope": "filter",
+    "name": "Color 175",
+    "tagKey": "Color 175",
+    "parentId": "filter-colors-group",
+    "order": 175
+  },
+  {
+    "id": "filter-color-184-37",
+    "scope": "filter",
+    "name": "Color 184",
+    "tagKey": "Color 184",
+    "parentId": "filter-colors-group",
+    "order": 184
+  },
+  {
+    "id": "filter-de-una-en-una-brodat-39",
+    "scope": "filter",
+    "name": "De Una En Una Brodat",
+    "tagKey": "De Una En Una Brodat",
+    "parentId": null,
+    "order": 39
+  },
+  {
+    "id": "filter-color-104-40",
+    "scope": "filter",
+    "name": "Color 104",
+    "tagKey": "Color 104",
+    "parentId": "filter-colors-group",
+    "order": 104
+  },
+  {
+    "id": "filter-color-105-41",
+    "scope": "filter",
+    "name": "Color 105",
+    "tagKey": "Color 105",
+    "parentId": "filter-colors-group",
+    "order": 105
+  },
+  {
+    "id": "filter-color-111-42",
+    "scope": "filter",
+    "name": "Color 111",
+    "tagKey": "Color 111",
+    "parentId": "filter-colors-group",
+    "order": 111
+  },
+  {
+    "id": "filter-color-114-43",
+    "scope": "filter",
+    "name": "Color 114",
+    "tagKey": "Color 114",
+    "parentId": "filter-colors-group",
+    "order": 114
+  },
+  {
+    "id": "filter-color-121-44",
+    "scope": "filter",
+    "name": "Color 121",
+    "tagKey": "Color 121",
+    "parentId": "filter-colors-group",
+    "order": 121
+  },
+  {
+    "id": "filter-color-125-45",
+    "scope": "filter",
+    "name": "Color 125",
+    "tagKey": "Color 125",
+    "parentId": "filter-colors-group",
+    "order": 125
+  },
+  {
+    "id": "filter-color-128-46",
+    "scope": "filter",
+    "name": "Color 128",
+    "tagKey": "Color 128",
+    "parentId": "filter-colors-group",
+    "order": 128
+  },
+  {
+    "id": "filter-color-139-47",
+    "scope": "filter",
+    "name": "Color 139",
+    "tagKey": "Color 139",
+    "parentId": "filter-colors-group",
+    "order": 139
+  },
+  {
+    "id": "filter-color-141-48",
+    "scope": "filter",
+    "name": "Color 141",
+    "tagKey": "Color 141",
+    "parentId": "filter-colors-group",
+    "order": 141
+  },
+  {
+    "id": "filter-color-144-49",
+    "scope": "filter",
+    "name": "Color 144",
+    "tagKey": "Color 144",
+    "parentId": "filter-colors-group",
+    "order": 144
+  },
+  {
+    "id": "filter-color-145-50",
+    "scope": "filter",
+    "name": "Color 145",
+    "tagKey": "Color 145",
+    "parentId": "filter-colors-group",
+    "order": 145
+  },
+  {
+    "id": "filter-color-149-51",
+    "scope": "filter",
+    "name": "Color 149",
+    "tagKey": "Color 149",
+    "parentId": "filter-colors-group",
+    "order": 149
+  },
+  {
+    "id": "filter-color-152-52",
+    "scope": "filter",
+    "name": "Color 152",
+    "tagKey": "Color 152",
+    "parentId": "filter-colors-group",
+    "order": 152
+  },
+  {
+    "id": "filter-color-159-53",
+    "scope": "filter",
+    "name": "Color 159",
+    "tagKey": "Color 159",
+    "parentId": "filter-colors-group",
+    "order": 159
+  },
+  {
+    "id": "filter-color-165-54",
+    "scope": "filter",
+    "name": "Color 165",
+    "tagKey": "Color 165",
+    "parentId": "filter-colors-group",
+    "order": 165
+  },
+  {
+    "id": "filter-color-166-55",
+    "scope": "filter",
+    "name": "Color 166",
+    "tagKey": "Color 166",
+    "parentId": "filter-colors-group",
+    "order": 166
+  },
+  {
+    "id": "filter-color-177-56",
+    "scope": "filter",
+    "name": "Color 177",
+    "tagKey": "Color 177",
+    "parentId": "filter-colors-group",
+    "order": 177
+  },
+  {
+    "id": "filter-color-178-57",
+    "scope": "filter",
+    "name": "Color 178",
+    "tagKey": "Color 178",
+    "parentId": "filter-colors-group",
+    "order": 178
+  },
+  {
+    "id": "filter-color-181-58",
+    "scope": "filter",
+    "name": "Color 181",
+    "tagKey": "Color 181",
+    "parentId": "filter-colors-group",
+    "order": 181
+  },
+  {
+    "id": "filter-color-186-59",
+    "scope": "filter",
+    "name": "Color 186",
+    "tagKey": "Color 186",
+    "parentId": "filter-colors-group",
+    "order": 186
+  },
+  {
+    "id": "filter-color-187-60",
+    "scope": "filter",
+    "name": "Color 187",
+    "tagKey": "Color 187",
+    "parentId": "filter-colors-group",
+    "order": 187
+  },
+  {
+    "id": "filter-color-188-61",
+    "scope": "filter",
+    "name": "Color 188",
+    "tagKey": "Color 188",
+    "parentId": "filter-colors-group",
+    "order": 188
+  },
+  {
+    "id": "filter-color-194-62",
+    "scope": "filter",
+    "name": "Color 194",
+    "tagKey": "Color 194",
+    "parentId": "filter-colors-group",
+    "order": 194
+  },
+  {
+    "id": "filter-color-196-63",
+    "scope": "filter",
+    "name": "Color 196",
+    "tagKey": "Color 196",
+    "parentId": "filter-colors-group",
+    "order": 196
+  },
+  {
+    "id": "filter-color-198-64",
+    "scope": "filter",
+    "name": "Color 198",
+    "tagKey": "Color 198",
+    "parentId": "filter-colors-group",
+    "order": 198
+  },
+  {
+    "id": "filter-de-cigrons-66",
+    "scope": "filter",
+    "name": "De Cigrons",
+    "tagKey": "De Cigrons",
+    "parentId": null,
+    "order": 66
+  },
+  {
+    "id": "filter-de-cuatre-colors-67",
+    "scope": "filter",
+    "name": "De Cuatre Colors",
+    "tagKey": "De Cuatre Colors",
+    "parentId": null,
+    "order": 67
+  },
+  {
+    "id": "filter-colors-group",
+    "scope": "filter",
+    "name": "Colores",
+    "tagKey": null,
+    "parentId": null,
+    "order": 4
+  },
+  {
+    "id": "c6d8e55d-c311-437b-92d9-b52fa1cbb916",
+    "name": "Calcetines",
+    "tagKey": null,
+    "scope": "header",
+    "parentId": null,
+    "order": 5
+  }
+]

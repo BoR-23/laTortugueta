@@ -1,0 +1,17 @@
+---
+name: Borriana
+color: Multicolor
+type: Calcetines artesanales
+price: 0
+image: /images/products/borriana_001.jpg
+description: Modelo Borriana perteneciente a la colección de calcetería tradicional.
+tags:
+  - Calces Llisses
+material: Algodón artesanal
+care: 'Lavar a mano con agua fría, no usar secadora'
+origin: Tejidos artesanalmente en España
+photos: 2
+category: Calces Llisses
+---
+
+Calcetines artesanales modelo Borriana.
