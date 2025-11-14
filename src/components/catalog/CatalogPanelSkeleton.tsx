@@ -7,7 +7,7 @@ export function CatalogPanelSkeleton({ items = 6 }: CatalogPanelSkeletonProps) {
 
   return (
     <section className="border-b border-neutral-200 bg-white">
-      <div className="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-16 sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-6xl 3xl:max-w-8xl flex-col gap-10 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 text-center">
           <div className="mx-auto h-4 w-40 animate-pulse rounded-full bg-neutral-200" />
           <div className="mx-auto h-10 w-3/4 animate-pulse rounded-full bg-neutral-200" />

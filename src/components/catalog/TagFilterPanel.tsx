@@ -325,7 +325,7 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
   return (
     <section id="colecciones" className="bg-white">
       <div className="sticky top-[64px] z-40 border-b border-neutral-200 bg-white/95 backdrop-blur-sm sm:top-[72px] lg:top-[80px]">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:gap-6 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-6xl 3xl:max-w-8xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:gap-6 sm:px-6 lg:px-8">
           <div className="flex-1 overflow-x-auto">
             <CategoryTabsNav tabs={headerNavTabs} />
           </div>
@@ -366,7 +366,7 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
         </div>
       </div>
 
-      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl 3xl:max-w-8xl px-4 py-12 sm:px-6 lg:px-8">
         <ProductGrid
           products={sortedProducts}
           filterState={filterState}
@@ -375,7 +375,7 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
         />
       </div>
 
-      <div className="fixed top-[64px] right-0 bottom-0 z-40 flex justify-end overflow-y-hidden px-2 sm:top-[72px] sm:px-4 lg:top-[80px] lg:px-6">
+      <div className={`fixed top-[64px] right-0 bottom-0 z-40 flex justify-end px-2 sm:top-[72px] sm:px-4 lg:top-[80px] lg:px-6 ${filtersOpen ? '' : 'pointer-events-none'}`}>
         <div
           className={`no-scrollbar pointer-events-auto flex h-full w-full max-w-[420px] flex-col border-l border-neutral-200 bg-white shadow-2xl transition-transform duration-300 ${
             filtersOpen ? 'translate-x-0' : 'translate-x-full'

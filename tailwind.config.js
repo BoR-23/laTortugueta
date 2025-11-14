@@ -17,6 +17,12 @@ module.exports = {
       letterSpacing: {
         widecaps: '0.35em',
       },
+      screens: {
+        '3xl': '2560px',
+      },
+      maxWidth: {
+        '8xl': '1500px',
+      },
     },
   },
   plugins: [],

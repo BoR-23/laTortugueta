@@ -113,7 +113,7 @@ export function ProductShowcase({ product, recommendations = [] }: ProductShowca
   return (
     <div className="bg-white text-neutral-900">
       <section className="border-b border-neutral-200 bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl 3xl:max-w-8xl px-4 py-16 sm:px-6 lg:px-8">
           <div className="grid gap-12 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
             <div className="space-y-6">
               <div className="relative aspect-[3/4] overflow-hidden bg-white">
@@ -243,7 +243,7 @@ export function ProductShowcase({ product, recommendations = [] }: ProductShowca
 
       {story && (
         <section className="border-b border-neutral-200 bg-neutral-50">
-          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-6xl 3xl:max-w-8xl px-4 py-16 sm:px-6 lg:px-8">
             <div className="grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.2fr)]">
               <div className="space-y-4">
                 <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">Historia</p>
@@ -326,7 +326,7 @@ export function ProductShowcase({ product, recommendations = [] }: ProductShowca
 
       {recommendations.length > 0 && (
         <section className="border-t border-neutral-200 bg-white">
-          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-6xl 3xl:max-w-8xl px-4 py-16 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">Analytics</p>

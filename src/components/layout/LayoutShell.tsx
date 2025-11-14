@@ -12,7 +12,7 @@ export function LayoutShell({ children }: LayoutShellProps) {
   return (
     <div className="min-h-screen bg-white text-neutral-900">
       <header className="sticky top-0 z-50 border-b border-neutral-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-6xl 3xl:max-w-8xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <Link
             href="/"
             className="text-2xl uppercase tracking-[0.35em] text-neutral-900"
@@ -55,7 +55,7 @@ export function LayoutShell({ children }: LayoutShellProps) {
       <main>{children}</main>
 
       <footer className="border-t border-neutral-200 bg-white">
-        <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-12 text-sm text-neutral-500 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-6xl 3xl:max-w-8xl flex-col gap-6 px-4 py-12 text-sm text-neutral-500 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
           <p className="max-w-xl leading-relaxed">
             Catálogo vivo de calcetería artesanal documentado y conservado por La Tortugueta. Ediciones
             limitadas disponibles bajo pedido personalizado.

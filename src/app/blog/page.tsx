@@ -31,7 +31,7 @@ export default async function BlogIndexPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-6xl 3xl:max-w-8xl px-4 py-12 sm:px-6 lg:px-8">
         {posts.length === 0 ? (
           <p className="text-sm leading-relaxed text-neutral-600">
             Encara no hi ha entrades publicades. Afegeix arxius a `data/blog` per comencar l&apos;arxiu
