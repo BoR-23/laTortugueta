@@ -3,6 +3,7 @@ import Link from 'next/link'
 
 import { getAllProducts } from '@/lib/products'
 import { CONTACT_NAME, INSTAGRAM_URL, WHATSAPP_LINK } from '@/lib/contact'
+import { absoluteUrl, siteMetadata } from '@/lib/seo'
 
 const storyParagraphs = [
   'La Tortugueta nace en Alcoi (Alicante) en 1989 de la mano de Macu García, fundadora del Grup de Danses Sant Jordi, investigadora de indumentaria tradicional y coleccionista de tortugas. Detectó que casi no existían calcetines fieles a los originales y empezó a reproducirlos junto a una tejedora local: dibujaba cada patrón, elegía los hilos y los primeros pares gustaron tanto en su grupo de danza que pronto comenzaron los encargos.',
@@ -54,9 +55,25 @@ const mediaMentions = [
 ]
 
 export const metadata: Metadata = {
-  title: 'Quiénes somos · La Tortugueta',
+  title: 'Quiénes somos',
   description:
-    'Conoce la historia de la calcetería artesanal de Alcoi fundada por Macu García. Hecho a mano desde 1989, con sello oficial de artesanía y producción limitada.'
+    'Conoce la historia de la calcetería artesanal de Alcoi fundada por Macu García. Hecho a mano desde 1989, con sello oficial de artesanía y producción limitada.',
+  alternates: {
+    canonical: absoluteUrl('/quienes-somos')
+  },
+  openGraph: {
+    title: `${siteMetadata.name} · Quiénes somos`,
+    description:
+      'Calcetería artesana nacida en Alcoi y activa desde 1989. Oficio familiar con sello oficial de artesanía.',
+    url: absoluteUrl('/quienes-somos'),
+    type: 'website'
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `${siteMetadata.name} · Quiénes somos`,
+    description:
+      'Calcetería artesana nacida en Alcoi y activa desde 1989. Oficio familiar con sello oficial de artesanía.'
+  }
 }
 
 export default async function AboutPage() {

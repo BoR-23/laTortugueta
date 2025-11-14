@@ -1,26 +1,51 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getAllPosts } from '@/lib/blog'
 import { renderMarkdown } from '@/lib/markdown'
+import { absoluteUrl, buildBlogListingJsonLd, siteMetadata } from '@/lib/seo'
 
 const dateFormatter = new Intl.DateTimeFormat('es-ES', {
   dateStyle: 'long'
 })
 
-export const metadata = {
-  title: 'Blog - La Tortugueta',
-  description: 'Relats i referencies de la calceteria tradicional documentats per La Tortugueta.'
+export const metadata: Metadata = {
+  title: 'Blog',
+  description: 'Relats i referències de la calceteria tradicional documentats per La Tortugueta.',
+  alternates: {
+    canonical: '/blog'
+  },
+  openGraph: {
+    title: `${siteMetadata.name} · Blog`,
+    description:
+      'Relats i referències de la calceteria tradicional documentats per La Tortugueta.',
+    url: absoluteUrl('/blog'),
+    type: 'website'
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `${siteMetadata.name} · Blog`,
+    description:
+      'Relats i referències de la calceteria tradicional documentats per La Tortugueta.'
+  }
 }
 
 export default async function BlogIndexPage() {
   const posts = await getAllPosts()
   const featuredPost = posts[0]
   const featuredHtml = featuredPost ? renderMarkdown(featuredPost.content) : ''
+  const blogJsonLd = buildBlogListingJsonLd(posts)
 
   return (
-    <div className="bg-white text-neutral-900">
-      <section className="border-b border-neutral-200 bg-white">
-        <div className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-16 sm:px-6 lg:px-8">
-          <p className="text-xs uppercase tracking-[0.35em] text-neutral-500">Relats i memoria</p>
+    <>
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogJsonLd) }}
+      />
+      <div className="bg-white text-neutral-900">
+        <section className="border-b border-neutral-200 bg-white">
+          <div className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-16 sm:px-6 lg:px-8">
+            <p className="text-xs uppercase tracking-[0.35em] text-neutral-500">Relats i memoria</p>
           <h1 className="text-4xl font-semibold text-neutral-900 sm:text-5xl">
             Blog de calceteria tradicional
           </h1>
@@ -95,6 +120,7 @@ export default async function BlogIndexPage() {
           </div>
         )}
       </section>
-    </div>
+      </div>
+    </>
   )
 }

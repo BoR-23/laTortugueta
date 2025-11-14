@@ -3,13 +3,58 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { LayoutShell } from '@/components/layout/LayoutShell'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
+import {
+  siteMetadata,
+  getSiteUrl,
+  defaultOpenGraphImage,
+  buildOrganizationJsonLd,
+  buildWebsiteJsonLd
+} from '@/lib/seo'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'La Tortugueta - Calcetines Artesanales Tradicionales',
-  description:
-    'Descubre nuestra colección de más de 300 diseños de calcetines tradicionales tejidos a mano con técnicas ancestrales.'
+  metadataBase: new URL(getSiteUrl()),
+  title: {
+    default: `${siteMetadata.name} · ${siteMetadata.shortDescription}`,
+    template: `%s · ${siteMetadata.name}`
+  },
+  description: siteMetadata.description,
+  applicationName: siteMetadata.name,
+  keywords: siteMetadata.keywords,
+  alternates: {
+    canonical: '/'
+  },
+  openGraph: {
+    title: siteMetadata.name,
+    description: siteMetadata.description,
+    type: 'website',
+    url: getSiteUrl(),
+    siteName: siteMetadata.name,
+    locale: siteMetadata.locale,
+    images: [
+      {
+        url: defaultOpenGraphImage,
+        width: 1200,
+        height: 630,
+        alt: siteMetadata.name
+      }
+    ]
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: siteMetadata.name,
+    description: siteMetadata.description,
+    images: [defaultOpenGraphImage]
+  },
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' }
+    ],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }]
+  },
+  manifest: '/manifest.webmanifest'
 }
 
 export default function RootLayout({
@@ -18,12 +63,18 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
+  const structuredData = JSON.stringify([buildOrganizationJsonLd(), buildWebsiteJsonLd()])
 
   return (
     <html lang="es">
       <head>
         <meta charSet="utf-8" />
         <meta httpEquiv="Content-Language" content="es" />
+        <script
+          type="application/ld+json"
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: structuredData }}
+        />
       </head>
       <body className={inter.className}>
         {gaMeasurementId ? <GoogleAnalytics GA_MEASUREMENT_ID={gaMeasurementId} /> : null}

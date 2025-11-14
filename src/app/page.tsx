@@ -1,7 +1,9 @@
-﻿import { getAllProducts } from "@/lib/products"
+﻿import type { Metadata } from 'next'
+import { getAllProducts } from "@/lib/products"
 import { TagFilterPanelClient } from "@/components/catalog/TagFilterPanelClient"
 import { prepareCatalogProducts } from "@/components/catalog/prepareCatalogProducts"
 import { getCategories } from "@/lib/categories"
+import { siteMetadata, absoluteUrl, buildCatalogJsonLd } from '@/lib/seo'
 
 const mapCategoriesToDTO = (records: Awaited<ReturnType<typeof getCategories>>) =>
   records.map(record => ({
@@ -21,6 +23,25 @@ const buildCategoryNameMap = (records: Awaited<ReturnType<typeof getCategories>>
     }
   })
   return map
+}
+
+export const metadata: Metadata = {
+  title: 'Catálogo',
+  description: siteMetadata.description,
+  alternates: {
+    canonical: '/'
+  },
+  openGraph: {
+    title: `${siteMetadata.name} · Catálogo`,
+    description: siteMetadata.description,
+    url: absoluteUrl('/'),
+    type: 'website'
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `${siteMetadata.name} · Catálogo`,
+    description: siteMetadata.description
+  }
 }
 
 export default async function Home() {
@@ -44,11 +65,20 @@ export default async function Home() {
     }
   })
 
+  const catalogJsonLd = buildCatalogJsonLd(enrichedProducts.length)
+
   return (
-    <TagFilterPanelClient
-      products={enrichedProducts}
-      headerCategories={mapCategoriesToDTO(headerCategories)}
-      filterCategories={mapCategoriesToDTO(filterCategories)}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(catalogJsonLd) }}
+      />
+      <TagFilterPanelClient
+        products={enrichedProducts}
+        headerCategories={mapCategoriesToDTO(headerCategories)}
+        filterCategories={mapCategoriesToDTO(filterCategories)}
+      />
+    </>
   )
 }

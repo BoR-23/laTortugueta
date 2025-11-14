@@ -3,6 +3,12 @@ import { getAllProductIds, getProductData } from '@/lib/products'
 import { notFound } from 'next/navigation'
 import { ProductShowcase } from '@/components/product/ProductShowcase'
 import { getRecommendationsForProduct } from '@/lib/recommendations'
+import {
+  absoluteUrl,
+  buildProductBreadcrumbJsonLd,
+  buildProductJsonLd,
+  getPrimaryProductImage
+} from '@/lib/seo'
 
 interface ProductPageProps {
   params: Promise<{
@@ -21,23 +27,39 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const { id } = await params
   try {
     const product = await getProductData(id)
-    const title = `${product.name} · La Tortugueta`
+    const title = product.name
     const description =
       product.description?.slice(0, 140) ||
       `Calcetines artesanales ${product.category ?? ''} – ${product.name}.`
-    const image = product.gallery[0] || product.image || '/favicon.ico'
+    const url = absoluteUrl(`/${product.id}`)
+    const image = getPrimaryProductImage(product)
     return {
       title,
       description,
       alternates: {
-        canonical: `/${product.id}`
+        canonical: url
       },
       openGraph: {
         title,
         description,
-        type: 'article',
-        url: `/${product.id}`,
-        images: image ? [{ url: image }] : undefined
+        type: 'product',
+        url,
+        images: image
+          ? [
+              {
+                url: image,
+                width: 1200,
+                height: 630,
+                alt: product.name
+              }
+            ]
+          : undefined
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title,
+        description,
+        images: image ? [image] : undefined
       }
     }
   } catch {
@@ -54,7 +76,20 @@ export default async function ProductPage({ params }: ProductPageProps) {
   try {
     const product = await getProductData(id)
     const recommendations = await getRecommendationsForProduct(id, 4)
-    return <ProductShowcase product={product} recommendations={recommendations} />
+    const jsonLd = [
+      buildProductJsonLd(product),
+      buildProductBreadcrumbJsonLd(product)
+    ]
+    return (
+      <>
+        <script
+          type="application/ld+json"
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        <ProductShowcase product={product} recommendations={recommendations} />
+      </>
+    )
   } catch {
     notFound()
   }
