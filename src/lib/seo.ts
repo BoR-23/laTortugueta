@@ -31,9 +31,9 @@ export const getSiteUrl = () => {
     process.env.NEXT_PUBLIC_SITE_URL,
     process.env.NEXTAUTH_URL,
     'http://localhost:3000'
-  ].filter(Boolean) as string[]
+  ].filter(value => typeof value === 'string' && !/^\*+$/.test(value)) as string[]
 
-  const first = candidates[0]
+  const first = candidates[0] || 'https://www.latortugueta.com'
   try {
     return stripTrailingSlash(new URL(first).toString())
   } catch {
