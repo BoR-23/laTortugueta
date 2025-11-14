@@ -33,12 +33,15 @@ export const getSiteUrl = () => {
     'http://localhost:3000'
   ].filter(value => typeof value === 'string' && !/^\*+$/.test(value)) as string[]
 
-  const first = candidates[0] || 'https://www.latortugueta.com'
-  try {
-    return stripTrailingSlash(new URL(first).toString())
-  } catch {
-    return stripTrailingSlash(first)
+  for (const candidate of candidates) {
+    try {
+      return stripTrailingSlash(new URL(candidate).toString())
+    } catch {
+      continue
+    }
   }
+
+  return 'https://www.latortugueta.com'
 }
 
 export const absoluteUrl = (path = '/') => {
