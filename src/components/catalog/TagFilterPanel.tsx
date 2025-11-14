@@ -345,10 +345,10 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
     <section id="colecciones" className="bg-white">
       <div className="sticky top-[64px] z-40 border-b border-neutral-200 bg-white/95 backdrop-blur-sm sm:top-[72px] lg:top-[80px]">
         <div className="mx-auto flex max-w-6xl 3xl:max-w-8xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:gap-6 sm:px-6 lg:px-8">
-          <div className="flex-1 overflow-x-auto">
+          <div className="order-2 flex-1 overflow-x-auto sm:order-1">
             <CategoryTabsNav tabs={headerNavTabs} />
           </div>
-          <div className="flex flex-wrap items-center justify-end gap-3 text-[10px] font-semibold uppercase tracking-[0.35em] text-neutral-500">
+          <div className="order-1 flex w-full flex-wrap items-center justify-between gap-3 text-[10px] font-semibold uppercase tracking-[0.35em] text-neutral-500 sm:order-2 sm:w-auto">
             <button
               type="button"
               onClick={toggleMenu}
@@ -360,10 +360,11 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
             >
               Menú
             </button>
-            <div className="hidden items-center gap-2 md:flex">
-              <span className="text-neutral-400">Vista</span>
-              {VIEW_COLUMN_OPTIONS.map(option => {
-                const isActive = gridColumns === option
+            <div className="flex flex-wrap items-center justify-end gap-3">
+              <div className="hidden items-center gap-2 md:flex">
+                <span className="text-neutral-400">Vista</span>
+                {VIEW_COLUMN_OPTIONS.map(option => {
+                  const isActive = gridColumns === option
                 return (
                   <button
                     key={option}
@@ -381,17 +382,18 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
                 )
               })}
             </div>
-            <button
-              type="button"
-              onClick={toggleFilters}
-              className={`rounded-full border px-4 py-1.5 text-[10px] transition ${
-                filtersOpen
-                  ? 'border-neutral-900 bg-neutral-900 text-white'
-                  : 'border-neutral-200 text-neutral-500 hover:border-neutral-900 hover:text-neutral-900'
-              }`}
-            >
-              {filtersOpen ? 'Ocultar filtros' : 'Filtros'}
-            </button>
+              <button
+                type="button"
+                onClick={toggleFilters}
+                className={`rounded-full border px-4 py-1.5 text-[10px] transition ${
+                  filtersOpen
+                    ? 'border-neutral-900 bg-neutral-900 text-white'
+                    : 'border-neutral-200 text-neutral-500 hover:border-neutral-900 hover:text-neutral-900'
+                }`}
+              >
+                {filtersOpen ? 'Ocultar filtros' : 'Filtros'}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -457,12 +459,6 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
       </div>
 
       <div className={`fixed inset-0 z-40 flex justify-start bg-black/40 transition-opacity md:hidden ${menuOpen ? 'opacity-100 pointer-events-auto' : 'pointer-events-none opacity-0'}`}>
-        <button
-          type="button"
-          aria-label="Cerrar menú"
-          className="flex-1"
-          onClick={closeMenu}
-        />
         <div
           className={`pointer-events-auto flex h-full w-full max-w-[320px] flex-col border-r border-neutral-200 bg-white shadow-2xl transition-transform duration-300 ${
             menuOpen ? 'translate-x-0' : '-translate-x-full'
@@ -490,6 +486,12 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
             </ul>
           </nav>
         </div>
+        <button
+          type="button"
+          aria-label="Cerrar menú"
+          className="flex-1"
+          onClick={closeMenu}
+        />
       </div>
     </section>
   )
