@@ -35,6 +35,17 @@ const readMarkdownProducts = () => {
   })
 }
 
+const inferImageExtension = data => {
+  if (data && typeof data.image === 'string') {
+    const ext = path.extname(data.image).toLowerCase()
+    if (ext) {
+      return ext
+    }
+  }
+
+  return '.jpg'
+}
+
 const populateMediaAssets = async () => {
   const entries = readMarkdownProducts()
   console.log(`\n🔄 Procesando ${entries.length} productos...\n`)
@@ -48,6 +59,7 @@ const populateMediaAssets = async () => {
     
     // Obtener el número de fotos del markdown
     const photoCount = typeof data.photos === 'number' ? data.photos : 0
+    const extension = inferImageExtension(data)
     
     if (photoCount === 0) {
       productsWithoutPhotos++
@@ -61,7 +73,7 @@ const populateMediaAssets = async () => {
       const paddedNumber = String(i).padStart(3, '0') // 1 -> 001, 2 -> 002, etc.
       mediaAssets.push({
         product_id: id,
-        url: `/images/products/${id}_${paddedNumber}.jpg`,
+        url: `/images/products/${id}_${paddedNumber}${extension}`,
         position: i - 1
       })
     }

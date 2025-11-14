@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs'
 const fallbackAdmins: Array<{ email: string; passwordHash: string }> = [
   {
     email: 'bor.arroyo@gmail.com',
-    passwordHash: '$2b$10$mZBp7vFcaFTSp9aKymcrhOIvl9PCvMsxS8Dl1xvhDx9ZJwu8G4Jza'
+    passwordHash: '$2b$10$AnDHUF.V4Yl89TWzdxqfP.4XIQbuKooPMfvGhf7slqsAP2zr1aXZm'
   }
 ]
 

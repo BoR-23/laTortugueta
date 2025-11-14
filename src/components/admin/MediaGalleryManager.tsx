@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { R2ImageUploader, uploadFileToR2 } from './R2ImageUploader'
+import { getProductImageVariant } from '@/lib/images'
 
 interface MediaGalleryManagerProps {
   productId: string
@@ -190,51 +191,54 @@ export function MediaGalleryManager({
         {gallery.length === 0 && !isDisabled && (
           <p className="text-sm text-neutral-500">Todav\u00eda no hay fotos asociadas.</p>
         )}
-        {gallery.map((url, index) => (
-          <div
-            key={`${url}-${index}`}
-            className="flex items-center gap-4 rounded-2xl border border-neutral-100 bg-neutral-50 p-3"
-          >
-            <div className="relative h-20 w-16 overflow-hidden rounded-xl bg-white">
-              {url ? (
-                <Image src={url} alt={productId} fill className="object-cover" sizes="64px" />
-              ) : (
-                <div className="flex h-full items-center justify-center text-xs text-neutral-400">
-                  Sin imagen
-                </div>
-              )}
-              {!isDisabled && (
+        {gallery.map((url, index) => {
+          const displayUrl = getProductImageVariant(url, 'original') || url
+          return (
+            <div
+              key={`${url}-${index}`}
+              className="flex items-center gap-4 rounded-2xl border border-neutral-100 bg-neutral-50 p-3"
+            >
+              <div className="relative h-20 w-16 overflow-hidden rounded-xl bg-white">
+                {url ? (
+                  <Image src={displayUrl} alt={productId} fill className="object-cover" sizes="64px" />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-xs text-neutral-400">
+                    Sin imagen
+                  </div>
+                )}
+                {!isDisabled && (
+                  <button
+                    type="button"
+                    onClick={() => handleOpenReplacePicker(index)}
+                    disabled={busy || replacingIndex === index}
+                    className="absolute right-1 top-1 rounded-full bg-white/90 px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-neutral-600 shadow hover:text-neutral-900 disabled:opacity-50"
+                  >
+                    {replacingIndex === index ? '...' : '✎'}
+                  </button>
+                )}
+              </div>
+              <div className="flex-1 break-all text-xs text-neutral-600">{url}</div>
+              <div className="flex flex-col gap-2">
                 <button
                   type="button"
-                  onClick={() => handleOpenReplacePicker(index)}
-                  disabled={busy || replacingIndex === index}
-                  className="absolute right-1 top-1 rounded-full bg-white/90 px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-neutral-600 shadow hover:text-neutral-900 disabled:opacity-50"
+                  className="rounded-full border border-neutral-300 px-3 py-1 text-xs uppercase tracking-[0.3em] text-neutral-600 hover:border-neutral-900 hover:text-neutral-900 disabled:opacity-50"
+                  onClick={() => handleSetFeatured(index)}
+                  disabled={busy || index === 0}
                 >
-                  {replacingIndex === index ? '...' : '✎'}
+                  Destacar
                 </button>
-              )}
+                <button
+                  type="button"
+                  className="rounded-full border border-neutral-300 px-3 py-1 text-xs uppercase tracking-[0.3em] text-neutral-600 hover:border-neutral-900 hover:text-neutral-900"
+                  onClick={() => handleRemove(url)}
+                  disabled={busy}
+                >
+                  Quitar
+                </button>
+              </div>
             </div>
-            <div className="flex-1 text-xs text-neutral-600 break-all">{url}</div>
-            <div className="flex flex-col gap-2">
-              <button
-                type="button"
-                className="rounded-full border border-neutral-300 px-3 py-1 text-xs uppercase tracking-[0.3em] text-neutral-600 hover:border-neutral-900 hover:text-neutral-900 disabled:opacity-50"
-                onClick={() => handleSetFeatured(index)}
-                disabled={busy || index === 0}
-              >
-                Destacar
-              </button>
-              <button
-                type="button"
-                className="rounded-full border border-neutral-300 px-3 py-1 text-xs uppercase tracking-[0.3em] text-neutral-600 hover:border-neutral-900 hover:text-neutral-900"
-                onClick={() => handleRemove(url)}
-                disabled={busy}
-              >
-                Quitar
-              </button>
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )
