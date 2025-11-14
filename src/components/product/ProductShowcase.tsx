@@ -120,7 +120,7 @@ export function ProductShowcase({ product, recommendations = [] }: ProductShowca
                 {gallery.length > 0 && (
                   <Image
                     src={getProductImageVariant(gallery[activeIndex], 'full')}
-                    alt={`${product.name} imagen ${activeIndex + 1}`}
+                    alt={`${product.name} · ${product.category ?? 'calcetines artesanales'} · vista ${activeIndex + 1}`}
                     fill
                     priority
                     className="object-contain"
@@ -142,7 +142,7 @@ export function ProductShowcase({ product, recommendations = [] }: ProductShowca
                     >
                       <Image
                         src={getProductImageVariant(photo, 'thumb')}
-                        alt={`${product.name} miniatura ${index + 1}`}
+                        alt={`Miniatura ${index + 1} · ${product.name} · ${product.color || 'color artesanal'}`}
                         fill
                         className="object-contain"
                         sizes="80px"

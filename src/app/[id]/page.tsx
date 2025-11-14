@@ -9,6 +9,7 @@ import {
   buildProductJsonLd,
   getPrimaryProductImage
 } from '@/lib/seo'
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs'
 
 interface ProductPageProps {
   params: Promise<{
@@ -80,6 +81,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
       buildProductJsonLd(product),
       buildProductBreadcrumbJsonLd(product)
     ]
+    const breadcrumbs = [
+      { label: 'Inicio', href: '/' },
+      { label: 'Catálogo', href: '/#colecciones' },
+      { label: product.category ?? 'Catálogo', href: '/#colecciones' },
+      { label: product.name, current: true }
+    ]
     return (
       <>
         <script
@@ -87,6 +94,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           suppressHydrationWarning
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        <Breadcrumbs items={[...breadcrumbs]} />
         <ProductShowcase product={product} recommendations={recommendations} />
       </>
     )

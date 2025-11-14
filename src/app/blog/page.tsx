@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { getAllPosts } from '@/lib/blog'
 import { renderMarkdown } from '@/lib/markdown'
 import { absoluteUrl, buildBlogListingJsonLd, siteMetadata } from '@/lib/seo'
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs'
 
 const dateFormatter = new Intl.DateTimeFormat('es-ES', {
   dateStyle: 'long'
@@ -34,6 +35,10 @@ export default async function BlogIndexPage() {
   const featuredPost = posts[0]
   const featuredHtml = featuredPost ? renderMarkdown(featuredPost.content) : ''
   const blogJsonLd = buildBlogListingJsonLd(posts)
+  const breadcrumbs = [
+    { label: 'Inicio', href: '/' },
+    { label: 'Blog', current: true }
+  ]
 
   return (
     <>
@@ -43,18 +48,19 @@ export default async function BlogIndexPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(blogJsonLd) }}
       />
       <div className="bg-white text-neutral-900">
+        <Breadcrumbs items={breadcrumbs} />
         <section className="border-b border-neutral-200 bg-white">
           <div className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-16 sm:px-6 lg:px-8">
             <p className="text-xs uppercase tracking-[0.35em] text-neutral-500">Relats i memoria</p>
-          <h1 className="text-4xl font-semibold text-neutral-900 sm:text-5xl">
-            Blog de calceteria tradicional
-          </h1>
-          <p className="max-w-3xl text-sm leading-relaxed text-neutral-600">
-            Histories, tecniques i arxius personals de Macu Garcia i del taller familiar. Documents
-            perque qualsevol persona entenga que hi ha darrere de cada parell de mitges.
-          </p>
-        </div>
-      </section>
+            <h1 className="text-4xl font-semibold text-neutral-900 sm:text-5xl">
+              Blog de calceteria tradicional
+            </h1>
+            <p className="max-w-3xl text-sm leading-relaxed text-neutral-600">
+              Histories, tecniques i arxius personals de Macu Garcia i del taller familiar. Documents
+              perque qualsevol persona entenga que hi ha darrere de cada parell de mitges.
+            </p>
+          </div>
+        </section>
 
       <section className="mx-auto max-w-6xl 3xl:max-w-8xl px-4 py-12 sm:px-6 lg:px-8">
         {posts.length === 0 ? (

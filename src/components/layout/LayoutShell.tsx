@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 
 import { footerNavLinks, primaryNavLinks } from '@/lib/navigation'
 import { HeaderActions } from './HeaderActions'
+import { CookieBanner } from '@/components/ui/CookieBanner'
 
 interface LayoutShellProps {
   children: ReactNode
@@ -75,6 +76,7 @@ export function LayoutShell({ children }: LayoutShellProps) {
           </div>
         </div>
       </footer>
+      <CookieBanner />
     </div>
   )
 }

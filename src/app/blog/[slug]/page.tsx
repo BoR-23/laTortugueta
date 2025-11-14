@@ -9,6 +9,7 @@ import {
   defaultOpenGraphImage,
   siteMetadata
 } from '@/lib/seo'
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs'
 
 type BlogPageProps = {
   params: Promise<{
@@ -77,6 +78,11 @@ export default async function BlogPostPage({ params }: BlogPageProps) {
 
   const html = renderMarkdown(post.content)
   const articleJsonLd = buildArticleJsonLd(post)
+  const breadcrumbs = [
+    { label: 'Inicio', href: '/' },
+    { label: 'Blog', href: '/blog' },
+    { label: post.title, current: true }
+  ]
 
   return (
     <>
@@ -85,6 +91,7 @@ export default async function BlogPostPage({ params }: BlogPageProps) {
         suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
       />
+      <Breadcrumbs items={breadcrumbs} />
       <article className="bg-white text-neutral-900">
         <div className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-16 sm:px-6 lg:px-8">
           <p className="text-xs uppercase tracking-[0.35em] text-neutral-500">
