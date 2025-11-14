@@ -23,13 +23,14 @@ export const getProductImageVariant = (
     return imagePath
   }
 
-  // Extraer ruta relativa (ej: "3-fonts/3-fonts_001.jpg")
+  // Extraer nombre del archivo (ej: "3-fonts_001.jpg")
+  // Las imágenes están directamente en /images/products/ sin carpeta de producto
   const relativePath = imagePath.slice(OLD_PRODUCT_IMAGES_BASE.length)
 
   if (variant === 'original') {
     return `${R2_PUBLIC_URL}/images/products/${relativePath}`
   }
 
-  // Las variantes están en /images/products/_variants/{variant}/{producto}/{producto}_001.jpg
+  // Las variantes están en /images/products/_variants/{variant}/producto_001.jpg
   return `${R2_PUBLIC_URL}/images/products/${VARIANTS_FOLDER}/${variant}/${relativePath}`
 }
