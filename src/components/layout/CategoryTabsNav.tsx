@@ -201,7 +201,7 @@ export function CategoryTabsNav({ tabs }: CategoryTabsNavProps) {
   const openMenu = openMenuId ? tabs.find(tab => tab.id === openMenuId) ?? null : null
 
   return (
-    <div ref={wrapperRef} className="flex flex-col gap-4">
+    <div ref={wrapperRef} className="hidden flex-col gap-4 md:flex">
       <nav
         className="flex flex-wrap items-center justify-start gap-4 text-[11px] font-semibold uppercase tracking-[0.35em] text-neutral-500"
         aria-label="Categorías del catálogo"

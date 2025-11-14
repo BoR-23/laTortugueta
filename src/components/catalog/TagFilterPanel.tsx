@@ -340,7 +340,7 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
             <CategoryTabsNav tabs={headerNavTabs} />
           </div>
           <div className="flex flex-wrap items-center justify-end gap-3 text-[10px] font-semibold uppercase tracking-[0.35em] text-neutral-500">
-            <div className="flex items-center gap-2">
+            <div className="hidden items-center gap-2 md:flex">
               <span className="text-neutral-400">Vista</span>
               {VIEW_COLUMN_OPTIONS.map(option => {
                 const isActive = gridColumns === option
@@ -387,7 +387,13 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
         />
       </div>
 
-      <div className={`fixed top-[64px] right-0 bottom-0 z-40 flex justify-end px-2 sm:top-[72px] sm:px-4 lg:top-[80px] lg:px-6 ${filtersOpen ? '' : 'pointer-events-none'}`}>
+      <div className={`fixed inset-0 z-40 flex justify-end bg-black/40 transition-opacity ${filtersOpen ? 'opacity-100 pointer-events-auto' : 'pointer-events-none opacity-0'}`}>
+        <button
+          type="button"
+          aria-label="Cerrar filtros"
+          className="flex-1"
+          onClick={closeFilters}
+        />
         <div
           className={`no-scrollbar pointer-events-auto flex h-full w-full max-w-[420px] flex-col border-l border-neutral-200 bg-white shadow-2xl transition-transform duration-300 ${
             filtersOpen ? 'translate-x-0' : 'translate-x-full'
