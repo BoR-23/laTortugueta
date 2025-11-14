@@ -4,6 +4,7 @@ import { TagFilterPanelClient } from "@/components/catalog/TagFilterPanelClient"
 import { prepareCatalogProducts } from "@/components/catalog/prepareCatalogProducts"
 import { getCategories } from "@/lib/categories"
 import { siteMetadata, absoluteUrl, buildCatalogJsonLd } from '@/lib/seo'
+import { TestimonialsSection } from '@/components/home/TestimonialsSection'
 
 const mapCategoriesToDTO = (records: Awaited<ReturnType<typeof getCategories>>) =>
   records.map(record => ({
@@ -66,6 +67,7 @@ export default async function Home() {
   })
 
   const catalogJsonLd = buildCatalogJsonLd(enrichedProducts.length)
+  const enableTestimonials = process.env.NEXT_PUBLIC_ENABLE_TESTIMONIALS !== 'false'
 
   return (
     <>
@@ -79,6 +81,7 @@ export default async function Home() {
         headerCategories={mapCategoriesToDTO(headerCategories)}
         filterCategories={mapCategoriesToDTO(filterCategories)}
       />
+      <TestimonialsSection show={enableTestimonials} />
     </>
   )
 }
