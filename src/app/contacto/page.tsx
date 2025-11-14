@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Metadata } from 'next'
 import { CONTACT_NAME, INSTAGRAM_URL, WHATSAPP_LINK } from '@/lib/contact'
 import { absoluteUrl, siteMetadata } from '@/lib/seo'
+import { ContactQuickForm } from '@/components/contact/ContactQuickForm'
 
 export const metadata: Metadata = {
   title: 'Contacto',
@@ -84,33 +85,7 @@ export default function ContactPage() {
               loading="lazy"
             />
           </div>
-          <form className="space-y-4">
-            <label className="text-xs uppercase tracking-[0.3em] text-neutral-500">Nombre</label>
-            <input
-              type="text"
-              name="name"
-              className="w-full rounded-full border border-neutral-300 px-4 py-3 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none focus:ring-0"
-            />
-            <label className="text-xs uppercase tracking-[0.3em] text-neutral-500">Correo electrónico</label>
-            <input
-              type="email"
-              name="email"
-              className="w-full rounded-full border border-neutral-300 px-4 py-3 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none focus:ring-0"
-            />
-            <label className="text-xs uppercase tracking-[0.3em] text-neutral-500">Mensaje</label>
-            <textarea
-              name="message"
-              rows={3}
-              className="w-full rounded-3xl border border-neutral-300 px-4 py-3 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none focus:ring-0"
-            />
-            <button
-              type="button"
-              className="btn-primary w-full px-4 py-3 text-sm uppercase tracking-[0.3em]"
-              onClick={() => window?.alert('El formulario se puede sustituir por un servicio de correo o CRM en producción.')}
-            >
-              Enviar mensaje
-            </button>
-          </form>
+          <ContactQuickForm />
         </div>
       </section>
     </div>

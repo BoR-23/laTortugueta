@@ -31,7 +31,7 @@ if (supabaseUrl) {
 
 const nextConfig = {
   experimental: {
-    viewTransitions: true
+    serverViewTransitions: true
   },
   images: {
     remotePatterns
