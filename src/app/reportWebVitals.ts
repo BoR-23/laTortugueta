@@ -1,7 +1,7 @@
-import type { ReportHandler } from 'web-vitals'
+import type { Metric } from 'web-vitals'
 import { logWebVital } from '@/lib/webVitals'
 
-const reportWebVitals: ReportHandler = metric => {
+const reportWebVitals = (metric: Metric) => {
   logWebVital({
     name: metric.name,
     value: metric.value,
