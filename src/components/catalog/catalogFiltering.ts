@@ -34,6 +34,7 @@ export type FilterState = {
   colorCounts: string[]
   sizes: string[]
   onlyAvailable: boolean
+  onlyFavorites: boolean
   priceRange: [number, number]
   search: string
 }
@@ -103,6 +104,7 @@ export const createInitialFilterState = (stats: PriceStats): FilterState => ({
   colorCounts: [],
   sizes: [],
   onlyAvailable: false,
+  onlyFavorites: false,
   priceRange: [stats.min, stats.max],
   search: ''
 })
@@ -212,7 +214,8 @@ export const filterCatalogProducts = (
   products: CatalogProduct[],
   filterState: FilterState,
   hasSearchQuery: boolean,
-  searchMatches: SearchMatchesMap
+  searchMatches: SearchMatchesMap,
+  favoriteIds?: Set<string>
 ) => {
   const baseList =
     hasSearchQuery && searchMatches
@@ -227,6 +230,12 @@ export const filterCatalogProducts = (
 
     if (filterState.onlyAvailable && !product.available) {
       return false
+    }
+
+    if (filterState.onlyFavorites) {
+      if (!favoriteIds || !favoriteIds.has(product.id)) {
+        return false
+      }
     }
 
     if (filterState.sizes.length > 0) {
@@ -309,6 +318,7 @@ export const hasActiveFilters = (
     filterState.colorCounts.length > 0 ||
     filterState.sizes.length > 0 ||
     filterState.onlyAvailable ||
+    filterState.onlyFavorites ||
     priceRangeActive ||
     hasSearchQuery
   )

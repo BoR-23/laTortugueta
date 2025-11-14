@@ -72,4 +72,13 @@ describe('useCatalogFilters', () => {
     act(() => result.current.toggleTag('archivo'))
     expect(result.current.filterState.tags).not.toContain('archivo')
   })
+
+  it('habilita el filtro de favoritos', () => {
+    const { result } = renderHook(() => useCatalogFilters(sampleProducts, priceStats))
+
+    expect(result.current.filterState.onlyFavorites).toBe(false)
+
+    act(() => result.current.toggleFavorites())
+    expect(result.current.filterState.onlyFavorites).toBe(true)
+  })
 })

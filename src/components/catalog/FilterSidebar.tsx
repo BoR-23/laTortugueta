@@ -27,6 +27,7 @@ interface FilterSidebarProps {
   onToggleColorCount: (value: string) => void
   onToggleSize: (value: string) => void
   onToggleAvailability: () => void
+  onToggleFavorites: () => void
   onPriceChange: (index: 0 | 1, value: number) => void
   onSearchChange: (value: string) => void
   onSortChange: (value: SortKey) => void
@@ -35,6 +36,7 @@ interface FilterSidebarProps {
   shareStatus?: 'idle' | 'copied' | 'error'
   searchInputRef?: RefObject<HTMLInputElement>
   managedCategories?: CategorySidebarNode[]
+  favoritesEnabled?: boolean
 }
 
 const sectionTitleClasses =
@@ -96,6 +98,7 @@ export const FilterSidebar = ({
   onToggleColorCount,
   onToggleSize,
   onToggleAvailability,
+  onToggleFavorites,
   onPriceChange,
   onSearchChange,
   onSortChange,
@@ -103,7 +106,8 @@ export const FilterSidebar = ({
   onShareFilters,
   shareStatus = 'idle',
   searchInputRef,
-  managedCategories = []
+  managedCategories = [],
+  favoritesEnabled = false
 }: FilterSidebarProps) => {
   const canShare = Boolean(onShareFilters)
   const [openNodes, setOpenNodes] = useState<Record<string, boolean>>({})
@@ -188,21 +192,37 @@ export const FilterSidebar = ({
                   Limpiar filtros
                 </button>
               )}
-              {canShare && (
-                <button
-                  type="button"
-                  onClick={onShareFilters}
-                  className="transition hover:text-neutral-900"
-                >
-                  {shareStatus === 'copied'
-                    ? 'Enlace copiado'
-                    : shareStatus === 'error'
-                      ? 'Error al copiar'
-                      : 'Copiar enlace'}
-                </button>
-              )}
-            </div>
-          </header>
+          {canShare && (
+            <button
+              type="button"
+              onClick={onShareFilters}
+              className="transition hover:text-neutral-900"
+            >
+              {shareStatus === 'copied'
+                ? 'Enlace copiado'
+                : shareStatus === 'error'
+                  ? 'Error al copiar'
+                  : 'Copiar enlace'}
+            </button>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-2 pt-1">
+          <button
+            type="button"
+            onClick={onToggleAvailability}
+            className={squareButtonClasses(filterState.onlyAvailable)}
+          >
+            Solo disponibles
+          </button>
+          <button
+            type="button"
+            onClick={onToggleFavorites}
+            className={squareButtonClasses(favoritesEnabled)}
+          >
+            Favoritos
+          </button>
+        </div>
+      </header>
 
           {hasManagedCategories && (
             <section className="space-y-3">
@@ -237,13 +257,22 @@ export const FilterSidebar = ({
 
             <section className="space-y-3">
               <p className={sectionTitleClasses}>Disponibilidad</p>
-              <button
-                type="button"
-                onClick={onToggleAvailability}
-                className={listTagClasses(filterState.onlyAvailable)}
-              >
-                {'Solo con galería'}
-              </button>
+              <div className="space-y-1.5">
+                <button
+                  type="button"
+                  onClick={onToggleAvailability}
+                  className={listTagClasses(filterState.onlyAvailable)}
+                >
+                  {'Solo con galería'}
+                </button>
+                <button
+                  type="button"
+                  onClick={onToggleFavorites}
+                  className={listTagClasses(favoritesEnabled)}
+                >
+                  {'Solo favoritos guardados'}
+                </button>
+              </div>
             </section>
 
             {sizeSummaries.length > 0 && (

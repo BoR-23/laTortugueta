@@ -1,3 +1,5 @@
+'use client'
+
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -12,6 +14,8 @@ interface ProductGridProps {
   filterState: FilterState
   filtersAreActive: boolean
   gridColumns: GridColumns
+  favorites?: Set<string>
+  onToggleFavorite?: (id: string) => void
 }
 
 const GRID_CLASS_BY_COLUMNS: Record<GridColumns, string> = {
@@ -24,8 +28,12 @@ export const ProductGrid = ({
   products,
   filterState,
   filtersAreActive,
-  gridColumns
+  gridColumns,
+  favorites,
+  onToggleFavorite
 }: ProductGridProps) => {
+  const isFavorite = (id: string) => (favorites ? favorites.has(id) : false)
+
   return (
     <div className="flex-1">
       <div className="mb-6 flex flex-col gap-2 text-[11px] uppercase tracking-[0.2em] text-neutral-500 sm:flex-row sm:items-center sm:justify-between">
@@ -47,6 +55,24 @@ export const ProductGrid = ({
             className="group space-y-4 text-center sm:text-left"
           >
             <div className="relative mx-auto aspect-[3/4] w-full overflow-hidden bg-white">
+              {onToggleFavorite ? (
+                <button
+                  type="button"
+                  aria-label={isFavorite(product.id) ? 'Eliminar de favoritos' : 'Guardar en favoritos'}
+                  className={`absolute right-2 top-2 rounded-full border px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] transition ${
+                    isFavorite(product.id)
+                      ? 'border-neutral-900 bg-neutral-900 text-white'
+                      : 'border-white/80 bg-white/80 text-neutral-600 hover:border-neutral-900 hover:text-neutral-900'
+                  }`}
+                  onClick={event => {
+                    event.preventDefault()
+                    event.stopPropagation()
+                    onToggleFavorite(product.id)
+                  }}
+                >
+                  {isFavorite(product.id) ? '★' : '☆'}
+                </button>
+              ) : null}
               {product.image ? (
                 <Image
                   src={getProductImageVariant(product.image, 'thumb')}

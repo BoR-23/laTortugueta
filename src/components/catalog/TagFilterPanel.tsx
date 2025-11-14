@@ -19,6 +19,7 @@ import {
 import { useCatalogFilters } from './useCatalogFilters'
 import { FilterSidebar } from './FilterSidebar'
 import { ProductGrid, type GridColumns } from './ProductGrid'
+import { useFavorites } from '@/hooks/useFavorites'
 
 const SORT_KEYS: SortKey[] = ['priority', 'name', 'price']
 const VIEW_COLUMN_OPTIONS: GridColumns[] = [2, 3, 4]
@@ -133,6 +134,9 @@ const buildFilterStateFromParams = (
   if (params.get('available') === '1') {
     state.onlyAvailable = true
   }
+  if (params.get('fav') === '1') {
+    state.onlyFavorites = true
+  }
   return state
 }
 
@@ -156,6 +160,9 @@ const serializeFiltersToParams = (
   }
   if (filterState.onlyAvailable) {
     params.set('available', '1')
+  }
+  if (filterState.onlyFavorites) {
+    params.set('fav', '1')
   }
   if (sortKey !== 'priority') {
     params.set('sort', sortKey)
@@ -208,6 +215,8 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
     [filterTree]
   )
 
+  const { favorites, favoriteSet, toggleFavorite } = useFavorites()
+
   const {
     filterState,
     sortKey,
@@ -220,6 +229,7 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
     toggleColorCount,
     toggleSize,
     toggleAvailability,
+    toggleFavorites,
     updatePriceRange,
     handleSearchChange,
     clearFilters
@@ -232,8 +242,8 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
   const lastAppliedQueryRef = useRef(currentQuery)
 
   const filteredProducts = useMemo(
-    () => filterCatalogProducts(products, filterState, hasSearchQuery, searchMatches),
-    [products, filterState, hasSearchQuery, searchMatches]
+    () => filterCatalogProducts(products, filterState, hasSearchQuery, searchMatches, favoriteSet),
+    [products, filterState, hasSearchQuery, searchMatches, favoriteSet]
   )
 
   const sortedProducts = useMemo(
@@ -372,6 +382,8 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
           filterState={filterState}
           filtersAreActive={filtersAreActive}
           gridColumns={gridColumns}
+          favorites={favoriteSet}
+          onToggleFavorite={toggleFavorite}
         />
       </div>
 
@@ -403,6 +415,7 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
               onToggleColorCount={toggleColorCount}
               onToggleSize={toggleSize}
               onToggleAvailability={toggleAvailability}
+              onToggleFavorites={toggleFavorites}
               onPriceChange={updatePriceRange}
               onSearchChange={handleSearchChange}
               onSortChange={value => setSortKey(value)}
@@ -411,6 +424,7 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
               shareStatus={shareStatus}
               searchInputRef={searchInputRef}
               managedCategories={managedFilterTree}
+              favoritesEnabled={filterState.onlyFavorites}
             />
           </div>
         </div>

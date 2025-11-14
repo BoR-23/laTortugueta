@@ -29,6 +29,7 @@ interface UseCatalogFiltersResult {
   toggleColorCount: (value: string) => void
   toggleSize: (value: string) => void
   toggleAvailability: () => void
+  toggleFavorites: () => void
   updatePriceRange: (index: 0 | 1, value: number) => void
   handleSearchChange: (value: string) => void
   clearFilters: () => void
@@ -155,6 +156,14 @@ export const useCatalogFilters = (
     registerFilterUsage('availability', filterState.onlyAvailable ? 'clear' : 'select')
   }
 
+  const toggleFavorites = () => {
+    setFilterState(prev => ({
+      ...prev,
+      onlyFavorites: !prev.onlyFavorites
+    }))
+    registerFilterUsage('favorites', filterState.onlyFavorites ? 'clear' : 'select')
+  }
+
   const updatePriceRange = (index: 0 | 1, value: number) => {
     setFilterState(prev => {
       const nextRange: [number, number] = [...prev.priceRange] as [number, number]
@@ -202,6 +211,7 @@ export const useCatalogFilters = (
     toggleColorCount,
     toggleSize,
     toggleAvailability,
+    toggleFavorites,
     updatePriceRange,
     handleSearchChange,
     clearFilters
