@@ -1,11 +1,6 @@
 import NextAuth, { type NextAuthOptions } from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
-import { createSupabaseServerClient } from './supabaseClient'
-
-const supabaseAuthAvailable =
-  Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL) &&
-  Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY)
 
 const fallbackAdmins: Array<{ email: string; passwordHash: string }> = [
   {
@@ -52,31 +47,12 @@ export const authOptions: NextAuthOptions = {
         const email = credentials.email.toLowerCase()
         const password = credentials.password
 
-        if (supabaseAuthAvailable) {
-          try {
-            const supabase = createSupabaseServerClient()
-            const { data, error } = await supabase
-              .from('users_admin')
-              .select('*')
-              .eq('email', email)
-              .single()
-
-            if (!error && data) {
-              const isValid = await bcrypt.compare(password, data.password_hash)
-              if (isValid) {
-                return {
-                  id: data.id,
-                  email: data.email,
-                  role: data.role
-                }
-              }
-            }
-          } catch (error) {
-            console.error('Auth error', error)
-          }
+        const admin = await findFallbackAdmin(email, password)
+        if (!admin) {
+          return null
         }
 
-        return await findFallbackAdmin(email, password)
+        return admin
       }
     })
   ],

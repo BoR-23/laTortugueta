@@ -7,6 +7,12 @@
 const fs = require('fs')
 const path = require('path')
 
+// Skip en CI/Netlify - usamos R2 directamente
+if (process.env.NETLIFY || process.env.CI) {
+  console.log('[link-product-assets] CI detected - using R2, skipping local assets')
+  process.exit(0)
+}
+
 const projectRoot = path.resolve(__dirname, '..')
 const assetsRoot = path.resolve(projectRoot, '..', 'assets', 'product-images')
 const publicImagesDir = path.join(projectRoot, 'public', 'images')

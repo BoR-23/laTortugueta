@@ -12,21 +12,30 @@ let galleryCache: Record<string, string[]> | null = null
 let pricingCache: Record<string, number> | null = null
 
 const buildGalleryCache = () => {
+  console.log('--- 🔍 INICIO ESCANEO DE IMÁGENES (Debug) ---')
   const cache: Record<string, string[]> = {}
 
   if (!fs.existsSync(productImagesDirectory)) {
+    console.warn('⚠️ La carpeta de imágenes NO existe:', productImagesDirectory)
     return cache
   }
 
   const files = fs.readdirSync(productImagesDirectory)
+  console.log(`📂 Archivos encontrados en disco: ${files.length}`)
 
   for (const file of files) {
-    const match = file.match(/^(.*?)(?:_(\d+))?\.[^.]+$/)
-    if (!match) {
+    // Ignoramos archivos ocultos o que no sean imágenes
+    if (file.startsWith('.') || !/\.(jpg|jpeg|png|webp)$/i.test(file)) {
       continue
     }
 
-    const slug = match[1]
+    // Lógica BLINDADA para sacar el slug:
+    // 1. Quitamos la extensión (.jpg)
+    // 2. Quitamos el sufijo de número (_001) si existe al final
+    const slug = file
+      .replace(/\.[^/.]+$/, '') // Quita extensión
+      .replace(/_\\d+$/, '')     // Quita _001, _002, etc.
+
     if (!cache[slug]) {
       cache[slug] = []
     }
@@ -34,6 +43,18 @@ const buildGalleryCache = () => {
     cache[slug].push(`/images/products/${file}`)
   }
 
+  // Reporte de diagnóstico rápido
+  const totalKeys = Object.keys(cache).length
+  console.log(`✅ Productos identificados con fotos: ${totalKeys}`)
+  if (files.length > 0 && totalKeys === 0) {
+    console.error('❌ ERROR: Hay archivos pero no se han asignado a ningún producto. Revisa los nombres.')
+    console.log('Ejemplo de archivo:', files[0])
+  } else if (cache['3-fonts']) {
+    console.log('🎉 ÉXITO: Fotos detectadas para \"3-fonts\":', cache['3-fonts'].length)
+  }
+  console.log('--- FIN ESCANEO ---')
+
+  // Ordenar alfabéticamente las fotos de cada producto
   Object.keys(cache).forEach(slug => {
     cache[slug].sort((a, b) =>
       a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
@@ -44,7 +65,8 @@ const buildGalleryCache = () => {
 }
 
 export const getProductGallery = (id: string) => {
-  if (!galleryCache) {
+  // Si la caché está vacía, forzamos un re-escaneo (útil en dev)
+  if (!galleryCache || Object.keys(galleryCache).length === 0) {
     galleryCache = buildGalleryCache()
   }
 

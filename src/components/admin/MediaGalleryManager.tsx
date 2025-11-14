@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
-import { supabaseBrowserClient } from '@/lib/supabaseClient'
+import { R2ImageUploader, uploadFileToR2 } from './R2ImageUploader'
 
 interface MediaGalleryManagerProps {
   productId: string
@@ -11,14 +11,13 @@ interface MediaGalleryManagerProps {
   disabled?: boolean
 }
 
-const bucket =
-  process.env.NEXT_PUBLIC_SUPABASE_BUCKET?.trim() || 'product-images'
-
-const slugify = (value: string) =>
-  value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '')
+const r2Bucket = process.env.NEXT_PUBLIC_R2_BUCKET_NAME?.trim() || ''
+const r2Configured =
+  Boolean(process.env.NEXT_PUBLIC_R2_PUBLIC_URL) &&
+  Boolean(process.env.NEXT_PUBLIC_R2_ENDPOINT) &&
+  Boolean(process.env.NEXT_PUBLIC_R2_ACCESS_KEY_ID) &&
+  Boolean(process.env.NEXT_PUBLIC_R2_SECRET_ACCESS_KEY) &&
+  Boolean(process.env.NEXT_PUBLIC_R2_BUCKET_NAME)
 
 export function MediaGalleryManager({
   productId,
@@ -27,7 +26,6 @@ export function MediaGalleryManager({
   disabled
 }: MediaGalleryManagerProps) {
   const [gallery, setGallery] = useState(initialGallery)
-  const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [pendingReplaceIndex, setPendingReplaceIndex] = useState<number | null>(null)
@@ -60,65 +58,26 @@ export function MediaGalleryManager({
     }
   }
 
-  const uploadFileToSupabase = async (file: File) => {
+  const ensureUploadReady = () => {
     if (!productId) {
-      throw new Error('Selecciona un producto antes de subir imágenes.')
+      setError('Selecciona un producto antes de subir imágenes.')
+      return false
     }
-    if (!supabaseBrowserClient) {
-      throw new Error('Configura las variables de Supabase para habilitar la subida.')
+    if (!r2Configured) {
+      setError('Configura las variables de Cloudflare R2 para habilitar la subida.')
+      return false
     }
-    const extension = file.name.split('.').pop()
-    const safeName = `${Date.now()}-${slugify(file.name)}${extension ? `.${extension}` : ''}`
-    const objectKey = `${productId}/${safeName}`
-    const { error: uploadError } = await supabaseBrowserClient.storage
-      .from(bucket)
-      .upload(objectKey, file, { upsert: true })
-
-    if (uploadError) {
-      throw new Error(uploadError.message)
-    }
-
-    const { data } = supabaseBrowserClient.storage.from(bucket).getPublicUrl(objectKey)
-    if (!data?.publicUrl) {
-      throw new Error('No se pudo obtener la URL pública de la imagen.')
-    }
-    return data.publicUrl
+    return true
   }
 
-  const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files
-    if (!files || files.length === 0) {
+  const handleUploadComplete = async (url: string) => {
+    if (!ensureUploadReady()) {
       return
     }
-
-    if (!productId) {
-      setError('Selecciona un producto antes de subir im\u00e1genes.')
-      return
-    }
-
-    if (!supabaseBrowserClient) {
-      setError('Configura las variables de Supabase para habilitar la subida.')
-      return
-    }
-
-    setUploading(true)
-    setError(null)
-
     try {
-      const newUrls: string[] = []
-      for (const file of Array.from(files)) {
-        const url = await uploadFileToSupabase(file)
-        newUrls.push(url)
-      }
-
-      if (newUrls.length > 0) {
-        await syncGallery([...gallery, ...newUrls])
-      }
+      await syncGallery([...gallery, url])
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudieron subir las im\u00e1genes.')
-    } finally {
-      event.target.value = ''
-      setUploading(false)
+      setError(err instanceof Error ? err.message : 'No se pudieron subir las imágenes.')
     }
   }
 
@@ -130,10 +89,13 @@ export function MediaGalleryManager({
     if (targetIndex === null || !file) {
       return
     }
+    if (!ensureUploadReady()) {
+      return
+    }
     setReplacingIndex(targetIndex)
     setError(null)
     try {
-      const newUrl = await uploadFileToSupabase(file)
+      const newUrl = await uploadFileToR2(file, productId)
       const nextGallery = [...gallery]
       nextGallery[targetIndex] = newUrl
       await syncGallery(nextGallery)
@@ -145,12 +107,7 @@ export function MediaGalleryManager({
   }
 
   const handleOpenReplacePicker = (index: number) => {
-    if (!productId) {
-      setError('Selecciona un producto antes de reemplazar imágenes.')
-      return
-    }
-    if (!supabaseBrowserClient) {
-      setError('Configura las variables de Supabase para habilitar la subida.')
+    if (!ensureUploadReady()) {
       return
     }
     setPendingReplaceIndex(index)
@@ -196,9 +153,9 @@ export function MediaGalleryManager({
         <h2 className="text-sm font-semibold uppercase tracking-[0.3em] text-neutral-500">
           Galer\u00eda de im\u00e1genes
         </h2>
-        {bucket && (
+        {r2Bucket && (
           <span className="text-[10px] uppercase tracking-[0.3em] text-neutral-400">
-            bucket: {bucket}
+            bucket: {r2Bucket}
           </span>
         )}
       </div>
@@ -207,28 +164,19 @@ export function MediaGalleryManager({
         <p className="mt-4 text-sm text-neutral-500">
           Selecciona un producto para gestionar su galer\u00eda.
         </p>
-      ) : !supabaseBrowserClient ? (
+      ) : !r2Configured ? (
         <p className="mt-4 text-sm text-red-500">
-          Necesitas definir NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY y NEXT_PUBLIC_SUPABASE_BUCKET
-          para subir im\u00e1genes desde el panel.
+          Necesitas definir las variables NEXT_PUBLIC_R2_PUBLIC_URL, NEXT_PUBLIC_R2_ENDPOINT, NEXT_PUBLIC_R2_ACCESS_KEY_ID,
+          NEXT_PUBLIC_R2_SECRET_ACCESS_KEY y NEXT_PUBLIC_R2_BUCKET_NAME para subir im\u00e1genes desde el panel.
         </p>
       ) : (
         <>
           <p className="mt-4 text-sm text-neutral-600">
-            Sube varias fotos a la vez. Se guardan en Supabase Storage y se actualiza la ficha
-            autom\u00e1ticamente.
+            Sube fotos directamente a Cloudflare R2. Una vez completado el upload se actualizar\u00e1 la galer\u00eda del producto.
           </p>
-          <label className="mt-4 inline-flex cursor-pointer items-center gap-3 rounded-full border border-dashed border-neutral-300 px-4 py-2 text-xs uppercase tracking-[0.3em] text-neutral-600 hover:border-neutral-900">
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              className="hidden"
-              onChange={handleUpload}
-              disabled={uploading || busy}
-            />
-            {uploading ? 'Subiendo\u2026' : 'Subir im\u00e1genes'}
-          </label>
+          <div className="mt-4">
+            <R2ImageUploader productId={productId} onUploadComplete={handleUploadComplete} />
+          </div>
         </>
       )}
 
@@ -259,7 +207,7 @@ export function MediaGalleryManager({
                 <button
                   type="button"
                   onClick={() => handleOpenReplacePicker(index)}
-                  disabled={busy || uploading || replacingIndex === index}
+                  disabled={busy || replacingIndex === index}
                   className="absolute right-1 top-1 rounded-full bg-white/90 px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-neutral-600 shadow hover:text-neutral-900 disabled:opacity-50"
                 >
                   {replacingIndex === index ? '...' : '✎'}
