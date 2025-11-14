@@ -1,6 +1,7 @@
 ﻿'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
 import { CategoryTabsNav, type CategoryNavNode } from '@/components/layout/CategoryTabsNav'
@@ -20,6 +21,7 @@ import { useCatalogFilters } from './useCatalogFilters'
 import { FilterSidebar } from './FilterSidebar'
 import { ProductGrid, type GridColumns } from './ProductGrid'
 import { useFavorites } from '@/hooks/useFavorites'
+import { primaryNavLinks } from '@/lib/navigation'
 
 const SORT_KEYS: SortKey[] = ['priority', 'name', 'price']
 const VIEW_COLUMN_OPTIONS: GridColumns[] = [2, 3, 4]
@@ -216,6 +218,10 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
   )
 
   const { favorites, favoriteSet, toggleFavorite } = useFavorites()
+  const mobileMenuLinks = useMemo(
+    () => primaryNavLinks.filter(link => !link.external && link.href !== '/admin'),
+    []
+  )
 
   const {
     filterState,
@@ -238,6 +244,7 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
   const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'error'>('idle')
   const [gridColumns, setGridColumns] = useState<GridColumns>(3)
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const lastAppliedQueryRef = useRef(currentQuery)
 
@@ -313,6 +320,8 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
 
   const closeFilters = () => setFiltersOpen(false)
   const toggleFilters = () => setFiltersOpen(prev => !prev)
+  const closeMenu = () => setMenuOpen(false)
+  const toggleMenu = () => setMenuOpen(prev => !prev)
 
   const canShare = typeof navigator !== 'undefined' && Boolean(navigator.clipboard)
 
@@ -340,6 +349,17 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
             <CategoryTabsNav tabs={headerNavTabs} />
           </div>
           <div className="flex flex-wrap items-center justify-end gap-3 text-[10px] font-semibold uppercase tracking-[0.35em] text-neutral-500">
+            <button
+              type="button"
+              onClick={toggleMenu}
+              className={`rounded-full border px-4 py-1.5 text-[10px] transition md:hidden ${
+                menuOpen
+                  ? 'border-neutral-900 bg-neutral-900 text-white'
+                  : 'border-neutral-200 text-neutral-500 hover:border-neutral-900 hover:text-neutral-900'
+              }`}
+            >
+              Menú
+            </button>
             <div className="hidden items-center gap-2 md:flex">
               <span className="text-neutral-400">Vista</span>
               {VIEW_COLUMN_OPTIONS.map(option => {
@@ -433,6 +453,42 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
               favoritesEnabled={filterState.onlyFavorites}
             />
           </div>
+        </div>
+      </div>
+
+      <div className={`fixed inset-0 z-40 flex justify-start bg-black/40 transition-opacity md:hidden ${menuOpen ? 'opacity-100 pointer-events-auto' : 'pointer-events-none opacity-0'}`}>
+        <button
+          type="button"
+          aria-label="Cerrar menú"
+          className="flex-1"
+          onClick={closeMenu}
+        />
+        <div
+          className={`pointer-events-auto flex h-full w-full max-w-[320px] flex-col border-r border-neutral-200 bg-white shadow-2xl transition-transform duration-300 ${
+            menuOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
+          <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-4 text-[11px] uppercase tracking-[0.3em] text-neutral-500">
+            <span>Menú</span>
+            <button type="button" className="text-neutral-900" onClick={closeMenu}>
+              Cerrar
+            </button>
+          </div>
+          <nav className="no-scrollbar flex-1 overflow-y-auto px-5 py-6">
+            <ul className="space-y-3 text-sm font-semibold text-neutral-800">
+              {mobileMenuLinks.map(link => (
+                <li key={link.label}>
+                  <Link
+                    href={link.href}
+                    className="block rounded-2xl border border-neutral-200 px-4 py-3 uppercase tracking-[0.25em] text-neutral-600 hover:border-neutral-900 hover:text-neutral-900"
+                    onClick={closeMenu}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
         </div>
       </div>
     </section>
