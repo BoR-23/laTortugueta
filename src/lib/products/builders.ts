@@ -145,6 +145,8 @@ export const buildProductFromMarkdown = (id: string, fileContents: string) => {
 }
 
 export const buildProductFromSupabase = (record: Record<string, any>): Product => {
+  // Las URLs vienen de Supabase como rutas locales (/images/products/...)
+  // Las dejamos así porque getProductImageVariant las convertirá a R2 cuando sea necesario
   const gallery = Array.isArray(record.media_assets)
     ? (record.media_assets as MediaAssetRecord[])
         .sort((a, b) => Number(a.position ?? 0) - Number(b.position ?? 0))
