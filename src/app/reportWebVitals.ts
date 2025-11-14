@@ -6,7 +6,7 @@ const reportWebVitals = (metric: Metric) => {
     name: metric.name,
     value: metric.value,
     id: metric.id,
-    label: metric.label
+    label: 'web-vital'
   })
 }
 
