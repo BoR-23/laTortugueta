@@ -55,11 +55,13 @@ const populateMediaAssets = async () => {
     }
 
     // Crear las referencias a las imágenes en R2
+    // Las imágenes en R2 tienen formato: producto_001.jpg, producto_002.jpg, etc.
     const mediaAssets = []
     for (let i = 1; i <= photoCount; i++) {
+      const paddedNumber = String(i).padStart(3, '0') // 1 -> 001, 2 -> 002, etc.
       mediaAssets.push({
         product_id: id,
-        url: `/images/products/${id}/${id}_${i}.jpg`,
+        url: `/images/products/${id}/${id}_${paddedNumber}.jpg`,
         position: i - 1
       })
     }
