@@ -6,7 +6,10 @@ export const productImagesDirectory = path.join(process.cwd(), 'public/images/pr
 export const pricingFilePath = path.join(process.cwd(), 'data/pricing.json')
 
 export const canUseSupabase =
-  Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL) && Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY)
+  process.env.NETLIFY
+    ? true // En Netlify SIEMPRE usar Supabase
+    : Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL) &&
+      Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY)
 
 let galleryCache: Record<string, string[]> | null = null
 let pricingCache: Record<string, number> | null = null

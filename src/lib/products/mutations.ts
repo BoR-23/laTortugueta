@@ -1,19 +1,21 @@
-import fs from 'fs'
-import path from 'path'
-import matter from 'gray-matter'
-
 import { createSupabaseServerClient } from '../supabaseClient'
 
-import { canUseSupabase, productsDirectory, clearProductCaches } from './cache'
+import { canUseSupabase, clearProductCaches } from './cache'
 import {
   sanitiseProductInput,
   supabasePayloadFromInput,
-  persistMarkdownProduct,
   normalisePriority,
   buildProductFromSupabase
 } from './builders'
 import type { MediaAssetInput, ProductMutationInput, ProductPriorityUpdate } from './types'
-import { getProductData } from './repository'
+
+const ensureSupabaseAvailable = () => {
+  if (!canUseSupabase) {
+    throw new Error(
+      'La gestión de productos requiere Supabase configurado. Define NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY y SUPABASE_SERVICE_ROLE_KEY.'
+    )
+  }
+}
 
 export const updateProductPriorities = async (updates: ProductPriorityUpdate[]) => {
   const sanitised = updates
@@ -27,39 +29,21 @@ export const updateProductPriorities = async (updates: ProductPriorityUpdate[]) 
     return
   }
 
-  if (canUseSupabase) {
-    const client = createSupabaseServerClient()
-    const now = new Date().toISOString()
-    const { error } = await client
-      .from('products')
-      .upsert(
-        sanitised.map(update => ({
-          id: update.id,
-          priority: update.priority,
-          updated_at: now
-        }))
-      )
+  ensureSupabaseAvailable()
+  const client = createSupabaseServerClient()
+  const now = new Date().toISOString()
+  const { error } = await client
+    .from('products')
+    .upsert(
+      sanitised.map(update => ({
+        id: update.id,
+        priority: update.priority,
+        updated_at: now
+      }))
+    )
 
-    if (error) {
-      throw new Error(error.message)
-    }
-
-    clearProductCaches()
-    return
-  }
-
-  for (const update of sanitised) {
-    const targetPath = path.join(productsDirectory, `${update.id}.md`)
-    if (!fs.existsSync(targetPath)) {
-      continue
-    }
-    const fileContents = fs.readFileSync(targetPath, 'utf8')
-    const parsed = matter(fileContents)
-    const markdown = matter.stringify(parsed.content, {
-      ...parsed.data,
-      priority: update.priority
-    })
-    fs.writeFileSync(targetPath, markdown, 'utf8')
+  if (error) {
+    throw new Error(error.message)
   }
 
   clearProductCaches()
@@ -76,69 +60,51 @@ export const createProductRecord = async (input: ProductMutationInput) => {
     throw new Error('El nombre es obligatorio.')
   }
 
-  if (canUseSupabase) {
-    const client = createSupabaseServerClient()
-    const supabasePayload = supabasePayloadFromInput(payload)
-    supabasePayload.created_at = new Date().toISOString()
-    const { data, error } = await client
-      .from('products')
-      .insert(supabasePayload)
-      .select('*, media_assets(*)')
-      .single()
+  ensureSupabaseAvailable()
+  const client = createSupabaseServerClient()
+  const supabasePayload = supabasePayloadFromInput(payload)
+  supabasePayload.created_at = new Date().toISOString()
+  const { data, error } = await client
+    .from('products')
+    .insert(supabasePayload)
+    .select('*, media_assets(*)')
+    .single()
 
-    if (error || !data) {
-      throw new Error(error?.message ?? 'No se pudo crear el producto.')
-    }
-
-    clearProductCaches()
-    return buildProductFromSupabase(data)
+  if (error || !data) {
+    throw new Error(error?.message ?? 'No se pudo crear el producto.')
   }
 
-  persistMarkdownProduct(payload)
   clearProductCaches()
-  return getProductData(payload.id)
+  return buildProductFromSupabase(data)
 }
 
 export const updateProductRecord = async (id: string, input: ProductMutationInput) => {
   const payload = sanitiseProductInput({ ...input, id })
 
-  if (canUseSupabase) {
-    const client = createSupabaseServerClient()
-    const supabasePayload = supabasePayloadFromInput(payload)
-    const { data, error } = await client
-      .from('products')
-      .update(supabasePayload)
-      .eq('id', id)
-      .select('*, media_assets(*)')
-      .single()
+  ensureSupabaseAvailable()
+  const client = createSupabaseServerClient()
+  const supabasePayload = supabasePayloadFromInput(payload)
+  const { data, error } = await client
+    .from('products')
+    .update(supabasePayload)
+    .eq('id', id)
+    .select('*, media_assets(*)')
+    .single()
 
-    if (error || !data) {
-      throw new Error(error?.message ?? 'No se pudo actualizar el producto.')
-    }
-
-    clearProductCaches()
-    return buildProductFromSupabase(data)
+  if (error || !data) {
+    throw new Error(error?.message ?? 'No se pudo actualizar el producto.')
   }
 
-  persistMarkdownProduct(payload)
   clearProductCaches()
-  return getProductData(payload.id)
+  return buildProductFromSupabase(data)
 }
 
 export const deleteProductRecord = async (id: string) => {
-  if (canUseSupabase) {
-    const client = createSupabaseServerClient()
-    const { error } = await client.from('products').delete().eq('id', id)
-    if (error) {
-      throw new Error(error.message)
-    }
-    clearProductCaches()
-    return
-  }
-
-  const targetPath = path.join(productsDirectory, `${id}.md`)
-  if (fs.existsSync(targetPath)) {
-    fs.unlinkSync(targetPath)
+  ensureSupabaseAvailable()
+  const client = createSupabaseServerClient()
+  const { error } = await client.from('products').delete().eq('id', id)
+  if (error) {
+    throw new Error(error.message)
   }
   clearProductCaches()
 }
@@ -147,10 +113,7 @@ export const replaceProductMediaAssets = async (
   productId: string,
   assets: MediaAssetInput[]
 ) => {
-  if (!canUseSupabase) {
-    throw new Error('La gestión de galerías requiere Supabase configurado.')
-  }
-
+  ensureSupabaseAvailable()
   const client = createSupabaseServerClient()
   await client.from('media_assets').delete().eq('product_id', productId)
 

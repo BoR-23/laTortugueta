@@ -28,6 +28,17 @@ create table if not exists public.media_assets (
   created_at timestamptz default now()
 );
 
+create table if not exists public.categories (
+  id text primary key,
+  scope text not null check (scope in ('header', 'filter')),
+  name text not null,
+  tag_key text,
+  parent_id text references public.categories(id) on delete cascade,
+  sort_order integer default 0,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
 create table if not exists public.users_admin (
   id uuid primary key default gen_random_uuid(),
   email text unique not null,
@@ -38,6 +49,7 @@ create table if not exists public.users_admin (
 
 create unique index if not exists products_slug_idx on public.products (id);
 create index if not exists media_assets_product_idx on public.media_assets (product_id, position);
+create index if not exists categories_scope_idx on public.categories (scope, sort_order);
 create unique index if not exists users_admin_email_idx on public.users_admin (lower(email));
 
 alter table public.products
@@ -45,4 +57,5 @@ alter table public.products
 
 comment on table public.products is 'Catálogo principal de productos';
 comment on table public.media_assets is 'Galerías asociadas a cada producto';
+comment on table public.categories is 'Categorías jerárquicas para el catálogo';
 comment on table public.users_admin is 'Usuarios autorizados para acceder al panel';

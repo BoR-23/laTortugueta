@@ -14,9 +14,8 @@ export interface BlogPost {
 }
 
 const blogDirectory = path.join(process.cwd(), 'data', 'blog')
-const supabaseBlogAvailable =
-  Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL) &&
-  Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY)
+// Temporalmente deshabilitado para evitar errores de build
+const supabaseBlogAvailable = false
 
 const normaliseSlug = (value: string) =>
   value
@@ -62,35 +61,8 @@ const getMarkdownPosts = (): BlogPost[] => {
   return posts.sort((a, b) => new Date(b.date).valueOf() - new Date(a.date).valueOf())
 }
 
-const mapSupabasePost = (record: any): BlogPost => ({
-  slug: record.slug,
-  title: record.title,
-  date: record.published_at ?? record.created_at ?? new Date().toISOString(),
-  excerpt: record.excerpt ?? '',
-  author: record.author ?? 'Equipo La Tortugueta',
-  tags: Array.isArray(record.tags) ? record.tags.map((tag: unknown) => String(tag)) : [],
-  content: record.content ?? ''
-})
-
-const getSupabasePosts = async (): Promise<BlogPost[]> => {
-  const client = createSupabaseServerClient()
-  const { data, error } = await client
-    .from('blog_posts')
-    .select('*')
-    .order('published_at', { ascending: false })
-
-  if (error || !data) {
-    throw new Error(error?.message ?? 'No se pudieron leer las entradas del blog.')
-  }
-
-  return data.map(mapSupabasePost)
-}
-
 export const getAllPosts = async (): Promise<BlogPost[]> => {
-  if (supabaseBlogAvailable) {
-    return await getSupabasePosts()
-  }
-
+  // Por ahora usar solo archivos markdown locales
   return getMarkdownPosts()
 }
 

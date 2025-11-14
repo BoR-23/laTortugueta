@@ -2,6 +2,8 @@ import { promises as fs } from 'fs'
 import path from 'path'
 import { randomUUID } from 'crypto'
 
+import { createSupabaseServerClient } from './supabaseClient'
+
 export type CategoryScope = 'header' | 'filter'
 
 export type CategoryRecord = {
@@ -15,6 +17,20 @@ export type CategoryRecord = {
 
 const categoriesFilePath = path.join(process.cwd(), 'data', 'categories.json')
 
+const supabaseCategoriesEnabled =
+  process.env.NETLIFY
+    ? true
+    : Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL) &&
+      Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY)
+
+const ensureSupabaseEnabled = () => {
+  if (!supabaseCategoriesEnabled) {
+    throw new Error(
+      'La gestión de categorías requiere Supabase configurado. Define NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY y SUPABASE_SERVICE_ROLE_KEY.'
+    )
+  }
+}
+
 const ensureCategoriesFile = async () => {
   try {
     await fs.access(categoriesFilePath)
@@ -24,7 +40,25 @@ const ensureCategoriesFile = async () => {
   }
 }
 
-export const readCategories = async (): Promise<CategoryRecord[]> => {
+type CategoryRow = {
+  id: string
+  scope: CategoryScope
+  name: string
+  tag_key: string | null
+  parent_id: string | null
+  sort_order: number | null
+}
+
+const mapRowToRecord = (row: CategoryRow): CategoryRecord => ({
+  id: row.id,
+  scope: row.scope,
+  name: row.name,
+  tagKey: row.tag_key ?? null,
+  parentId: row.parent_id ?? null,
+  order: typeof row.sort_order === 'number' ? row.sort_order : 0
+})
+
+const readCategoriesFromDisk = async (): Promise<CategoryRecord[]> => {
   await ensureCategoriesFile()
   const raw = await fs.readFile(categoriesFilePath, 'utf8')
   const data = raw.trim() ? (JSON.parse(raw) as CategoryRecord[]) : []
@@ -35,8 +69,27 @@ export const readCategories = async (): Promise<CategoryRecord[]> => {
   }))
 }
 
-const writeCategories = async (categories: CategoryRecord[]) => {
-  await fs.writeFile(categoriesFilePath, JSON.stringify(categories, null, 2), 'utf8')
+const readCategoriesFromSupabase = async (): Promise<CategoryRecord[]> => {
+  const client = createSupabaseServerClient()
+  const { data, error } = await client
+    .from('categories')
+    .select('*')
+    .order('scope', { ascending: true })
+    .order('sort_order', { ascending: true })
+
+  if (error || !data) {
+    throw new Error(error?.message ?? 'No se pudieron leer las categorías.')
+  }
+
+  return data.map(mapRowToRecord)
+}
+
+export const readCategories = async (): Promise<CategoryRecord[]> => {
+  if (supabaseCategoriesEnabled) {
+    return readCategoriesFromSupabase()
+  }
+
+  return readCategoriesFromDisk()
 }
 
 export const getCategories = async (scope?: CategoryScope) => {
@@ -65,6 +118,7 @@ export const createCategoryRecord = async (input: {
   parentId?: string | null
   scope: CategoryScope
 }) => {
+  ensureSupabaseEnabled()
   const categories = await readCategories()
   const record: CategoryRecord = {
     id: randomUUID(),
@@ -74,15 +128,34 @@ export const createCategoryRecord = async (input: {
     parentId: input.parentId ?? null,
     order: nextOrderForParent(categories, input.scope, input.parentId ?? null)
   }
-  categories.push(record)
-  await writeCategories(categories)
-  return record
+  const client = createSupabaseServerClient()
+  const now = new Date().toISOString()
+  const { data, error } = await client
+    .from('categories')
+    .insert({
+      id: record.id,
+      name: record.name,
+      scope: record.scope,
+      tag_key: record.tagKey,
+      parent_id: record.parentId,
+      sort_order: record.order,
+      updated_at: now
+    })
+    .select('*')
+    .single()
+
+  if (error || !data) {
+    throw new Error(error?.message ?? 'No se pudo crear la categoría.')
+  }
+
+  return mapRowToRecord(data as CategoryRow)
 }
 
 export const updateCategoryRecord = async (
   id: string,
   input: Partial<Pick<CategoryRecord, 'name' | 'tagKey' | 'parentId'>>
 ) => {
+  ensureSupabaseEnabled()
   const categories = await readCategories()
   const index = categories.findIndex(category => category.id === id)
   if (index === -1) {
@@ -90,18 +163,33 @@ export const updateCategoryRecord = async (
   }
   const prev = categories[index]
   const parentId = input.parentId === undefined ? prev.parentId : input.parentId ?? null
-  categories[index] = {
-    ...prev,
-    name: input.name?.trim() || prev.name,
-    tagKey: input.tagKey !== undefined ? input.tagKey?.trim() || null : prev.tagKey,
-    parentId
+  const client = createSupabaseServerClient()
+  const now = new Date().toISOString()
+  const { data, error } = await client
+    .from('categories')
+    .update({
+      name: input.name?.trim() || prev.name,
+      tag_key: input.tagKey !== undefined ? input.tagKey?.trim() || null : prev.tagKey,
+      parent_id: parentId,
+      updated_at: now
+    })
+    .eq('id', id)
+    .select('*')
+    .single()
+
+  if (error || !data) {
+    throw new Error(error?.message ?? 'No se pudo actualizar la categoría.')
   }
-  await writeCategories(categories)
-  return categories[index]
+
+  return mapRowToRecord(data as CategoryRow)
 }
 
 export const deleteCategoryRecord = async (id: string) => {
+  ensureSupabaseEnabled()
   const categories = await readCategories()
+  if (!categories.some(category => category.id === id)) {
+    throw new Error('Category not found')
+  }
   const idsToDelete = new Set<string>()
   const collect = (targetId: string) => {
     idsToDelete.add(targetId)
@@ -110,27 +198,40 @@ export const deleteCategoryRecord = async (id: string) => {
       .forEach(child => collect(child.id))
   }
   collect(id)
-  const remaining = categories.filter(category => !idsToDelete.has(category.id))
-  await writeCategories(remaining)
+  const client = createSupabaseServerClient()
+  const { error } = await client.from('categories').delete().in('id', Array.from(idsToDelete))
+  if (error) {
+    throw new Error(error.message)
+  }
   return { deleted: idsToDelete.size }
 }
 
 export const reorderCategories = async (
   updates: Array<{ id: string; parentId: string | null; order: number }>
 ) => {
-  const categories = await readCategories()
-  const map = new Map(updates.map(update => [update.id, update]))
-  const updated = categories.map(category => {
-    const update = map.get(category.id)
-    if (!update) return category
-    return {
-      ...category,
-      parentId: update.parentId,
-      order: update.order
-    }
-  })
-  await writeCategories(updated)
-  return updated
+  ensureSupabaseEnabled()
+  if (updates.length === 0) {
+    return readCategories()
+  }
+  const client = createSupabaseServerClient()
+  const now = new Date().toISOString()
+  const { error } = await client
+    .from('categories')
+    .upsert(
+      updates.map(update => ({
+        id: update.id,
+        parent_id: update.parentId,
+        sort_order: update.order,
+        updated_at: now
+      })),
+      { onConflict: 'id' }
+    )
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  return readCategories()
 }
 
 export const buildCategoryTree = (records: CategoryRecord[]) => {
