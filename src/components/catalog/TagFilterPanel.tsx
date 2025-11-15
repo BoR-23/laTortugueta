@@ -422,7 +422,11 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
         />
       </div>
 
-      <div className={`fixed inset-0 z-40 flex justify-end bg-black/40 transition-opacity ${filtersOpen ? 'opacity-100 pointer-events-auto' : 'pointer-events-none opacity-0'}`}>
+      <div
+        className={`fixed inset-x-0 bottom-0 top-[64px] z-40 flex justify-end bg-black/40 transition-opacity sm:top-[72px] lg:top-[80px] ${
+          filtersOpen ? 'opacity-100 pointer-events-auto' : 'pointer-events-none opacity-0'
+        }`}
+      >
         <button
           type="button"
           aria-label="Cerrar filtros"
