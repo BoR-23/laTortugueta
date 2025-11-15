@@ -7,6 +7,8 @@ import { siteMetadata, absoluteUrl, buildCatalogJsonLd } from '@/lib/seo'
 import { TestimonialsSection } from '@/components/home/TestimonialsSection'
 import { HowToOrderSection } from '@/components/home/HowToOrderSection'
 import { StoryHighlightsSection } from '@/components/home/StoryHighlightsSection'
+import { TopVisitedSection } from '@/components/home/TopVisitedSection'
+import { getSiteSettings } from '@/lib/settings'
 
 const mapCategoriesToDTO = (records: Awaited<ReturnType<typeof getCategories>>) =>
   records.map(record => ({
@@ -54,6 +56,7 @@ export default async function Home() {
     getCategories("header"),
     getCategories("filter")
   ])
+  const siteSettings = await getSiteSettings()
 
   const headerNameMap = buildCategoryNameMap(headerCategories)
   const filterNameMap = buildCategoryNameMap(filterCategories)
@@ -69,7 +72,8 @@ export default async function Home() {
   })
 
   const catalogJsonLd = buildCatalogJsonLd(enrichedProducts.length)
-  const enableTestimonials = process.env.NEXT_PUBLIC_ENABLE_TESTIMONIALS !== 'false'
+  const enableTestimonials =
+    process.env.NEXT_PUBLIC_ENABLE_TESTIMONIALS !== 'false' && siteSettings.enableTestimonials
 
   return (
     <>
@@ -82,9 +86,11 @@ export default async function Home() {
         products={enrichedProducts}
         headerCategories={mapCategoriesToDTO(headerCategories)}
         filterCategories={mapCategoriesToDTO(filterCategories)}
+        settings={siteSettings}
       />
+      {siteSettings.enableTopVisited ? <TopVisitedSection products={enrichedProducts} /> : null}
       <TestimonialsSection show={enableTestimonials} />
-      <StoryHighlightsSection />
+      {siteSettings.enableStoryHighlights ? <StoryHighlightsSection /> : null}
       <HowToOrderSection />
     </>
   )

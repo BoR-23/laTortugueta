@@ -23,7 +23,7 @@ const buildProduct = (overrides: Partial<Product> = {}): Product => ({
   content: overrides.content ?? 'Contenido',
   gallery: overrides.gallery ?? [],
   available: overrides.available,
-  metadata: overrides.metadata ?? {}
+  metadata: (overrides.metadata ?? {}) as Product['metadata']
 })
 
 describe('prepareCatalogProducts', () => {
@@ -45,5 +45,22 @@ describe('prepareCatalogProducts', () => {
 
     const [single] = prepareCatalogProducts(products)
     expect(single.priority).toBe(DEFAULT_PRODUCT_PRIORITY)
+  })
+
+  it('propagates hero placeholders when present in metadata', () => {
+    const placeholder = 'data:image/webp;base64,abc'
+    const products = [
+      buildProduct({
+        image: '/images/products/test.webp',
+        metadata: {
+          imagePlaceholders: {
+            '/images/products/test.webp': placeholder
+          }
+        }
+      })
+    ]
+
+    const [single] = prepareCatalogProducts(products)
+    expect(single.imagePlaceholder).toBe(placeholder)
   })
 })

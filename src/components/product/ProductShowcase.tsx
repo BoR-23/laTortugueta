@@ -1,12 +1,18 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { Product } from '@/lib/products'
-import { registerProductView, trackEvent } from '@/lib/analytics'
-import { getProductImageVariant } from '@/lib/images'
+import { getLocalCoViewGraph, registerProductView, trackEvent } from '@/lib/analytics'
+import {
+  buildProductPlaceholderMap,
+  extractProductPlaceholderMap,
+  getImagePlaceholder,
+  getProductImageVariant
+} from '@/lib/images'
 import { WHATSAPP_LINK } from '@/lib/contact'
+import { uploadProductImage } from '@/lib/client/uploadProductImage'
 
 interface SuggestedProduct {
   id: string
@@ -15,11 +21,14 @@ interface SuggestedProduct {
   price: number
   category?: string
   viewCount?: number
+  placeholder?: string
 }
 
 interface ProductShowcaseProps {
   product: Product
   recommendations?: SuggestedProduct[]
+  isAdmin?: boolean
+  showLocalSuggestions?: boolean
 }
 
 const DEFAULT_SIZES = ['35-36', '37-38', '39-40', '41-42']
@@ -62,13 +71,43 @@ const extractProductStory = (product: Product): ProductStory | null => {
   }
 }
 
-export function ProductShowcase({ product, recommendations = [] }: ProductShowcaseProps) {
-  const gallery = product.gallery.length > 0 ? product.gallery : product.image ? [product.image] : []
+export function ProductShowcase({
+  product,
+  recommendations = [],
+  isAdmin = false,
+  showLocalSuggestions = true
+}: ProductShowcaseProps) {
+  const initialGallery = useMemo(() => {
+    return product.gallery.length > 0 ? product.gallery : product.image ? [product.image] : []
+  }, [product.gallery, product.image])
+  const initialPlaceholders = useMemo(
+    () => extractProductPlaceholderMap(product.metadata),
+    [product.metadata]
+  )
+  const [gallery, setGallery] = useState(initialGallery)
+  const [placeholderMap, setPlaceholderMap] = useState(initialPlaceholders)
   const [activeIndex, setActiveIndex] = useState(0)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const sizeOptions = product.sizes && product.sizes.length > 0 ? product.sizes : DEFAULT_SIZES
   const [selectedSize, setSelectedSize] = useState(sizeOptions[0])
   const story = useMemo(() => extractProductStory(product), [product])
+  const [localSuggestions, setLocalSuggestions] = useState<SuggestedProduct[]>([])
+  const [priceInput, setPriceInput] = useState(product.price.toFixed(2))
+  const [priceStatus, setPriceStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle')
+  const [galleryError, setGalleryError] = useState<string | null>(null)
+  const [gallerySaving, setGallerySaving] = useState(false)
+  const replaceInputRef = useRef<HTMLInputElement | null>(null)
+  const addInputRef = useRef<HTMLInputElement | null>(null)
+  const pendingReplaceIndex = useRef<number | null>(null)
+
+  useEffect(() => {
+    setGallery(initialGallery)
+    setActiveIndex(0)
+  }, [initialGallery])
+
+  useEffect(() => {
+    setPlaceholderMap(initialPlaceholders)
+  }, [initialPlaceholders])
 
   const whatsappHref = useMemo(() => {
     const details = [
@@ -85,6 +124,54 @@ export function ProductShowcase({ product, recommendations = [] }: ProductShowca
   useEffect(() => {
     registerProductView(product.id)
   }, [product.id])
+
+  useEffect(() => {
+    let cancelled = false
+    const graph = getLocalCoViewGraph()
+    const neighbors = graph[product.id]
+    if (!neighbors) {
+      setLocalSuggestions([])
+      return
+    }
+
+    const loadSuggestions = async () => {
+      const entries = Object.entries(neighbors).sort((a, b) => b[1] - a[1])
+      const items: SuggestedProduct[] = []
+      for (const [neighborId] of entries) {
+        if (items.length >= 4) break
+        const existing = recommendations.find(rec => rec.id === neighborId)
+        if (existing) {
+          items.push(existing)
+          continue
+        }
+        try {
+          const response = await fetch(`/api/products/${neighborId}`)
+          if (!response.ok) continue
+          const data = await response.json()
+          const remotePlaceholders = extractProductPlaceholderMap(data.metadata)
+          items.push({
+            id: data.id,
+            name: data.name,
+            image: data.image,
+            price: data.price,
+            category: data.category,
+            viewCount: data.viewCount,
+            placeholder: remotePlaceholders[data.image as string]
+          })
+        } catch {
+          continue
+        }
+      }
+      if (!cancelled) {
+        setLocalSuggestions(items)
+      }
+    }
+
+    loadSuggestions()
+    return () => {
+      cancelled = true
+    }
+  }, [product.id, recommendations])
 
   useEffect(() => {
     if (!lightboxOpen) {
@@ -111,6 +198,111 @@ export function ProductShowcase({ product, recommendations = [] }: ProductShowca
     }
   }, [lightboxOpen, gallery.length])
 
+  const uploadsEnabled =
+    process.env.NEXT_PUBLIC_ENABLE_MEDIA_UPLOADS !== 'false' &&
+    Boolean(process.env.NEXT_PUBLIC_R2_PUBLIC_URL)
+  const activeImage = gallery[activeIndex] ?? ''
+  const heroPlaceholder = getImagePlaceholder(placeholderMap, activeImage)
+
+  const syncGallery = async (
+    nextGallery: string[],
+    additions: Record<string, string> = {}
+  ) => {
+    setGallerySaving(true)
+    setGalleryError(null)
+    try {
+      const nextPlaceholders = buildProductPlaceholderMap(nextGallery, placeholderMap, additions)
+      const response = await fetch(`/api/products/${product.id}/media`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assets: nextGallery.map((url, index) => ({ url, position: index })),
+          placeholders: nextPlaceholders
+        })
+      })
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null)
+        throw new Error(payload?.error ?? 'No se pudo sincronizar la galería.')
+      }
+      setGallery(nextGallery)
+      setPlaceholderMap(nextPlaceholders)
+      if (nextGallery.length === 0) {
+        setActiveIndex(0)
+      } else if (activeIndex >= nextGallery.length) {
+        setActiveIndex(nextGallery.length - 1)
+      }
+    } catch (error) {
+      setGalleryError(error instanceof Error ? error.message : 'Error al actualizar la galería.')
+    } finally {
+      setGallerySaving(false)
+    }
+  }
+
+  const handleRemoveImage = async (index: number) => {
+    const nextGallery = gallery.filter((_, idx) => idx !== index)
+    await syncGallery(nextGallery)
+  }
+
+  const handleReplaceFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    const targetIndex = pendingReplaceIndex.current
+    pendingReplaceIndex.current = null
+    if (!file || targetIndex === null) return
+    try {
+      const result = await uploadProductImage(product.id, file)
+      const nextGallery = [...gallery]
+      nextGallery[targetIndex] = result.path
+      await syncGallery(nextGallery, { [result.path]: result.placeholder })
+    } catch (error) {
+      setGalleryError(error instanceof Error ? error.message : 'No se pudo reemplazar la imagen.')
+    }
+  }
+
+  const handleAddFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    try {
+      const result = await uploadProductImage(product.id, file)
+      await syncGallery([...gallery, result.path], { [result.path]: result.placeholder })
+    } catch (error) {
+      setGalleryError(error instanceof Error ? error.message : 'No se pudo subir la imagen.')
+    }
+  }
+
+  const openReplacePicker = (index: number) => {
+    pendingReplaceIndex.current = index
+    replaceInputRef.current?.click()
+  }
+
+  const handlePriceSave = async () => {
+    const parsed = Number(priceInput)
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      setPriceStatus('error')
+      return
+    }
+    setPriceStatus('saving')
+    try {
+      const response = await fetch('/api/pricing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: product.id, price: parsed })
+      })
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null)
+        throw new Error(payload?.error ?? 'No se pudo actualizar el precio.')
+      }
+      setPriceInput(parsed.toFixed(2))
+      setPriceStatus('success')
+    } catch (error) {
+      console.error(error)
+      setPriceStatus('error')
+    } finally {
+      setTimeout(() => setPriceStatus('idle'), 2000)
+    }
+  }
+
   return (
     <div className="bg-white text-neutral-900">
       <section className="border-b border-neutral-200 bg-white">
@@ -118,39 +310,119 @@ export function ProductShowcase({ product, recommendations = [] }: ProductShowca
           <div className="grid gap-12 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
             <div className="space-y-6">
               <div className="relative aspect-[3/4] overflow-hidden bg-white">
+                {isAdmin && (
+                  <>
+                    <input
+                      ref={replaceInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleReplaceFile}
+                    />
+                    <input
+                      ref={addInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleAddFile}
+                    />
+                  </>
+                )}
                 {gallery.length > 0 && (
                   <Image
-                    src={getProductImageVariant(gallery[activeIndex], 'full')}
+                    src={getProductImageVariant(activeImage, 'full')}
                     alt={`${product.name} · ${product.category ?? 'calcetines artesanales'} · vista ${activeIndex + 1}`}
                     fill
                     priority
                     className="object-contain"
                     sizes="(min-width: 1280px) 55vw, (min-width: 1024px) 60vw, 100vw"
                     onClick={() => setLightboxOpen(true)}
+                    placeholder={heroPlaceholder ? 'blur' : 'empty'}
+                    blurDataURL={heroPlaceholder}
                   />
+                )}
+                {isAdmin && (
+                  <div className="pointer-events-none absolute inset-0 flex items-start justify-end gap-2 p-3">
+                    <div className="pointer-events-auto flex flex-col gap-2">
+                      <button
+                        type="button"
+                        className="rounded-full border border-white/60 bg-black/60 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-white"
+                        onClick={() => openReplacePicker(activeIndex)}
+                        disabled={!uploadsEnabled || gallerySaving}
+                      >
+                        Reemplazar
+                      </button>
+                      <button
+                        type="button"
+                        className="rounded-full border border-white/60 bg-black/60 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-white"
+                        onClick={() => handleRemoveImage(activeIndex)}
+                        disabled={gallerySaving}
+                      >
+                        Eliminar
+                      </button>
+                      <button
+                        type="button"
+                        className="rounded-full border border-white/60 bg-black/60 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-white"
+                        onClick={() => addInputRef.current?.click()}
+                        disabled={!uploadsEnabled || gallerySaving}
+                      >
+                        Añadir foto
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
               {gallery.length > 1 && (
                 <div className="flex flex-wrap gap-3">
-                  {gallery.map((photo, index) => (
-                    <button
-                      key={photo}
-                      type="button"
-                      onClick={() => setActiveIndex(index)}
-                      className={`relative h-24 w-20 overflow-hidden border ${
-                        activeIndex === index ? 'border-neutral-900' : 'border-neutral-200'
-                      }`}
-                    >
-                      <Image
-                        src={getProductImageVariant(photo, 'thumb')}
-                        alt={`Miniatura ${index + 1} · ${product.name} · ${product.color || 'color artesanal'}`}
-                        fill
-                        className="object-contain"
-                        sizes="80px"
-                      />
-                    </button>
-                  ))}
+                  {gallery.map((photo, index) => {
+                    const thumbPlaceholder = getImagePlaceholder(placeholderMap, photo)
+                    return (
+                      <button
+                        key={photo}
+                        type="button"
+                        onClick={() => setActiveIndex(index)}
+                        className={`relative h-24 w-20 overflow-hidden border ${
+                          activeIndex === index ? 'border-neutral-900' : 'border-neutral-200'
+                        }`}
+                      >
+                        <Image
+                          src={getProductImageVariant(photo, 'thumb')}
+                          alt={`Miniatura ${index + 1} · ${product.name} · ${product.color || 'color artesanal'}`}
+                          fill
+                          className="object-contain"
+                          sizes="80px"
+                          placeholder={thumbPlaceholder ? 'blur' : 'empty'}
+                          blurDataURL={thumbPlaceholder}
+                        />
+                        {isAdmin && (
+                          <div className="pointer-events-none absolute inset-0 flex items-start justify-end p-1">
+                            <button
+                              type="button"
+                              className="pointer-events-auto rounded-full bg-black/60 px-2 text-[11px] text-white"
+                              onClick={event => {
+                                event.preventDefault()
+                                event.stopPropagation()
+                                openReplacePicker(index)
+                              }}
+                              disabled={!uploadsEnabled || gallerySaving}
+                            >
+                              ✎
+                            </button>
+                          </div>
+                        )}
+                      </button>
+                    )
+                  })}
                 </div>
+              )}
+              {isAdmin && !uploadsEnabled && (
+                <p className="text-xs text-red-500">
+                  Configura las credenciales privadas de R2 (R2_ACCESS_KEY_ID/SECRET, R2_ENDPOINT, R2_BUCKET_NAME)
+                  y NEXT_PUBLIC_R2_PUBLIC_URL para habilitar la edición directa de la galería.
+                </p>
+              )}
+              {galleryError && (
+                <p className="text-xs text-red-500">{galleryError}</p>
               )}
             </div>
 
@@ -170,7 +442,46 @@ export function ProductShowcase({ product, recommendations = [] }: ProductShowca
               </div>
 
               <div className="space-y-4">
-                <p className="text-3xl font-semibold text-neutral-900">{product.price.toFixed(2)} €</p>
+                <div className="flex items-center gap-3">
+                  <p className="text-3xl font-semibold text-neutral-900">{Number(priceInput).toFixed(2)} €</p>
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      className="text-xs uppercase tracking-[0.3em] text-neutral-500 underline"
+                      onClick={() => setPriceInput(product.price.toFixed(2))}
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
+                {isAdmin && (
+                  <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-700">
+                    <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">Actualizar precio</p>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={priceInput}
+                        onChange={event => setPriceInput(event.target.value)}
+                        className="w-32 rounded-full border border-neutral-300 px-3 py-2 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none focus:ring-0"
+                      />
+                      <button
+                        type="button"
+                        onClick={handlePriceSave}
+                        className="rounded-full border border-neutral-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-neutral-900 transition hover:bg-neutral-900 hover:text-white disabled:opacity-50"
+                        disabled={priceStatus === 'saving'}
+                      >
+                        {priceStatus === 'saving' ? 'Guardando…' : 'Guardar'}
+                      </button>
+                    </div>
+                    {priceStatus === 'error' && (
+                      <p className="mt-2 text-xs text-red-500">Introduce un valor válido.</p>
+                    )}
+                    {priceStatus === 'success' && (
+                      <p className="mt-2 text-xs text-emerald-600">Precio actualizado.</p>
+                    )}
+                  </div>
+                )}
                 <div className="space-y-2">
                   <label htmlFor="size" className="text-xs uppercase tracking-[0.3em] text-neutral-500">
                     Talla
@@ -315,11 +626,13 @@ export function ProductShowcase({ product, recommendations = [] }: ProductShowca
           </button>
           <div className="relative aspect-[3/4] w-full max-w-3xl bg-white">
             <Image
-              src={getProductImageVariant(gallery[activeIndex], 'full')}
+              src={getProductImageVariant(activeImage, 'full')}
               alt={`${product.name} ampliada ${activeIndex + 1}`}
               fill
               className="object-contain"
               sizes="(min-width: 1024px) 50vw, 90vw"
+              placeholder={heroPlaceholder ? 'blur' : 'empty'}
+              blurDataURL={heroPlaceholder}
             />
           </div>
         </div>
@@ -346,40 +659,96 @@ export function ProductShowcase({ product, recommendations = [] }: ProductShowca
             </div>
 
             <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-              {recommendations.map(item => (
-                <Link
-                  key={item.id}
-                  href={`/${item.id}`}
-                  className="group space-y-3 text-center sm:text-left"
-                  onClick={() => trackEvent('suggestion_click', { source: product.id, target: item.id })}
-                >
-                  <div className="relative mx-auto aspect-[3/4] w-full overflow-hidden bg-white">
-                    {item.image ? (
-                      <Image
-                        src={getProductImageVariant(item.image, 'thumb')}
-                        alt={item.name}
-                        fill
-                        className="object-contain transition-transform duration-500 group-hover:scale-105"
-                        sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, 45vw"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center text-xs uppercase tracking-[0.3em] text-neutral-400">
-                        Sin imagen
-                      </div>
-                    )}
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">
-                      {item.category ?? 'Archivo'}
-                    </p>
-                    <h3 className="text-base font-medium text-neutral-900">{item.name}</h3>
-                    <p className="text-sm text-neutral-600">{item.price.toFixed(2)} €</p>
-                    {typeof item.viewCount === 'number' && item.viewCount > 0 ? (
-                      <p className="text-xs text-neutral-400">{item.viewCount} visitas</p>
-                    ) : null}
-                  </div>
-                </Link>
-              ))}
+              {recommendations.map(item => {
+                const cardPlaceholder = item.placeholder
+                return (
+                  <Link
+                    key={item.id}
+                    href={`/${item.id}`}
+                    className="group space-y-3 text-center sm:text-left"
+                    onClick={() => trackEvent('suggestion_click', { source: product.id, target: item.id })}
+                  >
+                    <div className="relative mx-auto aspect-[3/4] w-full overflow-hidden bg-white">
+                      {item.image ? (
+                        <Image
+                          src={getProductImageVariant(item.image, 'thumb')}
+                          alt={item.name}
+                          fill
+                          className="object-contain transition-transform duration-500 group-hover:scale-105"
+                          sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, 45vw"
+                          placeholder={cardPlaceholder ? 'blur' : 'empty'}
+                          blurDataURL={cardPlaceholder}
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-xs uppercase tracking-[0.3em] text-neutral-400">
+                          Sin imagen
+                        </div>
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">
+                        {item.category ?? 'Archivo'}
+                      </p>
+                      <h3 className="text-base font-medium text-neutral-900">{item.name}</h3>
+                      <p className="text-sm text-neutral-600">{item.price.toFixed(2)} €</p>
+                      {typeof item.viewCount === 'number' && item.viewCount > 0 ? (
+                        <p className="text-xs text-neutral-400">{item.viewCount} visitas</p>
+                      ) : null}
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {showLocalSuggestions && localSuggestions.length > 0 && (
+        <section className="border-t border-neutral-200 bg-white">
+          <div className="mx-auto max-w-6xl 3xl:max-w-8xl px-4 py-16 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">Basado en navegación</p>
+                <h2 className="text-2xl font-semibold text-neutral-900">Otros clientes visitan</h2>
+                <p className="text-sm text-neutral-600">Sugiere los modelos que más se consultan después de este producto.</p>
+              </div>
+            </div>
+            <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+              {localSuggestions.map(item => {
+                const cardPlaceholder = item.placeholder
+                return (
+                  <Link
+                    key={`local-${item.id}`}
+                    href={`/${item.id}`}
+                    className="group space-y-3 text-center sm:text-left"
+                  >
+                    <div className="relative mx-auto aspect-[3/4] w-full overflow-hidden bg-white">
+                      {item.image ? (
+                        <Image
+                          src={getProductImageVariant(item.image, 'thumb')}
+                          alt={item.name}
+                          fill
+                          className="object-contain transition-transform duration-500 group-hover:scale-105"
+                          sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, 45vw"
+                          placeholder={cardPlaceholder ? 'blur' : 'empty'}
+                          blurDataURL={cardPlaceholder}
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-xs uppercase tracking-[0.3em] text-neutral-400">
+                          Sin imagen
+                        </div>
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">
+                        {item.category ?? 'Archivo'}
+                      </p>
+                      <h3 className="text-base font-medium text-neutral-900">{item.name}</h3>
+                      <p className="text-sm text-neutral-600">{item.price.toFixed(2)} €</p>
+                    </div>
+                  </Link>
+                )
+              })}
             </div>
           </div>
         </section>

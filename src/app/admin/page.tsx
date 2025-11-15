@@ -8,6 +8,7 @@ import { DEFAULT_PRODUCT_TYPE } from '@/lib/productTypes'
 import { LoginForm } from '@/components/admin/LoginForm'
 import { AdminProductWorkspace } from '@/components/admin/AdminProductWorkspace'
 import type { AdminProductFormValues } from '@/types/admin'
+import { getSiteSettings } from '@/lib/settings'
 
 export const dynamic = 'force-dynamic'
 
@@ -47,6 +48,8 @@ export default async function AdminPricingPage() {
       return diff !== 0 ? diff : a.name.localeCompare(b.name, 'es')
     })
 
+  const siteSettings = await getSiteSettings()
+
   return (
     <div className="mx-auto max-w-6xl 3xl:max-w-8xl px-4 py-12 sm:px-6 lg:px-10">
       <div className="rounded-3xl border border-neutral-200 bg-white px-6 py-8 lg:px-10">
@@ -64,7 +67,7 @@ export default async function AdminPricingPage() {
         </div>
       </div>
 
-      <AdminProductWorkspace initialProducts={products} />
+      <AdminProductWorkspace initialProducts={products} initialSettings={siteSettings} />
     </div>
   )
 }

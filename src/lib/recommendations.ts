@@ -1,5 +1,6 @@
 import type { Product } from './products'
 import { getAllProducts } from './products'
+import { extractProductPlaceholderMap } from './images'
 
 type Recommendation = {
   id: string
@@ -9,6 +10,7 @@ type Recommendation = {
   category?: string
   tags: string[]
   viewCount?: number
+  placeholder?: string
 }
 
 const COLOR_CODE_REGEX = /^color\s+(\d{3})$/i
@@ -69,7 +71,7 @@ export const getRecommendationsForProduct = async (
   const baseProduct = products.find(product => product.id === productId)
   if (!baseProduct) return []
 
-  return products
+  const scored = products
     .filter(product => product.id !== productId)
     .map(product => ({
       product,
@@ -78,13 +80,39 @@ export const getRecommendationsForProduct = async (
     .filter(entry => entry.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, limit)
-    .map(({ product }) => ({
+
+  const byViewCount = products
+    .filter(product => product.id !== productId)
+    .sort((a, b) => (b.viewCount ?? 0) - (a.viewCount ?? 0))
+    .map(product => ({
+      product,
+      score: 0
+    }))
+
+  const combined: Recommendation[] = []
+  const seen = new Set<string>()
+
+  const pushProduct = (product: Product) => {
+    if (seen.has(product.id)) return
+    seen.add(product.id)
+    const placeholders = extractProductPlaceholderMap(product.metadata)
+    combined.push({
       id: product.id,
       name: product.name,
       price: product.price,
       image: product.image,
       category: product.category,
       tags: product.tags || [],
-      viewCount: product.viewCount
-    }))
+      viewCount: product.viewCount,
+      placeholder: placeholders[product.image]
+    })
+  }
+
+  scored.forEach(entry => pushProduct(entry.product))
+  for (const entry of byViewCount) {
+    if (combined.length >= limit) break
+    pushProduct(entry.product)
+  }
+
+  return combined.slice(0, limit)
 }

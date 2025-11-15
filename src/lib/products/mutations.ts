@@ -111,7 +111,8 @@ export const deleteProductRecord = async (id: string) => {
 
 export const replaceProductMediaAssets = async (
   productId: string,
-  assets: MediaAssetInput[]
+  assets: MediaAssetInput[],
+  placeholders?: Record<string, string>
 ) => {
   ensureSupabaseAvailable()
   const client = createSupabaseServerClient()
@@ -135,6 +136,42 @@ export const replaceProductMediaAssets = async (
       throw new Error(error.message)
     }
   }
+
+  const urls = new Set(validAssets.map(asset => asset.url))
+  const now = new Date().toISOString()
+  const { data: productRecord } = await client
+    .from('products')
+    .select('metadata')
+    .eq('id', productId)
+    .single()
+
+  const existingMetadata = (productRecord?.metadata ?? {}) as Record<string, any>
+  const existingPlaceholders =
+    existingMetadata.imagePlaceholders && typeof existingMetadata.imagePlaceholders === 'object'
+      ? (existingMetadata.imagePlaceholders as Record<string, string>)
+      : {}
+
+  const filteredPlaceholders: Record<string, string> = {}
+  Object.entries(existingPlaceholders).forEach(([url, value]) => {
+    if (urls.has(url) && value) {
+      filteredPlaceholders[url] = value
+    }
+  })
+
+  if (placeholders) {
+    Object.entries(placeholders).forEach(([url, value]) => {
+      if (urls.has(url) && value) {
+        filteredPlaceholders[url] = value
+      }
+    })
+  }
+
+  existingMetadata.imagePlaceholders = filteredPlaceholders
+
+  await client
+    .from('products')
+    .update({ metadata: existingMetadata, updated_at: now })
+    .eq('id', productId)
 
   clearProductCaches()
 }

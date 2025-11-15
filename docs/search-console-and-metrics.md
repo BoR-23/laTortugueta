@@ -135,4 +135,31 @@ Si necesitas crear objetivos en GA4:
 2. Para diferenciar CTA por sección, usa las propiedades (`location`, `target`, etc.).
 3. Si trabajas con GTM, crea un trigger “Custom Event” usando el mismo nombre y reenvíalo a GA4.
 
+## 7. Dashboard en Looker Studio
+
+Puedes combinar GA4 y Supabase en un único informe:
+
+1. En [Looker Studio](https://lookerstudio.google.com), crea un informe nuevo.
+2. Fuente 1: **Google Analytics** → selecciona tu propiedad GA4. Podrás visualizar los eventos anteriores (`product_view`, `whatsapp_cta`, etc.).
+3. Fuente 2: **PostgreSQL** → introduce las credenciales de lectura de Supabase (host, puerto, db, usuario `postgres`, contraseña de la sección `Project settings → Database`). Marca la opción SSL.
+4. Crea una vista que lea `select id, name, view_count, last_viewed_at from public.products order by view_count desc`.
+5. Combina ambas fuentes usando “Blend data” si quieres cruzar visitas GA con `view_count`. Un ejemplo de tabla:
+   - Dimensión: `name`
+   - Métrica 1: `view_count` (Supabase)
+   - Métrica 2: `Event count` filtrado por `product_view` (GA4).
+6. Publica el informe y enlázalo en la documentación interna o en Netlify (Settings → Deploy notifications) para tenerlo siempre accesible.
+
+> Recomendación: crea un usuario dedicado de lectura en Supabase o limita el acceso al IP de Looker Studio si lo necesitas.
+
+## 8. Seguimiento de CTA como conversiones
+
+Para marcar `whatsapp_cta`, `suggestion_click` y `cta_click` como conversiones en GA4:
+
+1. En GA4 ve a **Admin → Events**. Deberías ver los eventos apareciendo en la tabla tras unas visitas.
+2. Haz clic en el switch “Mark as conversion” para cada evento que te interese. Desde ese momento aparecerán en **Reports → Engagement → Conversions**.
+3. Si usas Google Tag Manager, añade triggers tipo “Custom Event” (`whatsapp_cta`, etc.) y reenvíalos a GA4 para poder manipularlos (ej. añadir parámetros extra o condicionar cuándo cuentan).
+4. Opcional: crea audiencias basadas en estos eventos (ej. usuarios que pulsaron `whatsapp_cta` pero no completaron un pedido) para campañas posteriores.
+
+Con esto tienes la cadena completa: GA4 recoge los eventos, Supabase almacena `view_count`, Looker Studio muestra ambos y puedes accionar campañas a partir de los CTA marcados.
+
 Con esto, tienes la base de monitorización completa y documentada dentro del repo (`docs/search-console-and-metrics.md`).

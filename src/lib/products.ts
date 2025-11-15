@@ -1,5 +1,7 @@
 export type {
   Product,
+  ProductMetadata,
+  ImagePlaceholderMap,
   MediaAssetInput,
   ProductMutationInput,
   ProductPriorityUpdate

@@ -44,7 +44,7 @@ export type PriceStats = {
   max: number
 }
 
-export type SortKey = 'priority' | 'name' | 'price'
+export type SortKey = 'priority' | 'name' | 'price' | 'views'
 
 const COLOR_CODE_REGEX = /^color\s+(\d{3})$/i
 
@@ -290,6 +290,13 @@ export const sortCatalogProducts = (
 
     if (sortKey === 'price') {
       return a.price - b.price
+    }
+
+    if (sortKey === 'views') {
+      const diff = (b.viewCount ?? 0) - (a.viewCount ?? 0)
+      if (diff !== 0) {
+        return diff
+      }
     }
 
     if (sortKey === 'priority') {

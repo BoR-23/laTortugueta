@@ -16,6 +16,7 @@ interface ProductGridProps {
   gridColumns: GridColumns
   favorites?: Set<string>
   onToggleFavorite?: (id: string) => void
+  showPopularityBadges?: boolean
 }
 
 const GRID_CLASS_BY_COLUMNS: Record<GridColumns, string> = {
@@ -30,7 +31,8 @@ export const ProductGrid = ({
   filtersAreActive,
   gridColumns,
   favorites,
-  onToggleFavorite
+  onToggleFavorite,
+  showPopularityBadges = false
 }: ProductGridProps) => {
   const isFavorite = (id: string) => (favorites ? favorites.has(id) : false)
 
@@ -73,6 +75,12 @@ export const ProductGrid = ({
                   {isFavorite(product.id) ? '★' : '☆'}
                 </button>
               ) : null}
+              {showPopularityBadges && typeof product.viewCount === 'number' && product.viewCount >= 100 ? (
+                <div className="absolute left-2 top-2 rounded-full border border-white bg-black/70 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.3em] text-white">
+                  +{product.viewCount}
+                  <span className="ml-1 text-[9px] text-neutral-200">visitas</span>
+                </div>
+              ) : null}
               {product.image ? (
                 <Image
                   src={getProductImageVariant(product.image, 'thumb')}
@@ -80,6 +88,8 @@ export const ProductGrid = ({
                   fill
                   className="object-contain transition-transform duration-700 group-hover:scale-[1.03]"
                   sizes="(min-width: 1280px) 22vw, (min-width: 1024px) 30vw, (min-width: 640px) 40vw, 90vw"
+                  placeholder={product.imagePlaceholder ? 'blur' : 'empty'}
+                  blurDataURL={product.imagePlaceholder}
                 />
               ) : (
                 <div className="flex h-full items-center justify-center text-xs uppercase tracking-[0.3em] text-neutral-400">

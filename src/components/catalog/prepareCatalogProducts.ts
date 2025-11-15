@@ -1,5 +1,6 @@
 import type { Product } from '@/lib/products'
 import { DEFAULT_PRODUCT_PRIORITY } from '@/lib/productDefaults'
+import { extractProductPlaceholderMap } from '@/lib/images'
 
 export type CatalogProductSummary = {
   id: string
@@ -13,6 +14,7 @@ export type CatalogProductSummary = {
   available: boolean
   priority: number
   viewCount?: number
+  imagePlaceholder?: string
 }
 
 export const prepareCatalogProducts = (products: Product[]): CatalogProductSummary[] => {
@@ -27,6 +29,7 @@ export const prepareCatalogProducts = (products: Product[]): CatalogProductSumma
     sizes: product.sizes || [],
     available: product.photos > 0,
     priority: product.priority ?? DEFAULT_PRODUCT_PRIORITY,
-    viewCount: product.viewCount
+    viewCount: product.viewCount,
+    imagePlaceholder: extractProductPlaceholderMap(product.metadata)[product.image]
   }))
 }

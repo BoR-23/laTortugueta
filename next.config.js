@@ -31,7 +31,8 @@ if (supabaseUrl) {
 
 const nextConfig = {
   images: {
-    remotePatterns
+    remotePatterns,
+    formats: ['image/avif', 'image/webp']
   },
   async headers() {
     return [

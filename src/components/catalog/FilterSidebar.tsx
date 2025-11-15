@@ -387,6 +387,7 @@ export const FilterSidebar = ({
           <option value="priority">Orden manual</option>
           <option value="name">Nombre</option>
           <option value="price">Precio</option>
+          <option value="views">Popularidad</option>
         </select>
       </div>
     </div>

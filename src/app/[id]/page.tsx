@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
+import { getServerSession } from 'next-auth'
 import { getAllProductIds, getProductData } from '@/lib/products'
 import { notFound } from 'next/navigation'
 import { ProductShowcase } from '@/components/product/ProductShowcase'
 import { getRecommendationsForProduct } from '@/lib/recommendations'
+import { authOptions } from '@/lib/auth'
 import {
   absoluteUrl,
   buildProductBreadcrumbJsonLd,
@@ -10,6 +12,7 @@ import {
   getPrimaryProductImage
 } from '@/lib/seo'
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs'
+import { getSiteSettings } from '@/lib/settings'
 
 interface ProductPageProps {
   params: Promise<{
@@ -77,6 +80,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
   try {
     const product = await getProductData(id)
     const recommendations = await getRecommendationsForProduct(id, 4)
+    const [session, siteSettings] = await Promise.all([
+      getServerSession(authOptions),
+      getSiteSettings()
+    ])
+    const isAdmin = Boolean(session?.user?.role === 'admin')
     const jsonLd = [
       buildProductJsonLd(product),
       buildProductBreadcrumbJsonLd(product)
@@ -95,7 +103,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <Breadcrumbs items={[...breadcrumbs]} />
-        <ProductShowcase product={product} recommendations={recommendations} />
+        <ProductShowcase
+          product={product}
+          recommendations={recommendations}
+          isAdmin={isAdmin}
+          showLocalSuggestions={siteSettings.enableLocalSuggestions}
+        />
       </>
     )
   } catch {

@@ -1,3 +1,5 @@
+import type { ProductMetadata } from '@/lib/products/types'
+
 export interface AdminProductFormValues {
   id: string
   name: string
@@ -11,7 +13,7 @@ export interface AdminProductFormValues {
   sizes: string[]
   available: boolean
   gallery: string[]
-  metadata: Record<string, unknown>
+  metadata: ProductMetadata
   viewCount?: number
 }
 

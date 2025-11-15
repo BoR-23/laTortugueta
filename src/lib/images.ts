@@ -4,6 +4,59 @@ const OLD_PRODUCT_IMAGES_BASE = '/images/products/'
 const VARIANTS_FOLDER = '_variants'
 const R2_PUBLIC_URL = process.env.NEXT_PUBLIC_R2_PUBLIC_URL
 
+export type ProductPlaceholderMap = Record<string, string>
+
+const normalisePlaceholderEntries = (input: unknown): ProductPlaceholderMap => {
+  if (!input || typeof input !== 'object' || Array.isArray(input)) {
+    return {}
+  }
+
+  const result: ProductPlaceholderMap = {}
+  Object.entries(input as Record<string, unknown>).forEach(([url, value]) => {
+    if (typeof value === 'string' && value.trim().length > 0) {
+      result[url] = value
+    }
+  })
+  return result
+}
+
+export const extractProductPlaceholderMap = (
+  metadata?: Record<string, unknown> | null
+): ProductPlaceholderMap => {
+  if (!metadata || typeof metadata !== 'object') {
+    return {}
+  }
+
+  const candidate = (metadata as { imagePlaceholders?: unknown }).imagePlaceholders
+  return normalisePlaceholderEntries(candidate)
+}
+
+export const buildProductPlaceholderMap = (
+  gallery: string[],
+  current: ProductPlaceholderMap,
+  additions: ProductPlaceholderMap = {}
+): ProductPlaceholderMap => {
+  const allowed = new Set(gallery)
+  const merged = { ...current, ...additions }
+  const next: ProductPlaceholderMap = {}
+  Object.entries(merged).forEach(([url, value]) => {
+    if (allowed.has(url) && value) {
+      next[url] = value
+    }
+  })
+  return next
+}
+
+export const getImagePlaceholder = (
+  placeholders?: ProductPlaceholderMap,
+  imagePath?: string | null
+) => {
+  if (!placeholders || !imagePath) {
+    return undefined
+  }
+  return placeholders[imagePath]
+}
+
 export const getProductImageVariant = (
   imagePath: string | undefined | null,
   variant: ProductImageVariant = 'original'

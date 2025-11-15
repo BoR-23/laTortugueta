@@ -1,4 +1,4 @@
-import type { ProductMutationInput } from '../products'
+import type { ProductMetadata, ProductMutationInput } from '../products'
 
 const toStringArray = (value: unknown) =>
   Array.isArray(value) ? value.map(item => String(item)) : []
@@ -8,11 +8,11 @@ const toPriorityValue = (value: unknown) => {
   return Number.isFinite(numeric) ? numeric : undefined
 }
 
-const toMetadata = (value: unknown): Record<string, unknown> => {
+const toMetadata = (value: unknown): ProductMetadata => {
   if (value && typeof value === 'object' && !Array.isArray(value)) {
-    return value as Record<string, unknown>
+    return value as ProductMetadata
   }
-  return {}
+  return {} as ProductMetadata
 }
 
 export const parseProductPayload = (

@@ -5,66 +5,76 @@ import { getAllProducts } from '@/lib/products'
 import { CONTACT_NAME, INSTAGRAM_URL, WHATSAPP_LINK } from '@/lib/contact'
 import { absoluteUrl, siteMetadata } from '@/lib/seo'
 
-const storyParagraphs = [
-  'La Tortugueta nace en Alcoi (Alicante) en 1989 de la mano de Macu García, fundadora del Grup de Danses Sant Jordi, investigadora de indumentaria tradicional y coleccionista de tortugas. Detectó que casi no existían calcetines fieles a los originales y empezó a reproducirlos junto a una tejedora local: dibujaba cada patrón, elegía los hilos y los primeros pares gustaron tanto en su grupo de danza que pronto comenzaron los encargos.',
-  'Durante los años 90 viajó semanalmente a Valencia para mostrar el muestrario en tiendas de indumentaria tradicional. En 2000 obtuvo el Sello de Artesanía de la Comunitat Valenciana (DECA nº 2324) —la única calcetería artesanal con esa acreditación—, en 2002 se constituyó como sociedad limitada y en 2011 recibió la Marca Parcs Naturals del Parc Natural del Carrascal de la Font Roja por su compromiso ambiental.',
-  'Hoy continúa como empresa familiar: la siguiente generación mantiene vivos los telares, documenta cada modelo y conserva el oficio con la misma filosofía de siempre. No inventamos diseños nuevos; rescatamos piezas históricas para que sigan luciéndose tal como fueron concebidas.'
-]
+type Section = {
+  title: string
+  paragraphs: string[]
+}
 
-const productHighlights = [
+const buildSections = (totalDesigns: number, yearsWeaving: number): Section[] => [
   {
-    title: 'Calcetines rayados',
-    description:
-      'Medias largas con franjas geométricas y combinaciones cromáticas históricas. Se tejen con varios hilos a la vez para recrear fielmente los patrones antiguos.'
+    title: 'Quiénes somos',
+    paragraphs: [
+      'Calcetería artesana nacida en Alcoi y activa desde 1989.',
+      'La Tortugueta es un taller familiar que documenta y reproduce calcetines tradicionales con tejedoras manuales históricas. Trabajamos sin stock, bajo pedido. Apostamos por la proximidad: tanto el hilo como los envases se compran a proveedores de la Comunitat Valenciana. Además, nuestro compromiso ambiental es total: tanto el etiquetaje como las cajas de envío son de material reciclado.'
+    ]
   },
   {
-    title: 'Calcetines bordados',
-    description:
-      'Piezas lisas a las que se añade bordado artesanal con motivos florales tradicionales. Cada puntada se realiza a mano siguiendo el diseño original.'
+    title: 'La historia de Macu',
+    paragraphs: [
+      'La Tortugueta nace en Alcoi (Alicante) en 1989 de la mano de Macu García, fundadora del "grup de danses" Sant Jordi, investigadora de indumentaria tradicional y coleccionista de tortugas. Detectó que casi no existían calcetines fieles a los originales y empezó a reproducirlos junto a una tejedora local.',
+      'En lugar de inventar, reproducía con los calcetines antiguos en la mano, trasladando el dibujo exacto a la galga 10 (adaptada a las máquinas de principios del XX, ya que los originales del XIX eran de galga 12). Los primeros pares se hacían exactamente igual que el antiguo y, más tarde, se adaptaban los colores a petición del cliente. Gustaron tanto en su grupo de "danses" que pronto comenzaron los encargos.',
+      'Durante los años 90 viajó semanalmente a Valencia para mostrar el muestrario en tiendas de indumentaria tradicional. En 2000 obtuvo el Sello de Artesanía de la Comunitat Valenciana (DECA nº 2324) —la única calcetería artesanal con esa acreditación—, en 2002 se constituyó como sociedad limitada y en 2011 recibió la Marca Parcs Naturals del Parc Natural del Carrascal de la Font Roja por su compromiso ambiental, del que nuestro etiquetaje en cartulina reciclada es un buen ejemplo.'
+    ]
   },
   {
-    title: 'Medias con talón',
-    description:
-      'Calcetines altos con forma completa de pie, idénticos a los usados en la indumentaria valenciana clásica. Tienen remates en ganchillo y costura interior cosida a mano.'
+    title: 'El taller hoy',
+    paragraphs: [
+      'Hoy continúa como empresa familiar: la siguiente generación mantiene vivas las tejedoras manuales, documenta cada modelo y conserva el oficio con la misma filosofía de siempre. No inventamos diseños nuevos; rescatamos piezas históricas para que sigan luciéndose tal como fueron concebidas, encontrando los originales en personas que nos los ceden, en museos, libros y visitas a archivos históricos donde fotografiamos los modelos antiguos.',
+      `Custodiamos un archivo con más de ${totalDesigns} modelos descritos al detalle y llevamos ${yearsWeaving} años consecutivos tejiendo, restaurando y difundiendo este oficio sin atajos industriales.`
+    ]
   },
   {
-    title: 'Polainas y peúcos',
-    description:
-      'Perneras para trabajo agrícola y pequeños escarpines de bebé. También confeccionamos cofias, barrets, mocadors, lligacames y escapularios bajo pedido.'
+    title: 'Nuestros productos',
+    paragraphs: [
+      'Nuestro día a día se reparte entre varias familias de piezas, la mayoría tejidas en algodón 100% del número 12 y todas con la costura lateral cosida a mano.',
+      'Los más conocidos son los calcetines rayados: medias por bajo de la rodilla (conforme son las antiguas) con franjas geométricas y combinaciones cromáticas históricas. También creamos calcetines bordados, piezas lisas a las que se añade bordado artesanal con motivos florales, o incluso de animales, usando máquinas antiguas de bordar.',
+      'Ofrecemos medias lisas con un dibujo en el mismo color realizado en la propia tejedora manual, idénticas a las de la indumentaria valenciana clásica. Recuperamos piezas como las polainas y peúcos, que usaban los labradores, y confeccionamos bajo pedido cofias, barrets y lligacames. Estas últimas son cintas de otomán reproducidas de modelos antiguos, y las tenemos también bordadas con frases antiguas (en valenciano o castellano) sacadas de archivos históricos.',
+      'Además, realizamos encargos para grupos de "danses" de otras comunidades que nos mandan sus modelos antiguos, habiendo trabajado para Zamora, Zaragoza, Burgos, Galicia, Cataluña y Mallorca.'
+    ]
+  },
+  {
+    title: 'Reconocimientos',
+    paragraphs: [
+      'Los reconocimientos oficiales acompañan, pero sobre todo son una garantía. Estamos orgullosos de nuestro Sello de Artesanía de la Comunitat Valenciana (DECA nº 2324) desde el año 2000, así como de la Marca Parcs Naturals del Parc Natural Font Roja (2011) por nuestros procesos respetuosos.',
+      'Somos miembros del Centro de Artesanía de la Comunitat Valenciana y hemos sido finalistas en los Premios de Artesanía. Nuestro trabajo también ha llegado a grandes producciones, habiendo creado calcetería para cine, teatro y ópera, incluyendo películas como “Libertador” y “The Promise” (con un encargo de más de 200 pares) o para las sopranos del Teatro Real de Madrid. Detrás de cada sello hay un proceso manual que revisa tensión, vaporado y remates a mano antes de guardar cada calcetín en su envase de material reciclado.'
+    ]
+  },
+  {
+    title: 'Cómo trabajamos',
+    paragraphs: [
+      'Llegamos a las personas igual que en los años noventa, ahora reforzados por la comunicación digital. Atendemos encargos directos por teléfono, correo o WhatsApp, ya que todas nuestras piezas son a medida: pedimos altura de pierna, grueso del gemelo y número de pie. Nuestras colecciones también se pueden encontrar en tiendas especializadas en indumentaria tradicional y seguimos presentes en ferias de artesanía y eventos festivos. Mantenemos una atención a distancia con envíos nacionales e internacionales, apoyándonos en las redes sociales.'
+    ]
+  },
+  {
+    title: 'Memoria textil',
+    paragraphs: [
+      'Compartimos procesos porque la memoria textil necesita ser pública. Esto lo hacemos a través de reportajes en blogs como “Diario de una Peineta”, prensa local y revistas de fiestas, y mediante nuestra participación en producciones teatrales y de cine. Mantenemos una presencia constante en Facebook e Instagram (@latortugueta.calcetines), donde mostramos procesos y novedades.',
+      'Hacemos un llamamiento: si tienes calcetines antiguos, fotografías o historias familiares, podemos documentarlas y devolverlas restauradas o replicadas para que sigan presentes en fiestas, escenarios y grupos de folclore.'
+    ]
   }
-]
-
-const recognitions = [
-  'Sello de Artesanía de la Comunitat Valenciana (DECA nº 2324) desde el año 2000.',
-  'Marca Parcs Naturals del Parc Natural Font Roja (2011) por procesos respetuosos con el entorno.',
-  'Miembros del Centro de Artesanía de la Comunitat Valenciana y finalistas en los Premios de Artesanía.',
-  'Calcetería para cine y teatro: producciones como “Libertador” o “The Promise” encargaron más de 200 pares.'
-]
-
-const channels = [
-  'Encargos directos por teléfono, correo o WhatsApp para piezas a medida.',
-  'Tiendas especializadas en indumentaria tradicional que distribuyen nuestras colecciones.',
-  'Ferias de artesanía, mercados medievales y eventos festivos de la Comunitat Valenciana.',
-  'Atención a distancia con envíos nacionales e internacionales apoyándonos en redes sociales.'
-]
-
-const mediaMentions = [
-  'Reportajes en blogs como “Diario de una Peineta”, prensa local y revistas de fiestas.',
-  'Participación en recreaciones históricas y producciones teatrales.',
-  'Presencia constante en Facebook e Instagram (@latortugueta.calcetines) mostrando procesos y novedades.'
 ]
 
 export const metadata: Metadata = {
   title: 'Quiénes somos',
   description:
-    'Conoce la historia de la calcetería artesanal de Alcoi fundada por Macu García. Hecho a mano desde 1989, con sello oficial de artesanía y producción limitada.',
+    'Calcetería artesana nacida en Alcoi en 1989. Taller familiar que documenta modelos históricos, trabaja bajo pedido y apuesta por materiales de proximidad.',
   alternates: {
     canonical: absoluteUrl('/quienes-somos')
   },
   openGraph: {
     title: `${siteMetadata.name} · Quiénes somos`,
     description:
-      'Calcetería artesana nacida en Alcoi y activa desde 1989. Oficio familiar con sello oficial de artesanía.',
+      'Taller familiar fundado por Macu García: tejemos calcetines tradicionales, restauramos modelos antiguos y trabajamos bajo pedido con materiales locales.',
     url: absoluteUrl('/quienes-somos'),
     type: 'website'
   },
@@ -81,6 +91,7 @@ export default async function AboutPage() {
   const totalDesigns = products.length
   const yearsWeaving = new Date().getFullYear() - 1989
   const whatsappDisplay = '+34 653 45 22 49'
+  const sections = buildSections(totalDesigns, yearsWeaving)
 
   return (
     <div className="bg-white text-neutral-900">
@@ -91,63 +102,37 @@ export default async function AboutPage() {
             Calcetería artesana nacida en Alcoi y activa desde 1989.
           </h1>
           <p className="mt-4 text-sm leading-relaxed text-neutral-600">
-            La Tortugueta es un taller familiar que documenta y reproduce calcetines tradicionales con telares
-            históricos. Trabajamos sin stock masivo, bajo pedido y acompañando cada entrega de la
-            documentación que garantiza su fidelidad.
+            Documentamos y reproducimos calcetines tradicionales con tejedoras manuales históricas, siempre
+            bajo pedido y con materiales de proximidad. Esta página resume la historia completa del taller y
+            cómo seguimos trabajando hoy.
           </p>
         </div>
       </section>
 
-      <article className="mx-auto max-w-5xl space-y-8 px-4 py-16 text-[15px] leading-relaxed text-neutral-700 sm:px-6 lg:px-8">
-        {storyParagraphs.map(paragraph => (
-          <p key={paragraph}>{paragraph}</p>
+      <article className="mx-auto max-w-5xl space-y-10 px-4 py-16 text-[15px] leading-relaxed text-neutral-700 sm:px-6 lg:px-8">
+        {sections.map(section => (
+          <section key={section.title} className="space-y-3">
+            <h2 className="text-2xl font-semibold text-neutral-900">{section.title}</h2>
+            {section.paragraphs.map((paragraph, index) => (
+              <p key={`${section.title}-${index}`}>{paragraph}</p>
+            ))}
+          </section>
         ))}
 
-        <p>
-          Tres décadas después conservamos los mismos telares y una metodología que combina libretas,
-          fotografías y digitalización. Custodiamos un archivo con más de {totalDesigns} diseños descritos
-          al detalle y llevamos {yearsWeaving} años consecutivos tejiendo, restaurando y difundiendo este
-          oficio sin atajos industriales.
-        </p>
-
-        <p>
-          Nuestro día a día se reparte entre varias familias de piezas.{' '}
-          {productHighlights.map((product, index) => (
-            <span key={product.title}>
-              <strong>{product.title}</strong> {product.description}
-              {index < productHighlights.length - 1 ? ' ' : ''}
-            </span>
-          ))}
-        </p>
-
-        <p>
-          Los reconocimientos oficiales acompañan, pero sobre todo son una garantía para quienes confían en
-          nosotros: {recognitions.join(' ')} Detrás de cada sello hay un proceso manual que revisa tensión,
-          vaporado y remates a mano antes de guardar cada calcetín en su carpeta.
-        </p>
-
-        <p>
-          Llegamos a las personas igual que en los años noventa, ahora reforzados por la comunicación digital:
-          {` ${channels.join(' ')}`}
-        </p>
-
-        <p>
-          Compartimos procesos porque la memoria textil necesita ser pública. {mediaMentions.join(' ')} Si
-          tienes calcetines antiguos, fotografías o historias familiares, podemos documentarlas y devolverlas
-          restauradas o replicadas para que sigan presentes en fiestas y escenarios.
-        </p>
-
-        <p>
-          Para hablar con nosotros solo tienes que escribir a{' '}
-          <a href={WHATSAPP_LINK} className="underline underline-offset-4">
-            {whatsappDisplay}
-          </a>{' '}
-          (WhatsApp), contactar en{' '}
-          <a href={INSTAGRAM_URL} className="underline underline-offset-4">
-            Instagram
-          </a>{' '}
-          o pedir cita con {CONTACT_NAME}. Respondemos sin intermediarios y cada pedido se teje a medida.
-        </p>
+        <section className="space-y-3">
+          <h2 className="text-2xl font-semibold text-neutral-900">Cómo contactar</h2>
+          <p>
+            Para hablar con nosotros solo tienes que escribir a{' '}
+            <a href={WHATSAPP_LINK} className="underline underline-offset-4">
+              {whatsappDisplay}
+            </a>{' '}
+            (WhatsApp), contactar en{' '}
+            <a href={INSTAGRAM_URL} className="underline underline-offset-4">
+              Instagram
+            </a>{' '}
+            o pedir cita con {CONTACT_NAME}. Respondemos sin intermediarios y cada pedido se teje a medida.
+          </p>
+        </section>
 
         <div className="flex flex-wrap gap-4 text-xs uppercase tracking-[0.35em] text-neutral-500">
           <Link href="/catalogo" className="rounded-full border border-neutral-900 px-6 py-3">

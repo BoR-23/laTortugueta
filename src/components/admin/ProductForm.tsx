@@ -24,7 +24,7 @@ const parseList = (value: string) =>
 
 const buildInitialState = (input: ProductFormValues): ProductFormValues => ({
   ...input,
-  metadata: mergeTypeMetadata(input.type, input.metadata ?? {})
+  metadata: mergeTypeMetadata(input.type, input.metadata ?? {}) as ProductFormValues['metadata']
 })
 
 export function ProductForm({
@@ -65,7 +65,7 @@ export function ProductForm({
     setValues(prev => ({
       ...prev,
       type: nextType,
-      metadata: mergeTypeMetadata(nextType, prev.metadata ?? {})
+      metadata: mergeTypeMetadata(nextType, prev.metadata ?? {}) as ProductFormValues['metadata']
     }))
   }
 

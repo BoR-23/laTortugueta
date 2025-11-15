@@ -27,8 +27,12 @@ export async function PUT(
     const assets = Array.isArray(payload.assets)
       ? (payload.assets as MediaAssetInput[])
       : []
+    const placeholders =
+      payload.placeholders && typeof payload.placeholders === 'object'
+        ? (payload.placeholders as Record<string, string>)
+        : undefined
 
-    await replaceProductMediaAssets(id, assets)
+    await replaceProductMediaAssets(id, assets, placeholders)
 
     revalidatePath('/')
     revalidatePath(`/${id}`)

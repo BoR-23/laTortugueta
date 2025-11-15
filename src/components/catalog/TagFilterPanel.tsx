@@ -24,7 +24,7 @@ import { ProductGrid, type GridColumns } from './ProductGrid'
 import { useFavorites } from '@/hooks/useFavorites'
 import { primaryNavLinks } from '@/lib/navigation'
 
-const SORT_KEYS: SortKey[] = ['priority', 'name', 'price']
+const SORT_KEYS: SortKey[] = ['priority', 'name', 'price', 'views']
 const VIEW_COLUMN_OPTIONS: GridColumns[] = [2, 3, 4]
 
 const isSortKey = (value: string | null): value is SortKey => SORT_KEYS.includes(value as SortKey)
@@ -177,9 +177,10 @@ interface TagFilterPanelProps {
   products: CatalogProduct[]
   headerCategories: CategoryDTO[]
   filterCategories: CategoryDTO[]
+  showPopularityBadges?: boolean
 }
 
-export function TagFilterPanel({ products, headerCategories, filterCategories }: TagFilterPanelProps) {
+export function TagFilterPanel({ products, headerCategories, filterCategories, showPopularityBadges = false }: TagFilterPanelProps) {
   const priceStats = useMemo(() => computePriceStats(products), [products])
   const searchParams = useSearchParams()
   const pathname = usePathname()
@@ -454,6 +455,7 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
           gridColumns={gridColumns}
           favorites={favoriteSet}
           onToggleFavorite={toggleFavorite}
+          showPopularityBadges={showPopularityBadges}
         />
       </div>
 

@@ -1,3 +1,14 @@
+export type ImagePlaceholderMap = Record<string, string>
+
+export type ProductMetadata = {
+  storyTitle?: string
+  storyOrigin?: string
+  storyCost?: string
+  storyBody?: string
+  storyImages?: string[] | string
+  imagePlaceholders?: ImagePlaceholderMap
+} & Record<string, unknown>
+
 export interface Product {
   id: string
   name: string
@@ -17,7 +28,7 @@ export interface Product {
   gallery: string[]
   sizes?: string[]
   available?: boolean
-  metadata?: Record<string, unknown>
+  metadata?: ProductMetadata
   viewCount?: number
 }
 
@@ -41,7 +52,7 @@ export type ProductMutationInput = {
   material?: string
   care?: string
   origin?: string
-  metadata?: Record<string, unknown>
+  metadata?: ProductMetadata
 }
 
 export type MediaAssetInput = {

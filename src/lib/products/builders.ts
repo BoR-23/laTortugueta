@@ -12,7 +12,7 @@ import {
   productsDirectory,
   ensureProductsDirectory
 } from './cache'
-import type { Product, ProductMutationInput, MediaAssetRecord } from './types'
+import type { Product, ProductMutationInput, MediaAssetRecord, ProductMetadata } from './types'
 
 export const toStringArray = (value?: unknown) => {
   if (!Array.isArray(value)) return []
@@ -39,7 +39,7 @@ export const sanitiseProductInput = (input: ProductMutationInput) => {
     typeof input.type === 'string' && input.type.trim().length > 0
       ? input.type.trim()
       : inferProductTypeFromCategory(input.category)
-  const metadataValue = sanitizeTypeMetadata(typeValue, input.metadata ?? {})
+  const metadataValue = sanitizeTypeMetadata(typeValue, input.metadata ?? {}) as ProductMetadata
   return {
     ...input,
     id: input.id.trim(),
@@ -129,11 +129,11 @@ export const buildProductFromMarkdown = (id: string, fileContents: string) => {
       ? rawData.type.trim()
       : inferProductTypeFromCategory(product.category)
   product.type = rawType || DEFAULT_PRODUCT_TYPE
-  const metadata =
+  const rawMetadata =
     rawData.metadata && typeof rawData.metadata === 'object'
       ? (rawData.metadata as Record<string, unknown>)
       : {}
-  product.metadata = sanitizeTypeMetadata(product.type, metadata)
+  product.metadata = sanitizeTypeMetadata(product.type, rawMetadata) as ProductMetadata
   product.viewCount = typeof (rawData as Record<string, any>).view_count === 'number' ? Number((rawData as Record<string, any>).view_count) : 0
 
   const pricingTable = getPricingTable()
@@ -182,7 +182,7 @@ export const buildProductFromSupabase = (record: Record<string, any>): Product =
     gallery,
     sizes: Array.isArray(record.sizes) ? record.sizes : undefined,
     available: typeof record.available === 'boolean' ? record.available : gallery.length > 0,
-    metadata: sanitizeTypeMetadata(baseType || DEFAULT_PRODUCT_TYPE, metadata),
+    metadata: sanitizeTypeMetadata(baseType || DEFAULT_PRODUCT_TYPE, metadata) as ProductMetadata,
     priority: normalisePriority(record.priority),
     viewCount: typeof record.view_count === 'number' ? Number(record.view_count) : 0
   }

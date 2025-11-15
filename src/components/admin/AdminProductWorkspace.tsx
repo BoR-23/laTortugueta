@@ -7,6 +7,7 @@ import { PricingManager } from './PricingManager'
 import { MediaGalleryManager } from './MediaGalleryManager'
 import { CatalogOrderManager } from './CatalogOrderManager'
 import { ProductPerformancePanel } from './ProductPerformancePanel'
+import { SiteSettingsPanel } from './SiteSettingsPanel'
 import { DEFAULT_PRODUCT_PRIORITY } from '@/lib/productDefaults'
 import { ProductDraftPreview, type DraftDiffEntry } from './ProductDraftPreview'
 import {
@@ -14,6 +15,7 @@ import {
   defaultChecklistState
 } from './PublicationChecklist'
 import type { AdminProductFormValues } from '@/types/admin'
+import type { SiteSettings } from '@/lib/settings'
 import {
   DEFAULT_PRODUCT_TYPE,
   getProductTypeConfig,
@@ -22,9 +24,11 @@ import {
   formatMetadataValue
 } from '@/lib/productTypes'
 import { inferProductTypeFromCategory } from '@/lib/categoryMappings'
+import { extractProductPlaceholderMap } from '@/lib/images'
 
 interface AdminProductWorkspaceProps {
   initialProducts: AdminProductFormValues[]
+  initialSettings: SiteSettings
 }
 
 const blankProduct: AdminProductFormValues = {
@@ -40,7 +44,7 @@ const blankProduct: AdminProductFormValues = {
   sizes: [],
   available: false,
   gallery: [],
-  metadata: mergeTypeMetadata(DEFAULT_PRODUCT_TYPE, {})
+  metadata: mergeTypeMetadata(DEFAULT_PRODUCT_TYPE, {}) as AdminProductFormValues['metadata']
 }
 
 const priorityOf = (value?: number) =>
@@ -57,7 +61,7 @@ const mapApiProductToFormValues = (payload: Record<string, any>): AdminProductFo
     typeof payload.type === 'string' && payload.type.trim().length > 0
       ? payload.type.trim()
       : inferProductTypeFromCategory(payload.category)
-  const metadata = mergeTypeMetadata(type, payload.metadata ?? {})
+  const metadata = mergeTypeMetadata(type, payload.metadata ?? {}) as AdminProductFormValues['metadata']
   return {
     id: payload.id,
     name: payload.name ?? '',
@@ -208,8 +212,9 @@ const mapDraftResponse = (payload: any): DraftInfo => ({
   actor: payload?.actor ?? null
 })
 
-export function AdminProductWorkspace({ initialProducts }: AdminProductWorkspaceProps) {
+export function AdminProductWorkspace({ initialProducts, initialSettings }: AdminProductWorkspaceProps) {
   const [products, setProducts] = useState<AdminProductFormValues[]>(sortByPriority(initialProducts))
+  const [siteSettings, setSiteSettings] = useState<SiteSettings>(initialSettings)
   const [selectedProduct, setSelectedProduct] = useState<AdminProductFormValues | null>(null)
   const [panelOpen, setPanelOpen] = useState(false)
   const [globalMessage, setGlobalMessage] = useState<string | null>(null)
@@ -263,6 +268,7 @@ export function AdminProductWorkspace({ initialProducts }: AdminProductWorkspace
   }, [selectedProduct?.id])
 
   const productForForm = selectedProduct ?? blankProduct
+  const productPlaceholderMap = extractProductPlaceholderMap(productForForm.metadata)
   const formMode = selectedProduct ? 'edit' : 'create'
 
   const pricingRows = useMemo(
@@ -372,16 +378,42 @@ export function AdminProductWorkspace({ initialProducts }: AdminProductWorkspace
     setGlobalMessage('Producto eliminado.')
   }
 
-  const handleGalleryChange = (productId: string, gallery: string[]) => {
-    setProducts(current =>
-      current.map(product =>
-        product.id === productId ? { ...product, gallery } : product
-      )
+const handleGalleryChange = (productId: string, gallery: string[]) => {
+  setProducts(current =>
+    current.map(product =>
+      product.id === productId ? { ...product, gallery } : product
     )
-    if (selectedProduct?.id === productId) {
-      setSelectedProduct({ ...selectedProduct, gallery })
-    }
+  )
+  if (selectedProduct?.id === productId) {
+    setSelectedProduct({ ...selectedProduct, gallery })
   }
+}
+
+const handlePlaceholderChange = (productId: string, placeholders: Record<string, string>) => {
+  setProducts(current =>
+    current.map(product =>
+      product.id === productId
+        ? {
+            ...product,
+            metadata: {
+              ...(product.metadata ?? {}),
+              imagePlaceholders: placeholders
+            }
+          }
+        : product
+    )
+  )
+
+  if (selectedProduct?.id === productId) {
+    setSelectedProduct({
+      ...selectedProduct,
+      metadata: {
+        ...(selectedProduct.metadata ?? {}),
+        imagePlaceholders: placeholders
+      }
+    })
+  }
+}
 
   const handleInlinePriceUpdate = async (productId: string, price: number) => {
     setGlobalError(null)
@@ -553,6 +585,7 @@ export function AdminProductWorkspace({ initialProducts }: AdminProductWorkspace
           </section>
         </div>
         <div className="space-y-10">
+          <SiteSettingsPanel initialSettings={siteSettings} onChange={setSiteSettings} />
           <ProductPerformancePanel
             products={products}
             onInspect={productId => {
@@ -642,8 +675,12 @@ export function AdminProductWorkspace({ initialProducts }: AdminProductWorkspace
               <MediaGalleryManager
                 productId={productForForm.id}
                 initialGallery={productForForm.gallery}
+                initialPlaceholders={productPlaceholderMap}
                 disabled={!selectedProduct}
                 onGalleryChange={gallery => handleGalleryChange(productForForm.id, gallery)}
+                onPlaceholdersChange={placeholders =>
+                  handlePlaceholderChange(productForForm.id, placeholders)
+                }
               />
             </div>
           </div>
