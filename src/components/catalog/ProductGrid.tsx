@@ -49,13 +49,15 @@ export const ProductGrid = ({
       </div>
 
       <div className={GRID_CLASS_BY_COLUMNS[gridColumns]}>
-        {products.map(product => (
-          <Link
-            key={product.id}
-            href={`/${product.id}`}
-            prefetch={false}
-            className="group space-y-4 text-center sm:text-left"
-          >
+        {products.map((product, index) => {
+          const isPriorityCard = index === 0
+          return (
+            <Link
+              key={product.id}
+              href={`/${product.id}`}
+              prefetch={false}
+              className="group space-y-4 text-center sm:text-left"
+            >
             <div className="relative mx-auto aspect-[3/4] w-full overflow-hidden bg-white">
               {onToggleFavorite ? (
                 <button
@@ -90,6 +92,9 @@ export const ProductGrid = ({
                   sizes="(min-width: 1280px) 22vw, (min-width: 1024px) 30vw, (min-width: 640px) 40vw, 90vw"
                   placeholder={product.imagePlaceholder ? 'blur' : 'empty'}
                   blurDataURL={product.imagePlaceholder}
+                  priority={isPriorityCard}
+                  loading={isPriorityCard ? 'eager' : undefined}
+                  fetchPriority={isPriorityCard ? 'high' : 'auto'}
                 />
               ) : (
                 <div className="flex h-full items-center justify-center text-xs uppercase tracking-[0.3em] text-neutral-400">
@@ -104,8 +109,8 @@ export const ProductGrid = ({
               <h2 className="text-base font-medium text-neutral-900">{product.name}</h2>
               <p className="text-sm text-neutral-600">{product.price.toFixed(2)} EUR</p>
             </div>
-          </Link>
-        ))}
+            </Link>
+        )})}
       </div>
     </div>
   )

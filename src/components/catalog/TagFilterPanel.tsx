@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { TouchEvent } from 'react'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
 import { CategoryTabsNav, type CategoryNavNode } from '@/components/layout/CategoryTabsNav'
@@ -19,13 +20,22 @@ import {
   createInitialFilterState
 } from './catalogFiltering'
 import { useCatalogFilters } from './useCatalogFilters'
-import { FilterSidebar } from './FilterSidebar'
 import { ProductGrid, type GridColumns } from './ProductGrid'
 import { useFavorites } from '@/hooks/useFavorites'
 import { primaryNavLinks } from '@/lib/navigation'
 
 const SORT_KEYS: SortKey[] = ['priority', 'name', 'price', 'views']
 const VIEW_COLUMN_OPTIONS: GridColumns[] = [2, 3, 4]
+
+const LazyFilterSidebar = dynamic(() =>
+  import('./FilterSidebar').then(mod => ({ default: mod.FilterSidebar })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="px-5 py-4 text-sm text-neutral-500">Cargando filtros…</div>
+    )
+  }
+)
 
 const isSortKey = (value: string | null): value is SortKey => SORT_KEYS.includes(value as SortKey)
 
@@ -459,21 +469,16 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
         />
       </div>
 
-      <div
-        className={`fixed inset-x-0 bottom-0 top-[64px] z-40 flex justify-end bg-black/40 transition-opacity sm:top-[72px] lg:top-[80px] ${
-          filtersOpen ? 'opacity-100 pointer-events-auto' : 'pointer-events-none opacity-0'
-        }`}
-      >
-        <button
-          type="button"
-          aria-label="Cerrar filtros"
-          className="flex-1"
-          onClick={closeFilters}
-        />
-        <div
-          className={`pointer-events-auto flex h-full w-full max-w-[420px] flex-col border-l border-neutral-200 bg-white shadow-2xl transition-transform duration-300 ${
-            filtersOpen ? 'translate-x-0' : 'translate-x-full'
-          }`}
+      {filtersOpen && (
+        <div className="fixed inset-x-0 bottom-0 top-[64px] z-40 flex justify-end bg-black/40 sm:top-[72px] lg:top-[80px]">
+          <button
+            type="button"
+            aria-label="Cerrar filtros"
+            className="flex-1"
+            onClick={closeFilters}
+          />
+          <div
+            className="pointer-events-auto flex h-full w-full max-w-[420px] flex-col border-l border-neutral-200 bg-white shadow-2xl"
           onTouchStart={(event: TouchEvent<HTMLDivElement>) => {
             const touch = event.touches[0]
             swipeStateRef.current = { startX: touch.clientX, startY: touch.clientY, active: true }
@@ -497,7 +502,7 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
           }}
         >
           <div className="no-scrollbar flex-1 overflow-y-auto px-5 py-4">
-            <FilterSidebar
+            <LazyFilterSidebar
               collectionTags={collectionTags}
               descriptorTags={descriptorTags}
               colorCodeSummaries={colorCodeSummaries}
@@ -525,21 +530,18 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
               onClose={closeFilters}
             />
           </div>
+          </div>
         </div>
-      </div>
+      )}
 
-      <div
-        className={`fixed inset-0 z-40 md:hidden ${menuOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
-        aria-hidden={!menuOpen}
-      >
-        <div
-          className={`absolute inset-0 bg-black/40 transition-opacity ${menuOpen ? 'opacity-100' : 'opacity-0'}`}
+      {menuOpen && (
+        <div className="fixed inset-0 z-40 md:hidden">
+          <div
+          className="absolute inset-0 bg-black/40"
           onClick={closeMenu}
         />
         <aside
-          className={`absolute inset-y-0 left-0 flex h-full w-full max-w-[320px] flex-col border-r border-neutral-200 bg-white shadow-2xl transition-transform duration-300 ${
-            menuOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
+          className="absolute inset-y-0 left-0 flex h-full w-full max-w-[320px] flex-col border-r border-neutral-200 bg-white shadow-2xl"
           role="dialog"
           aria-label="Menú principal"
         >
@@ -565,7 +567,8 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
             </ul>
           </nav>
         </aside>
-      </div>
+        </div>
+      )}
     </section>
   )
 }

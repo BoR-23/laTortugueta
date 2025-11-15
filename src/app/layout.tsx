@@ -71,6 +71,7 @@ export default function RootLayout({
       <head>
         <meta charSet="utf-8" />
         <meta httpEquiv="Content-Language" content="es" />
+        <meta name="theme-color" content="#f8f5ef" />
         <script
           type="application/ld+json"
           suppressHydrationWarning

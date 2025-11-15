@@ -185,7 +185,11 @@ export const FilterSidebar = ({
             <p className="text-sm leading-relaxed text-neutral-500">
               {'Búsqueda semántica y filtros combinables por colores, tallas y disponibilidad.'}
             </p>
+            <label htmlFor="catalog-filter-search" className="sr-only">
+              Buscar productos por nombre o descripción
+            </label>
             <input
+              id="catalog-filter-search"
               type="search"
               value={filterState.search}
               ref={searchInputRef}

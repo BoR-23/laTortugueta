@@ -41,7 +41,7 @@ export function HowToOrderSection() {
               key={step.title}
               className="rounded-3xl border border-neutral-200 bg-white px-6 py-5 shadow-sm"
             >
-              <div className="text-xs uppercase tracking-[0.3em] text-neutral-400">Paso {index + 1}</div>
+              <div className="text-xs uppercase tracking-[0.3em] text-neutral-600">Paso {index + 1}</div>
               <h3 className="mt-2 text-lg font-semibold text-neutral-900">{step.title}</h3>
               <p className="mt-2 text-sm text-neutral-600">{step.description}</p>
             </article>

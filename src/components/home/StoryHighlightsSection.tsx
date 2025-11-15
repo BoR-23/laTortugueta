@@ -96,7 +96,7 @@ export function StoryHighlightsSection() {
               key={highlight.id}
               className="flex h-full flex-col rounded-3xl border border-neutral-200 bg-white px-5 py-6 shadow-sm"
             >
-              <p className="text-[11px] uppercase tracking-[0.35em] text-neutral-400">{highlight.eyebrow}</p>
+              <p className="text-[11px] uppercase tracking-[0.35em] text-neutral-600">{highlight.eyebrow}</p>
               <h3 className="mt-2 text-xl font-semibold text-neutral-900">{highlight.title}</h3>
               <p className="mt-2 text-sm text-neutral-600">{highlight.description}</p>
               <ul className="mt-4 space-y-2 text-sm text-neutral-700">
