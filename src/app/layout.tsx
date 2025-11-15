@@ -1,4 +1,5 @@
-﻿import type { Metadata } from 'next'
+﻿import { Suspense } from 'react'
+import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { LayoutShell } from '@/components/layout/LayoutShell'
@@ -77,7 +78,11 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
-        {gaMeasurementId ? <GoogleAnalytics GA_MEASUREMENT_ID={gaMeasurementId} /> : null}
+        {gaMeasurementId ? (
+          <Suspense fallback={null}>
+            <GoogleAnalytics GA_MEASUREMENT_ID={gaMeasurementId} />
+          </Suspense>
+        ) : null}
         <LayoutShell>{children}</LayoutShell>
       </body>
     </html>
