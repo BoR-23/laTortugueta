@@ -37,6 +37,7 @@ interface FilterSidebarProps {
   searchInputRef?: RefObject<HTMLInputElement>
   managedCategories?: CategorySidebarNode[]
   favoritesEnabled?: boolean
+  onClose?: () => void
 }
 
 const sectionTitleClasses =
@@ -107,7 +108,8 @@ export const FilterSidebar = ({
   shareStatus = 'idle',
   searchInputRef,
   managedCategories = [],
-  favoritesEnabled = false
+  favoritesEnabled = false,
+  onClose
 }: FilterSidebarProps) => {
   const canShare = Boolean(onShareFilters)
   const [openNodes, setOpenNodes] = useState<Record<string, boolean>>({})
@@ -166,11 +168,23 @@ export const FilterSidebar = ({
     })
 
   return (
-    <aside className="w-full lg:w-72 lg:self-start">
-      <div className="sticky top-20">
-        <div className="no-scrollbar space-y-5 rounded-2xl border border-neutral-200 bg-white p-5 lg:max-h-[calc(100vh-5rem)] lg:overflow-y-auto lg:pr-2">
-          <header className="space-y-2.5">
-            <p className={sectionTitleClasses}>Filtrar</p>
+    <div className="space-y-5">
+      <div className="pb-4 border-b border-neutral-200">
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-neutral-900 bg-neutral-900 px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.3em] text-white transition hover:bg-neutral-800 hover:border-neutral-800"
+        >
+          Ocultar
+          <span aria-hidden="true" className="text-xl leading-none font-bold">
+            ×
+          </span>
+        </button>
+      </div>
+      <header className="space-y-2.5">
+            <div className="flex items-center justify-between gap-2">
+              <p className={sectionTitleClasses}>Filtrar</p>
+            </div>
             <p className="text-sm leading-relaxed text-neutral-500">
               {'Búsqueda semántica y filtros combinables por colores, tallas y disponibilidad.'}
             </p>
@@ -366,20 +380,18 @@ export const FilterSidebar = ({
             )}
           </div>
 
-          <div className="flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-neutral-500">
-            Ordenar
-            <select
-              value={sortKey}
-              onChange={event => onSortChange(event.target.value as SortKey)}
-              className="rounded-lg border border-neutral-200/80 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-neutral-600 focus:border-neutral-900 focus:outline-none focus:ring-0"
-            >
-              <option value="priority">Orden manual</option>
-              <option value="name">Nombre</option>
-              <option value="price">Precio</option>
-            </select>
-          </div>
-        </div>
+      <div className="flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-neutral-500">
+        Ordenar
+        <select
+          value={sortKey}
+          onChange={event => onSortChange(event.target.value as SortKey)}
+          className="rounded-lg border border-neutral-200/80 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-neutral-600 focus:border-neutral-900 focus:outline-none focus:ring-0"
+        >
+          <option value="priority">Orden manual</option>
+          <option value="name">Nombre</option>
+          <option value="price">Precio</option>
+        </select>
       </div>
-    </aside>
+    </div>
   )
 }

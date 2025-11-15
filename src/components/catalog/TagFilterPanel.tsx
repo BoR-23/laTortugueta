@@ -430,21 +430,10 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
           onClick={closeFilters}
         />
         <div
-          className={`no-scrollbar pointer-events-auto flex h-full w-full max-w-[420px] flex-col border-l border-neutral-200 bg-white shadow-2xl transition-transform duration-300 ${
+          className={`pointer-events-auto flex h-full w-full max-w-[420px] flex-col border-l border-neutral-200 bg-white shadow-2xl transition-transform duration-300 ${
             filtersOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
         >
-          <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-4 text-[11px] uppercase tracking-[0.3em] text-neutral-500">
-            <span>Filtros</span>
-            <button
-              type="button"
-              className="inline-flex items-center gap-2 rounded-full border border-neutral-200 px-4 py-1 text-[10px] font-semibold uppercase tracking-[0.35em] text-neutral-600 transition hover:border-neutral-900 hover:text-neutral-900"
-              onClick={closeFilters}
-            >
-              Cerrar
-              <span aria-hidden="true">✕</span>
-            </button>
-          </div>
           <div className="no-scrollbar flex-1 overflow-y-auto px-5 py-4">
             <FilterSidebar
               collectionTags={collectionTags}
@@ -471,6 +460,7 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
               searchInputRef={searchInputRef}
               managedCategories={managedFilterTree}
               favoritesEnabled={filterState.onlyFavorites}
+              onClose={closeFilters}
             />
           </div>
         </div>
