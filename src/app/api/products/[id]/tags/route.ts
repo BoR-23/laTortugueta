@@ -28,7 +28,7 @@ export async function PUT(
     const tags = Array.isArray(payload.tags) ? payload.tags : []
     const updated = await updateProductTags(
       id,
-      tags.map(tag => (typeof tag === 'string' ? tag : String(tag ?? '')))
+      tags.map((tag: unknown) => (typeof tag === 'string' ? tag : String(tag ?? '')))
     )
 
     revalidatePath('/')

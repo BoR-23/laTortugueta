@@ -34,7 +34,7 @@ export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
   try {
     const client = createSupabaseServerClient()
     const { data, error } = await client
-      .from<RawSetting>('site_settings')
+      .from('site_settings')
       .select('value')
       .eq('key', SETTINGS_KEY)
       .single()
@@ -43,7 +43,8 @@ export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
       return DEFAULT_SETTINGS
     }
 
-    return mergeSettings(data.value)
+    const payload = data as RawSetting
+    return mergeSettings(payload.value)
   } catch (error) {
     console.warn('[settings] falling back to defaults', error)
     return DEFAULT_SETTINGS
@@ -72,11 +73,15 @@ export const getClientSiteSettings = async (): Promise<SiteSettings> => {
     return DEFAULT_SETTINGS
   }
   const { data } = await supabaseBrowserClient
-    .from<RawSetting>('site_settings')
+    .from('site_settings')
     .select('value')
     .eq('key', SETTINGS_KEY)
     .single()
-  return mergeSettings(data?.value)
+  if (!data) {
+    return DEFAULT_SETTINGS
+  }
+  const payload = data as RawSetting
+  return mergeSettings(payload.value)
 }
 
 export const SITE_SETTINGS_DEFAULTS = DEFAULT_SETTINGS

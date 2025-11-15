@@ -6,25 +6,29 @@ import Image from 'next/image'
 import { buildProductPlaceholderMap, getProductImageVariant } from '@/lib/images'
 import { uploadProductImage } from '@/lib/client/uploadProductImage'
 
-interface MediaGalleryManagerProps {
+type PlaceholderMap = Record<string, string>
+
+type MediaGalleryManagerProps = {
   productId: string
   initialGallery: string[]
-  initialPlaceholders?: Record<string, string>
+  initialPlaceholders?: PlaceholderMap
   onGalleryChange: (gallery: string[]) => void
-  onPlaceholdersChange?: (placeholders: Record<string, string>) => void
+  onPlaceholdersChange?: (placeholders: PlaceholderMap) => void
   disabled?: boolean
 }
 
-export function MediaGalleryManager({
-  productId,
-  initialGallery,
-  initialPlaceholders = {},
-  onGalleryChange,
-  onPlaceholdersChange,
-  disabled
-}: MediaGalleryManagerProps) {
+export function MediaGalleryManager(props: MediaGalleryManagerProps) {
+  const {
+    productId,
+    initialGallery,
+    initialPlaceholders = {},
+    onGalleryChange,
+    onPlaceholdersChange,
+    disabled
+  } = props
+
   const [gallery, setGallery] = useState(initialGallery)
-  const [placeholders, setPlaceholders] = useState<Record<string, string>>(initialPlaceholders)
+  const [placeholders, setPlaceholders] = useState<PlaceholderMap>(initialPlaceholders)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [pendingReplaceIndex, setPendingReplaceIndex] = useState<number | null>(null)
@@ -42,7 +46,7 @@ export function MediaGalleryManager({
 
   const syncGallery = async (
     nextGallery: string[],
-    additions: Record<string, string> = {}
+    additions: PlaceholderMap = {}
   ) => {
     setBusy(true)
     try {
@@ -237,7 +241,7 @@ export function MediaGalleryManager({
               )}
             </div>
           )
-        })
+        })}
       </div>
     </div>
   )
