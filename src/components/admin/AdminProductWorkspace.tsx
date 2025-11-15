@@ -382,6 +382,25 @@ export function AdminProductWorkspace({ initialProducts }: AdminProductWorkspace
     }
   }
 
+  const handleInlinePriceUpdate = async (productId: string, price: number) => {
+    setGlobalError(null)
+    const response = await fetch('/api/pricing', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: productId, price })
+    })
+    const data = await response.json().catch(() => null)
+    if (!response.ok) {
+      throw new Error(data?.error ?? 'No se pudo actualizar el precio.')
+    }
+    setProducts(current =>
+      current.map(product => (product.id === productId ? { ...product, price } : product))
+    )
+    if (selectedProduct?.id === productId) {
+      setSelectedProduct({ ...selectedProduct, price })
+    }
+  }
+
   const handleSaveDraft = async (values: AdminProductFormValues) => {
     if (!values.id.trim()) {
       throw new Error('Define un identificador antes de guardar el borrador.')
@@ -509,7 +528,12 @@ export function AdminProductWorkspace({ initialProducts }: AdminProductWorkspace
               </button>
             </div>
             <div className="mt-6">
-              <ProductList products={products} onEdit={handleEdit} onDelete={handleDelete} />
+            <ProductList
+              products={products}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onPriceUpdate={handleInlinePriceUpdate}
+            />
             </div>
           </section>
 

@@ -5,6 +5,8 @@ import { prepareCatalogProducts } from "@/components/catalog/prepareCatalogProdu
 import { getCategories } from "@/lib/categories"
 import { siteMetadata, absoluteUrl, buildCatalogJsonLd } from '@/lib/seo'
 import { TestimonialsSection } from '@/components/home/TestimonialsSection'
+import { HowToOrderSection } from '@/components/home/HowToOrderSection'
+import { StoryHighlightsSection } from '@/components/home/StoryHighlightsSection'
 
 const mapCategoriesToDTO = (records: Awaited<ReturnType<typeof getCategories>>) =>
   records.map(record => ({
@@ -82,6 +84,8 @@ export default async function Home() {
         filterCategories={mapCategoriesToDTO(filterCategories)}
       />
       <TestimonialsSection show={enableTestimonials} />
+      <StoryHighlightsSection />
+      <HowToOrderSection />
     </>
   )
 }

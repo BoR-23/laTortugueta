@@ -1,6 +1,7 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import type { KeyboardEvent } from 'react'
 import Fuse from 'fuse.js'
 import type { AdminProductFormValues } from '@/types/admin'
 import { expandSearchQuery } from '@/lib/search'
@@ -9,15 +10,41 @@ interface ProductListProps {
   products: AdminProductFormValues[]
   onEdit: (product: AdminProductFormValues) => void
   onDelete: (id: string) => Promise<void>
+  onPriceUpdate: (id: string, price: number) => Promise<void>
 }
 
 const formatOrder = (value?: number) => (value ?? 0).toString().padStart(3, '0')
 
-export function ProductList({ products, onEdit, onDelete }: ProductListProps) {
+type PriceDraftState = {
+  value: string
+  dirty: boolean
+  saving: boolean
+  error: string | null
+  success: boolean
+}
+
+const buildPriceState = (products: AdminProductFormValues[]): Record<string, PriceDraftState> => {
+  const entries: Record<string, PriceDraftState> = {}
+  products.forEach(product => {
+    entries[product.id] = {
+      value: product.price.toFixed(2),
+      dirty: false,
+      saving: false,
+      error: null,
+      success: false
+    }
+  })
+  return entries
+}
+
+export function ProductList({ products, onEdit, onDelete, onPriceUpdate }: ProductListProps) {
   const [search, setSearch] = useState('')
   const [pendingDelete, setPendingDelete] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [priceDrafts, setPriceDrafts] = useState<Record<string, PriceDraftState>>(() =>
+    buildPriceState(products)
+  )
   const fuse = useMemo(
     () =>
       new Fuse<AdminProductFormValues>(products, {
@@ -70,6 +97,95 @@ export function ProductList({ products, onEdit, onDelete }: ProductListProps) {
         return (orderLookup.get(a.id) ?? 0) - (orderLookup.get(b.id) ?? 0)
       })
   }, [fuse, hasSearch, products, searchTerms])
+
+  useEffect(() => {
+    setPriceDrafts(prev => {
+      const next: Record<string, PriceDraftState> = {}
+      products.forEach(product => {
+        const existing = prev[product.id]
+        const formatted = product.price.toFixed(2)
+        next[product.id] = existing
+          ? {
+              ...existing,
+              value: existing.dirty ? existing.value : formatted
+            }
+          : {
+              value: formatted,
+              dirty: false,
+              saving: false,
+              error: null,
+              success: false
+            }
+      })
+      return next
+    })
+  }, [products])
+
+  const updatePriceDraft = (id: string, updates: Partial<PriceDraftState>) => {
+    setPriceDrafts(current => {
+      const existing = current[id] ?? {
+        value: '',
+        dirty: false,
+        saving: false,
+        error: null,
+        success: false
+      }
+      return {
+        ...current,
+        [id]: {
+          ...existing,
+          ...updates
+        }
+      }
+    })
+  }
+
+  const handlePriceChange = (id: string, value: string) => {
+    const sanitized = value.replace(/,/g, '.')
+    updatePriceDraft(id, {
+      value: sanitized,
+      dirty: true,
+      error: null,
+      success: false
+    })
+  }
+
+  const handlePriceSubmit = async (id: string) => {
+    const draft = priceDrafts[id]
+    if (!draft) return
+    const trimmedValue = draft.value.trim()
+    if (!trimmedValue) {
+      updatePriceDraft(id, { error: 'Introduce un valor numérico.' })
+      return
+    }
+    const parsed = Number(trimmedValue)
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      updatePriceDraft(id, { error: 'Introduce un valor válido (>= 0).' })
+      return
+    }
+    updatePriceDraft(id, { saving: true, error: null })
+    try {
+      await onPriceUpdate(id, Number(parsed.toFixed(2)))
+      updatePriceDraft(id, {
+        saving: false,
+        dirty: false,
+        success: true,
+        value: parsed.toFixed(2)
+      })
+    } catch (err) {
+      updatePriceDraft(id, {
+        saving: false,
+        error: err instanceof Error ? err.message : 'No se pudo guardar.'
+      })
+    }
+  }
+
+  const handlePriceKeyDown = (event: KeyboardEvent<HTMLInputElement>, id: string) => {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      void handlePriceSubmit(id)
+    }
+  }
 
   const handleDelete = async (id: string) => {
     setPendingDelete(id)
@@ -137,7 +253,25 @@ export function ProductList({ products, onEdit, onDelete }: ProductListProps) {
                   </span>
                 </td>
                 <td className="px-4 py-4 align-top text-sm text-neutral-700">
-                  {product.price.toFixed(2)} EUR
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      step="0.01"
+                      className="w-28 rounded-full border border-neutral-200 px-3 py-2 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none focus:ring-0 disabled:opacity-60"
+                      value={priceDrafts[product.id]?.value ?? product.price.toFixed(2)}
+                      onChange={event => handlePriceChange(product.id, event.target.value)}
+                      onKeyDown={event => handlePriceKeyDown(event, product.id)}
+                      disabled={priceDrafts[product.id]?.saving}
+                    />
+                    <span className="text-xs uppercase tracking-[0.3em] text-neutral-400">EUR</span>
+                  </div>
+                  {priceDrafts[product.id]?.error && (
+                    <p className="mt-2 text-xs text-red-500">{priceDrafts[product.id]?.error}</p>
+                  )}
+                  {priceDrafts[product.id]?.success && !priceDrafts[product.id]?.dirty && (
+                    <p className="mt-2 text-xs text-neutral-500">Precio actualizado.</p>
+                  )}
                 </td>
                 <td className="px-4 py-4 align-top text-sm">
                   {product.available ? (

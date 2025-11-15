@@ -348,40 +348,53 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
           <div className="order-2 flex-1 overflow-x-auto sm:order-1">
             <CategoryTabsNav tabs={headerNavTabs} />
           </div>
-          <div className="order-1 flex w-full flex-wrap items-center justify-between gap-3 text-[10px] font-semibold uppercase tracking-[0.35em] text-neutral-500 sm:order-2 sm:w-auto">
-            <button
-              type="button"
-              onClick={toggleMenu}
-              className={`rounded-full border px-4 py-1.5 text-[10px] transition md:hidden ${
-                menuOpen
-                  ? 'border-neutral-900 bg-neutral-900 text-white'
-                  : 'border-neutral-200 text-neutral-500 hover:border-neutral-900 hover:text-neutral-900'
-              }`}
-            >
-              Menú
-            </button>
-            <div className="flex flex-wrap items-center justify-end gap-3">
-              <div className="hidden items-center gap-2 md:flex">
+          <div className="order-1 w-full sm:order-2 sm:w-auto">
+            <div className="flex items-center justify-between gap-3 text-[10px] font-semibold uppercase tracking-[0.35em] text-neutral-500 md:hidden">
+              <button
+                type="button"
+                onClick={toggleMenu}
+                className={`rounded-full border px-4 py-1.5 transition ${
+                  menuOpen
+                    ? 'border-neutral-900 bg-neutral-900 text-white'
+                    : 'border-neutral-200 text-neutral-500 hover:border-neutral-900 hover:text-neutral-900'
+                }`}
+              >
+                Menú
+              </button>
+              <button
+                type="button"
+                onClick={toggleFilters}
+                className={`rounded-full border px-4 py-1.5 transition ${
+                  filtersOpen
+                    ? 'border-neutral-900 bg-neutral-900 text-white'
+                    : 'border-neutral-200 text-neutral-500 hover:border-neutral-900 hover:text-neutral-900'
+                }`}
+              >
+                {filtersOpen ? 'Ocultar filtros' : 'Filtros'}
+              </button>
+            </div>
+            <div className="mt-3 hidden flex-wrap items-center justify-end gap-3 text-[10px] font-semibold uppercase tracking-[0.35em] text-neutral-500 md:flex">
+              <div className="flex items-center gap-2">
                 <span className="text-neutral-400">Vista</span>
                 {VIEW_COLUMN_OPTIONS.map(option => {
                   const isActive = gridColumns === option
-                return (
-                  <button
-                    key={option}
-                    type="button"
-                    onClick={() => setGridColumns(option)}
-                    className={`rounded-full border px-3 py-1.5 text-[10px] transition ${
-                      isActive
-                        ? 'border-neutral-900 bg-neutral-900 text-white'
-                        : 'border-neutral-200 text-neutral-500 hover:border-neutral-900 hover:text-neutral-900'
-                    }`}
-                    aria-pressed={isActive}
-                  >
-                    {option}x
-                  </button>
-                )
-              })}
-            </div>
+                  return (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => setGridColumns(option)}
+                      className={`rounded-full border px-3 py-1.5 text-[10px] transition ${
+                        isActive
+                          ? 'border-neutral-900 bg-neutral-900 text-white'
+                          : 'border-neutral-200 text-neutral-500 hover:border-neutral-900 hover:text-neutral-900'
+                      }`}
+                      aria-pressed={isActive}
+                    >
+                      {option}x
+                    </button>
+                  )
+                })}
+              </div>
               <button
                 type="button"
                 onClick={toggleFilters}
@@ -423,8 +436,13 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
         >
           <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-4 text-[11px] uppercase tracking-[0.3em] text-neutral-500">
             <span>Filtros</span>
-            <button type="button" className="text-neutral-900" onClick={closeFilters}>
+            <button
+              type="button"
+              className="inline-flex items-center gap-2 rounded-full border border-neutral-200 px-4 py-1 text-[10px] font-semibold uppercase tracking-[0.35em] text-neutral-600 transition hover:border-neutral-900 hover:text-neutral-900"
+              onClick={closeFilters}
+            >
               Cerrar
+              <span aria-hidden="true">✕</span>
             </button>
           </div>
           <div className="no-scrollbar flex-1 overflow-y-auto px-5 py-4">
@@ -458,11 +476,20 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
         </div>
       </div>
 
-      <div className={`fixed inset-0 z-40 flex justify-start bg-black/40 transition-opacity md:hidden ${menuOpen ? 'opacity-100 pointer-events-auto' : 'pointer-events-none opacity-0'}`}>
+      <div
+        className={`fixed inset-0 z-40 md:hidden ${menuOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
+        aria-hidden={!menuOpen}
+      >
         <div
-          className={`pointer-events-auto flex h-full w-full max-w-[320px] flex-col border-r border-neutral-200 bg-white shadow-2xl transition-transform duration-300 ${
+          className={`absolute inset-0 bg-black/40 transition-opacity ${menuOpen ? 'opacity-100' : 'opacity-0'}`}
+          onClick={closeMenu}
+        />
+        <aside
+          className={`absolute inset-y-0 left-0 flex h-full w-full max-w-[320px] flex-col border-r border-neutral-200 bg-white shadow-2xl transition-transform duration-300 ${
             menuOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
+          role="dialog"
+          aria-label="Menú principal"
         >
           <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-4 text-[11px] uppercase tracking-[0.3em] text-neutral-500">
             <span>Menú</span>
@@ -485,13 +512,7 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
               ))}
             </ul>
           </nav>
-        </div>
-        <button
-          type="button"
-          aria-label="Cerrar menú"
-          className="flex-1"
-          onClick={closeMenu}
-        />
+        </aside>
       </div>
     </section>
   )
