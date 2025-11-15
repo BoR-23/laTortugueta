@@ -116,4 +116,23 @@ set view_count = 0,
 
 > **Importante**: Asegúrate de que `SUPABASE_SERVICE_ROLE_KEY` esté configurado en Netlify, ya que el endpoint usa ese secreto para actualizar los contadores.
 
+## 6. Eventos disponibles (GA / dataLayer)
+
+Los siguientes eventos se envían con `trackEvent()` a `window.dataLayer`, por lo que GA4 / GTM pueden recogerlos directamente:
+
+| Evento | Cuándo se dispara | Propiedades |
+| --- | --- | --- |
+| `product_view` | Cada vez que alguien abre una ficha de producto (además incrementa `view_count` en Supabase) | `productId` |
+| `whatsapp_cta` | Click en el botón principal “Reservar vía WhatsApp” en una ficha | `productId` |
+| `suggestion_click` | Click en un producto sugerido desde otra ficha | `source` (producto actual), `target` (sugerido) |
+| `suggestion_view_more` | Click en “Ver todo” del bloque de sugeridos | `productId` |
+| `filter_interaction` | Al activar o limpiar un filtro desde el panel lateral | `filterId`, `action` (`select` o `clear`) |
+| `testimonial_group_select` | Seleccionando manualmente un bloque de testimonios | `groupId` |
+| `cta_click` | CTA genéricas en secciones de marketing (testimonios, highlights) | `location`, `target`/`highlightId` según el origen |
+
+Si necesitas crear objetivos en GA4:
+1. Añade etiquetas (Events) usando el nombre exacto del evento.
+2. Para diferenciar CTA por sección, usa las propiedades (`location`, `target`, etc.).
+3. Si trabajas con GTM, crea un trigger “Custom Event” usando el mismo nombre y reenvíalo a GA4.
+
 Con esto, tienes la base de monitorización completa y documentada dentro del repo (`docs/search-console-and-metrics.md`).
