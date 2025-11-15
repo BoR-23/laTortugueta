@@ -175,3 +175,28 @@ export const replaceProductMediaAssets = async (
 
   clearProductCaches()
 }
+
+export const updateProductTags = async (productId: string, tags: string[]) => {
+  ensureSupabaseAvailable()
+  const client = createSupabaseServerClient()
+  const cleaned = Array.from(
+    new Set(
+      tags
+        .map(tag => (typeof tag === 'string' ? tag.trim() : ''))
+        .filter(tag => tag.length > 0)
+    )
+  )
+
+  const now = new Date().toISOString()
+  const { error } = await client
+    .from('products')
+    .update({ tags: cleaned, updated_at: now })
+    .eq('id', productId)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  clearProductCaches()
+  return cleaned
+}

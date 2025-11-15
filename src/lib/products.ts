@@ -25,5 +25,6 @@ export {
   createProductRecord,
   updateProductRecord,
   deleteProductRecord,
-  replaceProductMediaAssets
+  replaceProductMediaAssets,
+  updateProductTags
 } from './products/mutations'
