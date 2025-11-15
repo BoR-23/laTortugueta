@@ -6,6 +6,7 @@ import { ProductForm } from './ProductForm'
 import { PricingManager } from './PricingManager'
 import { MediaGalleryManager } from './MediaGalleryManager'
 import { CatalogOrderManager } from './CatalogOrderManager'
+import { ProductPerformancePanel } from './ProductPerformancePanel'
 import { DEFAULT_PRODUCT_PRIORITY } from '@/lib/productDefaults'
 import { ProductDraftPreview, type DraftDiffEntry } from './ProductDraftPreview'
 import {
@@ -550,6 +551,17 @@ export function AdminProductWorkspace({ initialProducts }: AdminProductWorkspace
               <PricingManager products={pricingRows} />
             </div>
           </section>
+        </div>
+        <div className="space-y-10">
+          <ProductPerformancePanel
+            products={products}
+            onInspect={productId => {
+              const target = products.find(product => product.id === productId)
+              if (target) {
+                handleEdit(target)
+              }
+            }}
+          />
         </div>
       </div>
 

@@ -134,6 +134,7 @@ export const buildProductFromMarkdown = (id: string, fileContents: string) => {
       ? (rawData.metadata as Record<string, unknown>)
       : {}
   product.metadata = sanitizeTypeMetadata(product.type, metadata)
+  product.viewCount = typeof (rawData as Record<string, any>).view_count === 'number' ? Number((rawData as Record<string, any>).view_count) : 0
 
   const pricingTable = getPricingTable()
   const priceFromTable = pricingTable[id]
@@ -182,6 +183,7 @@ export const buildProductFromSupabase = (record: Record<string, any>): Product =
     sizes: Array.isArray(record.sizes) ? record.sizes : undefined,
     available: typeof record.available === 'boolean' ? record.available : gallery.length > 0,
     metadata: sanitizeTypeMetadata(baseType || DEFAULT_PRODUCT_TYPE, metadata),
-    priority: normalisePriority(record.priority)
+    priority: normalisePriority(record.priority),
+    viewCount: typeof record.view_count === 'number' ? Number(record.view_count) : 0
   }
 }

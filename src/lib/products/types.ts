@@ -18,6 +18,7 @@ export interface Product {
   sizes?: string[]
   available?: boolean
   metadata?: Record<string, unknown>
+  viewCount?: number
 }
 
 export type MediaAssetRecord = {

@@ -29,6 +29,7 @@ export function TestimonialsSection({
   groups = defaultTestimonialGroups,
   show = true
 }: TestimonialsSectionProps) {
+  const [activeTags, setActiveTags] = useState<string[]>([])
   const groupsToRender = useMemo<TestimonialGroup[]>(() => {
     if (groups && groups.length) {
       return groups
@@ -47,6 +48,20 @@ export function TestimonialsSection({
   const [activeGroupId, setActiveGroupId] = useState(groupsToRender[0]?.id)
 
   useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+    const handleFiltersChanged = (event: Event) => {
+      const customEvent = event as CustomEvent<{ tags?: string[] }>
+      const tags = Array.isArray(customEvent.detail?.tags) ? customEvent.detail!.tags : []
+      setActiveTags(tags)
+    }
+
+    window.addEventListener('catalog:filters-changed', handleFiltersChanged as EventListener)
+    return () => {
+      window.removeEventListener('catalog:filters-changed', handleFiltersChanged as EventListener)
+    }
+  }, [])
+
+  useEffect(() => {
     if (!groupsToRender.length) {
       return
     }
@@ -54,6 +69,22 @@ export function TestimonialsSection({
       setActiveGroupId(groupsToRender[0].id)
     }
   }, [groupsToRender, activeGroupId])
+  const normalizedActiveTags = useMemo(
+    () => activeTags.map(tag => tag.toLowerCase()),
+    [activeTags]
+  )
+
+  useEffect(() => {
+    if (!normalizedActiveTags.length) {
+      return
+    }
+    const matchedGroup = groupsToRender.find(group =>
+      group.matchTags?.some(keyword => normalizedActiveTags.includes(keyword.toLowerCase()))
+    )
+    if (matchedGroup && matchedGroup.id !== activeGroupId) {
+      setActiveGroupId(matchedGroup.id)
+    }
+  }, [normalizedActiveTags, groupsToRender, activeGroupId])
 
   if (!show || groupsToRender.length === 0) {
     return null

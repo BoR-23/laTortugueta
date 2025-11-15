@@ -1,6 +1,7 @@
 ﻿'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import type { TouchEvent } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
@@ -247,6 +248,11 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
   const [menuOpen, setMenuOpen] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const lastAppliedQueryRef = useRef(currentQuery)
+  const swipeStateRef = useRef({
+    startX: 0,
+    startY: 0,
+    active: false
+  })
 
   const filteredProducts = useMemo(
     () => filterCatalogProducts(products, filterState, hasSearchQuery, searchMatches, favoriteSet),
@@ -318,10 +324,31 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [filtersOpen])
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const detail = { tags: filterState.tags }
+    window.dispatchEvent(new CustomEvent('catalog:filters-changed', { detail }))
+  }, [filterState.tags])
+
   const closeFilters = () => setFiltersOpen(false)
   const toggleFilters = () => setFiltersOpen(prev => !prev)
   const closeMenu = () => setMenuOpen(false)
   const toggleMenu = () => setMenuOpen(prev => !prev)
+  const activeFilterCount = useMemo(() => {
+    let count = 0
+    if (filterState.search.trim()) count += 1
+    count += filterState.tags.length
+    count += filterState.colorCodes.length
+    count += filterState.colorCounts.length
+    count += filterState.sizes.length
+    if (filterState.onlyAvailable) count += 1
+    if (filterState.onlyFavorites) count += 1
+    const [minPrice, maxPrice] = filterState.priceRange
+    if (minPrice > priceStats.min || maxPrice < priceStats.max) {
+      count += 1
+    }
+    return count
+  }, [filterState, priceStats])
 
   const canShare = typeof navigator !== 'undefined' && Boolean(navigator.clipboard)
 
@@ -350,28 +377,32 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
           </div>
           <div className="order-1 w-full sm:order-2 sm:w-auto">
             <div className="flex items-center justify-between gap-3 text-[10px] font-semibold uppercase tracking-[0.35em] text-neutral-500 md:hidden">
-              <button
-                type="button"
-                onClick={toggleMenu}
-                className={`rounded-full border px-4 py-1.5 transition ${
-                  menuOpen
-                    ? 'border-neutral-900 bg-neutral-900 text-white'
-                    : 'border-neutral-200 text-neutral-500 hover:border-neutral-900 hover:text-neutral-900'
-                }`}
-              >
-                Menú
-              </button>
-              <button
-                type="button"
-                onClick={toggleFilters}
-                className={`rounded-full border px-4 py-1.5 transition ${
-                  filtersOpen
-                    ? 'border-neutral-900 bg-neutral-900 text-white'
-                    : 'border-neutral-200 text-neutral-500 hover:border-neutral-900 hover:text-neutral-900'
-                }`}
-              >
-                {filtersOpen ? 'Ocultar filtros' : 'Filtros'}
-              </button>
+            <button
+              type="button"
+              onClick={toggleMenu}
+              className={`rounded-full border px-4 py-1.5 transition ${
+                menuOpen
+                  ? 'border-neutral-900 bg-neutral-900 text-white'
+                  : 'border-neutral-200 text-neutral-500 hover:border-neutral-900 hover:text-neutral-900'
+              }`}
+            >
+              Menú
+            </button>
+            <button
+              type="button"
+              onClick={toggleFilters}
+              className={`rounded-full border px-4 py-1.5 transition ${
+                filtersOpen
+                  ? 'border-neutral-900 bg-neutral-900 text-white'
+                  : 'border-neutral-200 text-neutral-500 hover:border-neutral-900 hover:text-neutral-900'
+              }`}
+            >
+              {filtersOpen
+                ? 'Ocultar filtros'
+                : activeFilterCount > 0
+                  ? `Filtros (${activeFilterCount})`
+                  : 'Filtros'}
+            </button>
             </div>
             <div className="mt-3 hidden flex-wrap items-center justify-end gap-3 text-[10px] font-semibold uppercase tracking-[0.35em] text-neutral-500 md:flex">
               <div className="flex items-center gap-2">
@@ -404,7 +435,11 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
                     : 'border-neutral-200 text-neutral-500 hover:border-neutral-900 hover:text-neutral-900'
                 }`}
               >
-                {filtersOpen ? 'Ocultar filtros' : 'Filtros'}
+                {filtersOpen
+                  ? 'Ocultar filtros'
+                  : activeFilterCount > 0
+                    ? `Filtros (${activeFilterCount})`
+                    : 'Filtros'}
               </button>
             </div>
           </div>
@@ -437,6 +472,27 @@ export function TagFilterPanel({ products, headerCategories, filterCategories }:
           className={`pointer-events-auto flex h-full w-full max-w-[420px] flex-col border-l border-neutral-200 bg-white shadow-2xl transition-transform duration-300 ${
             filtersOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
+          onTouchStart={(event: TouchEvent<HTMLDivElement>) => {
+            const touch = event.touches[0]
+            swipeStateRef.current = { startX: touch.clientX, startY: touch.clientY, active: true }
+          }}
+          onTouchMove={(event: TouchEvent<HTMLDivElement>) => {
+            if (!swipeStateRef.current.active) return
+            const touch = event.touches[0]
+            const deltaX = touch.clientX - swipeStateRef.current.startX
+            const deltaY = Math.abs(touch.clientY - swipeStateRef.current.startY)
+            if (deltaY > 80) {
+              swipeStateRef.current.active = false
+              return
+            }
+            if (deltaX > 80) {
+              swipeStateRef.current.active = false
+              closeFilters()
+            }
+          }}
+          onTouchEnd={() => {
+            swipeStateRef.current.active = false
+          }}
         >
           <div className="no-scrollbar flex-1 overflow-y-auto px-5 py-4">
             <FilterSidebar

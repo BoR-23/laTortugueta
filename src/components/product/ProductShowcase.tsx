@@ -14,6 +14,7 @@ interface SuggestedProduct {
   image: string
   price: number
   category?: string
+  viewCount?: number
 }
 
 interface ProductShowcaseProps {
@@ -373,6 +374,9 @@ export function ProductShowcase({ product, recommendations = [] }: ProductShowca
                     </p>
                     <h3 className="text-base font-medium text-neutral-900">{item.name}</h3>
                     <p className="text-sm text-neutral-600">{item.price.toFixed(2)} €</p>
+                    {typeof item.viewCount === 'number' && item.viewCount > 0 ? (
+                      <p className="text-xs text-neutral-400">{item.viewCount} visitas</p>
+                    ) : null}
                   </div>
                 </Link>
               ))}

@@ -8,6 +8,7 @@ type Recommendation = {
   image: string
   category?: string
   tags: string[]
+  viewCount?: number
 }
 
 const COLOR_CODE_REGEX = /^color\s+(\d{3})$/i
@@ -54,6 +55,9 @@ const scoreProduct = (base: Product, candidate: Product) => {
     }
   }
 
+  const viewBoost = candidate.viewCount ? Math.log10(candidate.viewCount + 1) * 2 : 0
+  score += viewBoost
+
   return score
 }
 
@@ -80,6 +84,7 @@ export const getRecommendationsForProduct = async (
       price: product.price,
       image: product.image,
       category: product.category,
-      tags: product.tags || []
+      tags: product.tags || [],
+      viewCount: product.viewCount
     }))
 }

@@ -12,6 +12,7 @@ export interface AdminProductFormValues {
   available: boolean
   gallery: string[]
   metadata: Record<string, unknown>
+  viewCount?: number
 }
 
 export interface AdminProductDraftRecord {

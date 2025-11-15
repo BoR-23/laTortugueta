@@ -11,6 +11,7 @@ export type TestimonialGroup = {
   label: string
   description: string
   testimonials: Testimonial[]
+  matchTags?: string[]
 }
 
 export const defaultTestimonialGroups: TestimonialGroup[] = [
@@ -19,6 +20,7 @@ export const defaultTestimonialGroups: TestimonialGroup[] = [
     label: 'Grupos de danzas',
     description:
       'Festes majors, collas falleras y escuelas de danza colaboran con el archivo para recrear piezas históricas idénticas a las originales.',
+    matchTags: ['danza', 'danzas', 'folklore', 'ballet', 'fiesta', 'festes'],
     testimonials: [
       {
         name: 'Elena · Grup de Danses Sant Jordi',
@@ -48,6 +50,7 @@ export const defaultTestimonialGroups: TestimonialGroup[] = [
     label: 'Teatro y audiovisual',
     description:
       'Compañías escénicas y producciones audiovisuales buscan rapidez y consistencia; entregamos fichas técnicas cerradas y versiones extra para vestuarios de rodaje.',
+    matchTags: ['teatro', 'escena', 'produccion', 'rodaje', 'audiovisual'],
     testimonials: [
       {
         name: 'Teatre Escalante',
@@ -77,6 +80,7 @@ export const defaultTestimonialGroups: TestimonialGroup[] = [
     label: 'Coleccionistas y archivo',
     description:
       'Restauramos pares únicos para familias y museos locales, cuidando documentación, humedad y guardado para que las piezas duren generaciones.',
+    matchTags: ['archivo', 'museo', 'coleccion', 'restauracion', 'patrimonio'],
     testimonials: [
       {
         name: 'Arxiu Municipal d’Alcoi',

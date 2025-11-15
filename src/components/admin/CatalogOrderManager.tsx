@@ -27,6 +27,7 @@ export function CatalogOrderManager({
   const [saving, setSaving] = useState(false)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const hasViewStats = products.some(product => typeof product.viewCount === 'number')
 
   useEffect(() => {
     setOrdered(sortItems(products))
@@ -77,6 +78,20 @@ export function CatalogOrderManager({
     }
   }
 
+  const applyViewRanking = () => {
+    if (!hasViewStats) return
+    setOrdered(
+      [...products].sort((a, b) => {
+        const diff = (b.viewCount ?? 0) - (a.viewCount ?? 0)
+        if (diff !== 0) {
+          return diff
+        }
+        return a.name.localeCompare(b.name, 'es')
+      })
+    )
+    setSuccessMessage('Orden temporal aplicado según visitas. Pulsa "Guardar" para publicar.')
+  }
+
   return (
     <section className="rounded-3xl border border-neutral-200 bg-white p-6">
       <div className="flex flex-wrap items-start gap-4">
@@ -88,6 +103,15 @@ export function CatalogOrderManager({
             Arrastra para decidir que fichas aparecen primero. Guarda para publicar el cambio.
           </p>
         </div>
+        {hasViewStats && (
+          <button
+            type="button"
+            onClick={applyViewRanking}
+            className="rounded-full border border-neutral-200 px-4 py-2 text-[11px] uppercase tracking-[0.25em] text-neutral-600 transition hover:border-neutral-900 hover:text-neutral-900"
+          >
+            Ordenar por visitas
+          </button>
+        )}
         <button
           type="button"
           onClick={handleSave}

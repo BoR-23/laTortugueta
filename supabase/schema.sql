@@ -54,6 +54,22 @@ create unique index if not exists users_admin_email_idx on public.users_admin (l
 
 alter table public.products
   add column if not exists metadata jsonb default '{}'::jsonb;
+alter table public.products
+  add column if not exists view_count integer default 0;
+alter table public.products
+  add column if not exists last_viewed_at timestamptz;
+
+create or replace function public.increment_product_view(p_product_id text)
+returns void
+language plpgsql
+as $$
+begin
+  update public.products
+  set view_count = coalesce(view_count, 0) + 1,
+      last_viewed_at = now()
+  where id = p_product_id;
+end;
+$$;
 
 comment on table public.products is 'Catálogo principal de productos';
 comment on table public.media_assets is 'Galerías asociadas a cada producto';

@@ -99,4 +99,21 @@ Y sustituye el cuerpo de `logWebVital()` por el `fetch`. Recuerda activar loggin
 - [ ] `NEXT_PUBLIC_GA_MEASUREMENT_ID` definido para registrar Web Vitals en GA.
 - [ ] Revisar periódicamente los informes de Search Console (cobertura, Core Web Vitals) y ajustar en consecuencia.
 
+## 5. Analítica propia en Supabase
+
+Además del registro en GA/Clarity, la web guarda cada vista de producto en Supabase (tabla `products`, columnas `view_count` y `last_viewed_at`). El endpoint `/api/analytics/product-view` incrementa estos contadores y se invoca automáticamente desde `registerProductView`.
+
+- El campo `view_count` se utiliza para ordenar sugerencias, mostrar productos más vistos en el panel de administración y preparar futuras automatizaciones.
+- Si necesitas rehacer el histórico, puedes ejecutar manualmente en Supabase:
+
+```sql
+update public.products
+set view_count = 0,
+    last_viewed_at = null;
+```
+
+- Para paneles personalizados (Looker Studio, Metabase...), basta con exponer la tabla `products` y filtrar por `view_count` o `last_viewed_at`.
+
+> **Importante**: Asegúrate de que `SUPABASE_SERVICE_ROLE_KEY` esté configurado en Netlify, ya que el endpoint usa ese secreto para actualizar los contadores.
+
 Con esto, tienes la base de monitorización completa y documentada dentro del repo (`docs/search-console-and-metrics.md`).

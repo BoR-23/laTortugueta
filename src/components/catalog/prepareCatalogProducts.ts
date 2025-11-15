@@ -12,6 +12,7 @@ export type CatalogProductSummary = {
   sizes?: string[]
   available: boolean
   priority: number
+  viewCount?: number
 }
 
 export const prepareCatalogProducts = (products: Product[]): CatalogProductSummary[] => {
@@ -25,6 +26,7 @@ export const prepareCatalogProducts = (products: Product[]): CatalogProductSumma
     description: product.description,
     sizes: product.sizes || [],
     available: product.photos > 0,
-    priority: product.priority ?? DEFAULT_PRODUCT_PRIORITY
+    priority: product.priority ?? DEFAULT_PRODUCT_PRIORITY,
+    viewCount: product.viewCount
   }))
 }

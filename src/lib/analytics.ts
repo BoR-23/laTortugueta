@@ -9,6 +9,8 @@ declare global {
 const STORAGE_KEY = 'tortugueta:events'
 const VIEW_GRAPH_KEY = 'tortugueta:coViews'
 const LAST_VIEW_KEY = 'tortugueta:lastView'
+const REMOTE_VIEW_KEY = 'tortugueta:lastRemoteView'
+const REMOTE_VIEW_TTL = 1000 * 60 * 30 // 30 minutos
 
 const safeWindow = () => (typeof window === 'undefined' ? null : window)
 
@@ -29,6 +31,35 @@ export const trackEvent = (name: string, properties?: AnalyticsPayload) => {
   win.dataLayer = win.dataLayer || []
   win.dataLayer.push({ event: name, ...properties })
   persistEvent({ name, properties })
+}
+
+const shouldReportRemoteView = (productId: string) => {
+  try {
+    const map = JSON.parse(localStorage.getItem(REMOTE_VIEW_KEY) ?? '{}') as Record<string, number>
+    const lastReport = map[productId]
+    if (lastReport && Date.now() - lastReport < REMOTE_VIEW_TTL) {
+      return false
+    }
+    map[productId] = Date.now()
+    localStorage.setItem(REMOTE_VIEW_KEY, JSON.stringify(map))
+    return true
+  } catch {
+    return true
+  }
+}
+
+const reportProductViewRemotely = async (productId: string) => {
+  try {
+    await fetch('/api/analytics/product-view', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ productId })
+    })
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('No se pudo registrar la vista remota', error)
+    }
+  }
 }
 
 export const registerProductView = (productId: string) => {
@@ -53,6 +84,10 @@ export const registerProductView = (productId: string) => {
     localStorage.setItem(LAST_VIEW_KEY, productId)
   } catch {
     // ignore
+  }
+
+  if (shouldReportRemoteView(productId)) {
+    void reportProductViewRemotely(productId)
   }
 }
 

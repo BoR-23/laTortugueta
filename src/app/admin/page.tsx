@@ -39,7 +39,8 @@ export default async function AdminPricingPage() {
       available: product.available ?? product.photos > 0,
       gallery: product.gallery ?? [],
       priority: priorityOf(product.priority),
-      metadata: product.metadata ?? {}
+      metadata: product.metadata ?? {},
+      viewCount: product.viewCount ?? 0
     }))
     .sort((a, b) => {
       const diff = priorityOf(a.priority) - priorityOf(b.priority)
