@@ -45,6 +45,10 @@ export type PriceStats = {
 }
 
 export type SortKey = 'priority' | 'name' | 'price' | 'views'
+export type SortDirection = 'asc' | 'desc'
+
+export const getDefaultSortDirection = (sortKey: SortKey): SortDirection =>
+  sortKey === 'views' ? 'desc' : 'asc'
 
 const COLOR_CODE_REGEX = /^color\s+(\d{3})$/i
 
@@ -273,9 +277,11 @@ export const filterCatalogProducts = (
 export const sortCatalogProducts = (
   products: CatalogProduct[],
   sortKey: SortKey,
+  sortDirection: SortDirection,
   hasSearchQuery: boolean,
   searchMatches: SearchMatchesMap
 ) => {
+  const directionFactor = sortDirection === 'desc' ? -1 : 1
   return [...products].sort((a, b) => {
     if (hasSearchQuery && searchMatches) {
       const scoreA = searchMatches.get(a.id)
@@ -289,24 +295,24 @@ export const sortCatalogProducts = (
     }
 
     if (sortKey === 'price') {
-      return a.price - b.price
+      return (a.price - b.price) * directionFactor
     }
 
     if (sortKey === 'views') {
-      const diff = (b.viewCount ?? 0) - (a.viewCount ?? 0)
+      const diff = (a.viewCount ?? 0) - (b.viewCount ?? 0)
       if (diff !== 0) {
-        return diff
+        return diff * directionFactor
       }
     }
 
     if (sortKey === 'priority') {
       const diff = getProductPriority(a) - getProductPriority(b)
       if (diff !== 0) {
-        return diff
+        return diff * directionFactor
       }
     }
 
-    return a.name.localeCompare(b.name, 'es')
+    return a.name.localeCompare(b.name, 'es') * directionFactor
   })
 }
 

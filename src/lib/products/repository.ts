@@ -12,7 +12,7 @@ const getSupabaseProducts = async () => {
   const client = createSupabaseServerClient()
   const { data, error } = await client
     .from('products')
-    .select('*, media_assets(*)')
+    .select('*, media_assets(*), categories:category_id(id, name, scope, tag_key)')
     .order('priority', { ascending: true, nullsFirst: false })
     .order('name', { ascending: true })
 
@@ -27,7 +27,7 @@ const getSupabaseProductById = async (id: string) => {
   const client = createSupabaseServerClient()
   const { data, error } = await client
     .from('products')
-    .select('*, media_assets(*)')
+    .select('*, media_assets(*), categories:category_id(id, name, scope, tag_key)')
     .eq('id', id)
     .single()
 

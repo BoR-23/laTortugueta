@@ -11,8 +11,10 @@ import {
   type FilterState,
   type SortKey,
   type PriceStats,
+  type SortDirection,
   createInitialFilterState,
-  hasActiveFilters
+  hasActiveFilters,
+  getDefaultSortDirection
 } from './catalogFiltering'
 
 type SearchMatchesMap = Map<string, number> | null
@@ -21,6 +23,8 @@ interface UseCatalogFiltersResult {
   filterState: FilterState
   sortKey: SortKey
   setSortKey: (value: SortKey) => void
+  sortDirection: SortDirection
+  setSortDirection: (value: SortDirection) => void
   hasSearchQuery: boolean
   searchMatches: SearchMatchesMap
   filtersAreActive: boolean
@@ -39,12 +43,17 @@ export const useCatalogFilters = (
   products: CatalogProduct[],
   priceStats: PriceStats,
   initialState?: FilterState,
-  initialSortKey?: SortKey
+  initialSortKey?: SortKey,
+  initialSortDirection?: SortDirection
 ): UseCatalogFiltersResult => {
   const [filterState, setFilterState] = useState<FilterState>(() =>
     initialState ? { ...initialState } : createInitialFilterState(priceStats)
   )
-  const [sortKey, setSortKey] = useState<SortKey>(initialSortKey ?? 'priority')
+  const initialKey = initialSortKey ?? 'priority'
+  const [sortKeyState, setSortKeyState] = useState<SortKey>(initialKey)
+  const [sortDirection, setSortDirectionState] = useState<SortDirection>(
+    initialSortDirection ?? getDefaultSortDirection(initialKey)
+  )
 
   useEffect(() => {
     if (initialState) {
@@ -53,8 +62,17 @@ export const useCatalogFilters = (
   }, [initialState])
 
   useEffect(() => {
-    setSortKey(initialSortKey ?? 'priority')
-  }, [initialSortKey])
+    const nextKey = initialSortKey ?? 'priority'
+    setSortKeyState(nextKey)
+    setSortDirectionState(initialSortDirection ?? getDefaultSortDirection(nextKey))
+  }, [initialSortKey, initialSortDirection])
+  const setSortKey = (value: SortKey) => {
+    setSortKeyState(value)
+    setSortDirectionState(getDefaultSortDirection(value))
+  }
+  const setSortDirection = (value: SortDirection) => {
+    setSortDirectionState(value)
+  }
 
   // Instanciamos Fuse solo cuando cambia la lista para no recalcular índices en cada pulsación.
   const fuse = useMemo(
@@ -201,8 +219,10 @@ export const useCatalogFilters = (
 
   return {
     filterState,
-    sortKey,
+    sortKey: sortKeyState,
     setSortKey,
+    sortDirection,
+    setSortDirection,
     hasSearchQuery,
     searchMatches,
     filtersAreActive,

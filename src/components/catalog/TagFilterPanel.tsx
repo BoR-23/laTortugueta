@@ -8,7 +8,13 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
 import { CategoryTabsNav, type CategoryNavNode } from '@/components/layout/CategoryTabsNav'
 import type { CategoryDTO, CategoryTreeNode, CategorySidebarNode } from '@/types/categories'
-import type { CatalogProduct, FilterState, PriceStats, SortKey } from './catalogFiltering'
+import type {
+  CatalogProduct,
+  FilterState,
+  PriceStats,
+  SortDirection,
+  SortKey
+} from './catalogFiltering'
 import {
   computePriceStats,
   summariseTags,
@@ -17,7 +23,8 @@ import {
   summariseSizes,
   filterCatalogProducts,
   sortCatalogProducts,
-  createInitialFilterState
+  createInitialFilterState,
+  getDefaultSortDirection
 } from './catalogFiltering'
 import { useCatalogFilters } from './useCatalogFilters'
 import { ProductGrid, type GridColumns } from './ProductGrid'
@@ -25,6 +32,12 @@ import { useFavorites } from '@/hooks/useFavorites'
 import { primaryNavLinks } from '@/lib/navigation'
 
 const SORT_KEYS: SortKey[] = ['priority', 'name', 'price', 'views']
+const SORT_OPTION_LABELS: Record<SortKey, string> = {
+  priority: 'Orden manual',
+  name: 'Nombre',
+  price: 'Precio',
+  views: 'Popularidad'
+}
 const VIEW_COLUMN_OPTIONS: GridColumns[] = [2, 3, 4]
 
 const LazyFilterSidebar = dynamic(() =>
@@ -38,6 +51,8 @@ const LazyFilterSidebar = dynamic(() =>
 )
 
 const isSortKey = (value: string | null): value is SortKey => SORT_KEYS.includes(value as SortKey)
+const isSortDirection = (value: string | null): value is SortDirection =>
+  value === 'asc' || value === 'desc'
 
 const parseListParam = (value: string | null) =>
   value ? value.split(',').map(item => item.trim()).filter(Boolean) : []
@@ -156,6 +171,7 @@ const buildFilterStateFromParams = (
 const serializeFiltersToParams = (
   filterState: FilterState,
   sortKey: SortKey,
+  sortDirection: SortDirection,
   stats: PriceStats
 ) => {
   const params = new URLSearchParams()
@@ -179,6 +195,10 @@ const serializeFiltersToParams = (
   }
   if (sortKey !== 'priority') {
     params.set('sort', sortKey)
+  }
+  const defaultDirection = getDefaultSortDirection(sortKey)
+  if (sortDirection !== defaultDirection) {
+    params.set('dir', sortDirection)
   }
   return params
 }
@@ -210,6 +230,10 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
     const value = searchParams.get('sort')
     return isSortKey(value) ? value : undefined
   }, [searchParams])
+  const initialDirectionFromQuery = useMemo(() => {
+    const value = searchParams.get('dir')
+    return isSortDirection(value) ? value : undefined
+  }, [searchParams])
 
   const headerTree = useMemo(() => {
     const tree = buildTreeFromRecords(headerCategories)
@@ -239,6 +263,8 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
     filterState,
     sortKey,
     setSortKey,
+    sortDirection,
+    setSortDirection,
     hasSearchQuery,
     searchMatches,
     filtersAreActive,
@@ -251,10 +277,16 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
     updatePriceRange,
     handleSearchChange,
     clearFilters
-  } = useCatalogFilters(products, priceStats, initialFilterFromQuery, initialSortFromQuery)
+  } = useCatalogFilters(
+    products,
+    priceStats,
+    initialFilterFromQuery,
+    initialSortFromQuery,
+    initialDirectionFromQuery
+  )
   const [shareUrl, setShareUrl] = useState('')
   const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'error'>('idle')
-  const [gridColumns, setGridColumns] = useState<GridColumns>(3)
+  const [gridColumns, setGridColumns] = useState<GridColumns>(4 as GridColumns)
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -264,6 +296,8 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
     startY: 0,
     active: false
   })
+  const toggleSortDirection = () =>
+    setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
 
   const filteredProducts = useMemo(
     () => filterCatalogProducts(products, filterState, hasSearchQuery, searchMatches, favoriteSet),
@@ -271,12 +305,12 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
   )
 
   const sortedProducts = useMemo(
-    () => sortCatalogProducts(filteredProducts, sortKey, hasSearchQuery, searchMatches),
-    [filteredProducts, sortKey, hasSearchQuery, searchMatches]
+    () => sortCatalogProducts(filteredProducts, sortKey, sortDirection, hasSearchQuery, searchMatches),
+    [filteredProducts, sortKey, sortDirection, hasSearchQuery, searchMatches]
   )
 
   useEffect(() => {
-    const params = serializeFiltersToParams(filterState, sortKey, priceStats)
+    const params = serializeFiltersToParams(filterState, sortKey, sortDirection, priceStats)
     const queryString = params.toString()
     const targetPath = queryString ? `${pathname}?${queryString}` : pathname
 
@@ -301,7 +335,7 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
     } else {
       setShareUrl(targetPath)
     }
-  }, [filterState, sortKey, priceStats, pathname, router, currentQuery])
+  }, [filterState, sortKey, sortDirection, priceStats, pathname, router, currentQuery])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -387,14 +421,14 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
             <CategoryTabsNav tabs={headerNavTabs} />
           </div>
           <div className="order-1 w-full sm:order-2 sm:w-auto">
-            <div className="flex items-center justify-between gap-3 text-[10px] font-semibold uppercase tracking-[0.35em] text-neutral-500 md:hidden">
+            <div className="flex items-center justify-between gap-3 text-[10px] font-semibold uppercase tracking-[0.35em] text-neutral-900 md:hidden">
             <button
               type="button"
               onClick={toggleMenu}
-              className={`rounded-full border px-4 py-1.5 transition ${
+              className={`rounded-full border-2 px-4 py-1.5 transition ${
                 menuOpen
                   ? 'border-neutral-900 bg-neutral-900 text-white'
-                  : 'border-neutral-200 text-neutral-500 hover:border-neutral-900 hover:text-neutral-900'
+                  : 'border-neutral-900 text-neutral-900 hover:bg-neutral-900 hover:text-white'
               }`}
             >
               Menú
@@ -402,10 +436,10 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
             <button
               type="button"
               onClick={toggleFilters}
-              className={`rounded-full border px-4 py-1.5 transition ${
+              className={`rounded-full border-2 px-4 py-1.5 transition ${
                 filtersOpen
                   ? 'border-neutral-900 bg-neutral-900 text-white'
-                  : 'border-neutral-200 text-neutral-500 hover:border-neutral-900 hover:text-neutral-900'
+                  : 'border-neutral-900 text-neutral-900 hover:bg-neutral-900 hover:text-white'
               }`}
             >
               {filtersOpen
@@ -415,9 +449,59 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
                   : 'Filtros'}
             </button>
             </div>
-            <div className="mt-3 hidden flex-wrap items-center justify-end gap-3 text-[10px] font-semibold uppercase tracking-[0.35em] text-neutral-500 md:flex">
+            <div className="mt-3 flex flex-col gap-1 text-[10px] font-semibold uppercase tracking-[0.35em] text-neutral-900 md:hidden">
+              <span className="text-neutral-500">Ordenar</span>
               <div className="flex items-center gap-2">
-                <span className="text-neutral-400">Vista</span>
+                <select
+                  value={sortKey}
+                  onChange={event => setSortKey(event.target.value as SortKey)}
+                  className="flex-1 rounded-full border border-neutral-200 px-4 py-2 text-[10px] tracking-[0.25em] text-neutral-600 focus:border-neutral-900 focus:outline-none focus:ring-0"
+                  aria-label="Ordenar catálogo"
+                >
+                  {SORT_KEYS.map(option => (
+                    <option key={option} value={option}>
+                      {SORT_OPTION_LABELS[option]}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={toggleSortDirection}
+                  className="rounded-full border border-neutral-200 px-3 py-2 text-[12px] text-neutral-600 transition hover:border-neutral-900 hover:text-neutral-900"
+                  aria-label={sortDirection === 'asc' ? 'Orden ascendente' : 'Orden descendente'}
+                >
+                  {sortDirection === 'asc' ? '↑' : '↓'}
+                </button>
+              </div>
+            </div>
+            <div className="mt-3 hidden flex-wrap items-center justify-end gap-3 text-[10px] font-semibold uppercase tracking-[0.35em] text-neutral-900 md:flex">
+              <div className="flex items-center gap-2">
+                <span className="text-neutral-500">Ordenar</span>
+                <div className="flex items-center gap-2">
+                <select
+                  value={sortKey}
+                  onChange={event => setSortKey(event.target.value as SortKey)}
+                  className="rounded-full border border-neutral-200 px-4 py-1.5 text-[10px] tracking-[0.25em] text-neutral-600 focus:border-neutral-900 focus:outline-none focus:ring-0"
+                  aria-label="Ordenar catálogo"
+                >
+                  {SORT_KEYS.map(option => (
+                    <option key={option} value={option}>
+                      {SORT_OPTION_LABELS[option]}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={toggleSortDirection}
+                  className="rounded-full border border-neutral-200 px-3 py-1.5 text-[12px] text-neutral-600 transition hover:border-neutral-900 hover:text-neutral-900"
+                  aria-label={sortDirection === 'asc' ? 'Orden ascendente' : 'Orden descendente'}
+                >
+                  {sortDirection === 'asc' ? '↑' : '↓'}
+                </button>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-neutral-500">Vista</span>
                 {VIEW_COLUMN_OPTIONS.map(option => {
                   const isActive = gridColumns === option
                   return (
@@ -425,7 +509,7 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
                       key={option}
                       type="button"
                       onClick={() => setGridColumns(option)}
-                      className={`rounded-full border px-3 py-1.5 text-[10px] transition ${
+                      className={`rounded-full border px-3 py-1.5 text-[10px] font-semibold transition ${
                         isActive
                           ? 'border-neutral-900 bg-neutral-900 text-white'
                           : 'border-neutral-200 text-neutral-500 hover:border-neutral-900 hover:text-neutral-900'
@@ -440,10 +524,10 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
               <button
                 type="button"
                 onClick={toggleFilters}
-                className={`rounded-full border px-4 py-1.5 text-[10px] transition ${
+                className={`rounded-full border-2 px-4 py-1.5 text-[10px] font-semibold transition ${
                   filtersOpen
                     ? 'border-neutral-900 bg-neutral-900 text-white'
-                    : 'border-neutral-200 text-neutral-500 hover:border-neutral-900 hover:text-neutral-900'
+                    : 'border-neutral-900 text-neutral-900 hover:bg-neutral-900 hover:text-white'
                 }`}
               >
                 {filtersOpen
@@ -510,6 +594,7 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
               sizeSummaries={sizeSummaries}
               filterState={filterState}
               sortKey={sortKey}
+              sortDirection={sortDirection}
               priceStats={priceStats}
               filtersAreActive={filtersAreActive}
               onToggleTag={toggleTag}
@@ -521,6 +606,7 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
               onPriceChange={updatePriceRange}
               onSearchChange={handleSearchChange}
               onSortChange={value => setSortKey(value)}
+              onSortDirectionChange={value => setSortDirection(value)}
               onClearFilters={clearFilters}
               onShareFilters={canShare ? handleShareFilters : undefined}
               shareStatus={shareStatus}

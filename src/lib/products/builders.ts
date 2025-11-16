@@ -40,6 +40,10 @@ export const sanitiseProductInput = (input: ProductMutationInput) => {
       ? input.type.trim()
       : inferProductTypeFromCategory(input.category)
   const metadataValue = sanitizeTypeMetadata(typeValue, input.metadata ?? {}) as ProductMetadata
+  const categoryIdValue =
+    typeof input.categoryId === 'string' && input.categoryId.trim().length > 0
+      ? input.categoryId.trim()
+      : undefined
   return {
     ...input,
     id: input.id.trim(),
@@ -51,7 +55,8 @@ export const sanitiseProductInput = (input: ProductMutationInput) => {
     available: Boolean(input.available),
     priority: normalisePriority(input.priority),
     type: typeValue,
-    metadata: metadataValue
+    metadata: metadataValue,
+    categoryId: categoryIdValue
   }
 }
 
@@ -70,7 +75,7 @@ export const supabasePayloadFromInput = (input: ProductMutationInput, withTimest
     name: input.name,
     description: input.description,
     price: input.price ?? 0,
-    category: input.category ?? '',
+    category_id: input.categoryId ?? null,
     color: input.color ?? '',
     tags: input.tags ?? [],
     sizes: input.sizes ?? [],
@@ -142,6 +147,7 @@ export const buildProductFromMarkdown = (id: string, fileContents: string) => {
     product.price = priceFromTable
   }
 
+  product.categoryId = typeof rawData.category === 'string' ? rawData.category : undefined
   return product
 }
 
@@ -157,7 +163,7 @@ export const buildProductFromSupabase = (record: Record<string, any>): Product =
   const baseType =
     typeof record.type === 'string' && record.type.trim().length > 0
       ? record.type.trim()
-      : inferProductTypeFromCategory(record.category)
+      : inferProductTypeFromCategory(record.categories?.name || record.category)
 
   const metadata =
     record.metadata && typeof record.metadata === 'object'
@@ -177,7 +183,8 @@ export const buildProductFromSupabase = (record: Record<string, any>): Product =
     care: record.care || '',
     origin: record.origin || '',
     content: record.description || '',
-    category: record.category || '',
+    categoryId: record.category_id || null,
+    category: record.categories?.name || record.category || '',
     photos: record.photos || gallery.length,
     gallery,
     sizes: Array.isArray(record.sizes) ? record.sizes : undefined,

@@ -9,6 +9,7 @@ import type {
   SizeSummary,
   FilterState,
   SortKey,
+  SortDirection,
   PriceStats
 } from './catalogFiltering'
 
@@ -20,6 +21,7 @@ interface FilterSidebarProps {
   sizeSummaries: SizeSummary[]
   filterState: FilterState
   sortKey: SortKey
+  sortDirection: SortDirection
   priceStats: PriceStats
   filtersAreActive: boolean
   onToggleTag: (tag: string) => void
@@ -31,6 +33,7 @@ interface FilterSidebarProps {
   onPriceChange: (index: 0 | 1, value: number) => void
   onSearchChange: (value: string) => void
   onSortChange: (value: SortKey) => void
+  onSortDirectionChange: (value: SortDirection) => void
   onClearFilters: () => void
   onShareFilters?: () => void
   shareStatus?: 'idle' | 'copied' | 'error'
@@ -92,6 +95,7 @@ export const FilterSidebar = ({
   sizeSummaries,
   filterState,
   sortKey,
+  sortDirection,
   priceStats,
   filtersAreActive,
   onToggleTag,
@@ -103,6 +107,7 @@ export const FilterSidebar = ({
   onPriceChange,
   onSearchChange,
   onSortChange,
+  onSortDirectionChange,
   onClearFilters,
   onShareFilters,
   shareStatus = 'idle',
@@ -383,16 +388,26 @@ export const FilterSidebar = ({
 
       <div className="flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-neutral-500">
         Ordenar
-        <select
-          value={sortKey}
-          onChange={event => onSortChange(event.target.value as SortKey)}
-          className="rounded-lg border border-neutral-200/80 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-neutral-600 focus:border-neutral-900 focus:outline-none focus:ring-0"
-        >
-          <option value="priority">Orden manual</option>
-          <option value="name">Nombre</option>
-          <option value="price">Precio</option>
-          <option value="views">Popularidad</option>
-        </select>
+        <div className="flex items-center gap-2">
+          <select
+            value={sortKey}
+            onChange={event => onSortChange(event.target.value as SortKey)}
+            className="rounded-lg border border-neutral-200/80 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-neutral-600 focus:border-neutral-900 focus:outline-none focus:ring-0"
+          >
+            <option value="priority">Orden manual</option>
+            <option value="name">Nombre</option>
+            <option value="price">Precio</option>
+            <option value="views">Popularidad</option>
+          </select>
+          <button
+            type="button"
+            onClick={() => onSortDirectionChange(sortDirection === 'asc' ? 'desc' : 'asc')}
+            className="rounded-lg border border-neutral-200/80 px-2.5 py-2 text-[12px] text-neutral-600 transition hover:border-neutral-900 hover:text-neutral-900"
+            aria-label={sortDirection === 'asc' ? 'Orden ascendente' : 'Orden descendente'}
+          >
+            {sortDirection === 'asc' ? '↑' : '↓'}
+          </button>
+        </div>
       </div>
     </div>
   )

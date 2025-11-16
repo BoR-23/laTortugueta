@@ -23,6 +23,7 @@ export interface Product {
   care: string
   origin: string
   content: string
+  categoryId?: string
   category?: string
   photos: number
   gallery: string[]
@@ -41,6 +42,7 @@ export type ProductMutationInput = {
   id: string
   name: string
   description: string
+  categoryId?: string
   category?: string
   priority?: number
   color?: string

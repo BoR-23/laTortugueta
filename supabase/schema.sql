@@ -1,5 +1,16 @@
 create extension if not exists "pgcrypto" with schema public;
 
+create table if not exists public.categories (
+  id text primary key,
+  scope text not null check (scope in ('header', 'filter')),
+  name text not null,
+  tag_key text,
+  parent_id text references public.categories(id) on delete cascade,
+  sort_order integer default 0,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
 create table if not exists public.products (
   id text primary key,
   name text not null,
@@ -10,7 +21,7 @@ create table if not exists public.products (
   material text,
   care text,
   origin text,
-  category text,
+  category_id text,
   tags jsonb default '[]'::jsonb,
   sizes jsonb default '[]'::jsonb,
   photos integer default 0,
@@ -26,17 +37,6 @@ create table if not exists public.media_assets (
   url text not null,
   position integer default 0,
   created_at timestamptz default now()
-);
-
-create table if not exists public.categories (
-  id text primary key,
-  scope text not null check (scope in ('header', 'filter')),
-  name text not null,
-  tag_key text,
-  parent_id text references public.categories(id) on delete cascade,
-  sort_order integer default 0,
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
 );
 
 create table if not exists public.users_admin (
@@ -64,6 +64,14 @@ alter table public.products
   add column if not exists view_count integer default 0;
 alter table public.products
   add column if not exists last_viewed_at timestamptz;
+alter table public.products
+  drop column if exists category;
+alter table public.products
+  add column if not exists category_id text;
+alter table public.products
+  add constraint if not exists fk_products_category
+  foreign key (category_id) references public.categories(id)
+  on delete restrict;
 
 create or replace function public.increment_product_view(p_product_id text)
 returns void
@@ -74,5 +82,27 @@ begin
   set view_count = coalesce(view_count, 0) + 1,
       last_viewed_at = now()
   where id = p_product_id;
+end;
+$$;
+
+create or replace function public.merge_categories(
+  target_category_id text,
+  source_category_ids text[]
+)
+returns void
+language plpgsql
+security definer
+as $$
+begin
+  update public.products
+  set category_id = target_category_id
+  where category_id = any(source_category_ids);
+
+  update public.categories
+  set parent_id = target_category_id
+  where parent_id = any(source_category_ids);
+
+  delete from public.categories
+  where id = any(source_category_ids);
 end;
 $$;

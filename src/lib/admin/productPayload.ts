@@ -21,6 +21,7 @@ export const parseProductPayload = (
   id: String(payload.id ?? '').trim(),
   name: String(payload.name ?? '').trim(),
   description: String(payload.description ?? ''),
+  categoryId: typeof payload.categoryId === 'string' ? payload.categoryId : '',
   category: typeof payload.category === 'string' ? payload.category : '',
   priority: toPriorityValue(payload.priority),
   color: typeof payload.color === 'string' ? payload.color : '',
