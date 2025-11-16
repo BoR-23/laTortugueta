@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Script from 'next/script'
 import { usePathname, useSearchParams } from 'next/navigation'
 
@@ -13,6 +13,18 @@ declare global {
 export default function GoogleAnalytics({ GA_MEASUREMENT_ID }: { GA_MEASUREMENT_ID: string }) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const [shouldLoad, setShouldLoad] = useState(false)
+
+  useEffect(() => {
+    const enable = () => setShouldLoad(true)
+    if (typeof window === 'undefined') return
+    if ('requestIdleCallback' in window) {
+      ;(window as Window & { requestIdleCallback: (cb: () => void) => number }).requestIdleCallback(enable)
+    } else {
+      const timer = window.setTimeout(enable, 2000)
+      return () => window.clearTimeout(timer)
+    }
+  }, [])
 
   useEffect(() => {
     if (!pathname || typeof window === 'undefined' || !window.gtag) return
@@ -21,13 +33,17 @@ export default function GoogleAnalytics({ GA_MEASUREMENT_ID }: { GA_MEASUREMENT_
     })
   }, [pathname, searchParams, GA_MEASUREMENT_ID])
 
+  if (!shouldLoad) {
+    return null
+  }
+
   return (
     <>
       <Script
         src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
-        strategy="afterInteractive"
+        strategy="lazyOnload"
       />
-      <Script id="ga-init" strategy="afterInteractive">
+      <Script id="ga-init" strategy="lazyOnload">
         {`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}

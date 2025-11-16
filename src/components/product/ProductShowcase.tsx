@@ -364,33 +364,6 @@ export function ProductShowcase({
     heroSwipeStateRef.current.active = false
   }
 
-  const handlePriceSave = async () => {
-    const parsed = Number(priceInput)
-    if (!Number.isFinite(parsed) || parsed < 0) {
-      setPriceStatus('error')
-      return
-    }
-    setPriceStatus('saving')
-    try {
-      const response = await fetch('/api/pricing', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: product.id, price: parsed })
-      })
-      if (!response.ok) {
-        const payload = await response.json().catch(() => null)
-        throw new Error(payload?.error ?? 'No se pudo actualizar el precio.')
-      }
-      setPriceInput(parsed.toFixed(2))
-      setPriceStatus('success')
-    } catch (error) {
-      console.error(error)
-      setPriceStatus('error')
-    } finally {
-      setTimeout(() => setPriceStatus('idle'), 2000)
-    }
-  }
-
   return (
     <div className="bg-white text-neutral-900">
       <section className="border-b border-neutral-200 bg-white">

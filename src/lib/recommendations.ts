@@ -1,3 +1,5 @@
+import { cache } from 'react'
+
 import type { Product } from './products'
 import { getAllProducts } from './products'
 import { extractProductPlaceholderMap } from './images'
@@ -63,7 +65,7 @@ const scoreProduct = (base: Product, candidate: Product) => {
   return score
 }
 
-export const getRecommendationsForProduct = async (
+const buildRecommendations = async (
   productId: string,
   limit = 4
 ): Promise<Recommendation[]> => {
@@ -113,6 +115,7 @@ export const getRecommendationsForProduct = async (
     if (combined.length >= limit) break
     pushProduct(entry.product)
   }
-
   return combined.slice(0, limit)
 }
+
+export const getRecommendationsForProduct = cache(buildRecommendations)
