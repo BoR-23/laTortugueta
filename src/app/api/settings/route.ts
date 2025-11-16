@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { revalidatePath } from 'next/cache'
-
 import { authOptions } from '@/lib/auth'
 import { getSiteSettings, updateSiteSettings, type SiteSettings } from '@/lib/settings'
+import { revalidateCatalog } from '@/lib/revalidation'
 
 const requireAdmin = async () => {
   const session = await getServerSession(authOptions)
@@ -27,8 +26,7 @@ export async function PUT(request: Request) {
   try {
     const payload = (await request.json()) as Partial<SiteSettings>
     const settings = await updateSiteSettings(payload)
-    revalidatePath('/')
-    revalidatePath('/admin')
+    revalidateCatalog()
     return NextResponse.json(settings)
   } catch (error) {
     console.error('[settings] update error', error)

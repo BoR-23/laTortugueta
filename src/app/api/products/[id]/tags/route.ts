@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { revalidatePath } from 'next/cache'
-
 import { authOptions } from '@/lib/auth'
 import { updateProductTags } from '@/lib/products'
+import { revalidateProduct } from '@/lib/revalidation'
 
 const requireAdminSession = async () => {
   const session = await getServerSession(authOptions)
@@ -31,9 +30,7 @@ export async function PUT(
       tags.map((tag: unknown) => (typeof tag === 'string' ? tag : String(tag ?? '')))
     )
 
-    revalidatePath('/')
-    revalidatePath(`/${id}`)
-    revalidatePath('/admin')
+    revalidateProduct(id)
 
     return NextResponse.json({ ok: true, tags: updated })
   } catch (error) {

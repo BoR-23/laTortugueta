@@ -7,8 +7,8 @@ import {
   updateProductRecord
 } from '@/lib/products'
 import { parseProductPayload } from '@/lib/admin/productPayload'
-import { revalidatePath } from 'next/cache'
 import { recordAdminActivity } from '@/lib/admin/activityLog'
+import { revalidateProduct } from '@/lib/revalidation'
 
 const requireAdminSession = async () => {
   const session = await getServerSession(authOptions)
@@ -45,9 +45,7 @@ export async function PUT(
     const { id } = await params
     const payload = parseProductPayload(await request.json())
     const product = await updateProductRecord(id, payload)
-    revalidatePath('/')
-    revalidatePath(`/${id}`)
-    revalidatePath('/admin')
+    revalidateProduct(id)
     await recordAdminActivity({
       action: 'product.update',
       entity: 'product',
@@ -80,9 +78,7 @@ export async function DELETE(
   try {
     const { id } = await params
     await deleteProductRecord(id)
-    revalidatePath('/')
-    revalidatePath(`/${id}`)
-    revalidatePath('/admin')
+    revalidateProduct(id)
     await recordAdminActivity({
       action: 'product.delete',
       entity: 'product',

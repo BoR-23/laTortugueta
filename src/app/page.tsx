@@ -71,7 +71,9 @@ export default async function Home() {
     }
   })
 
-  const catalogJsonLd = buildCatalogJsonLd(enrichedProducts.length)
+  const visibleProducts = enrichedProducts.filter(product => product.price > 0)
+
+  const catalogJsonLd = buildCatalogJsonLd(visibleProducts.length)
   const enableTestimonials =
     process.env.NEXT_PUBLIC_ENABLE_TESTIMONIALS !== 'false' && siteSettings.enableTestimonials
 
@@ -83,12 +85,12 @@ export default async function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(catalogJsonLd) }}
       />
       <TagFilterPanelClient
-        products={enrichedProducts}
+        products={visibleProducts}
         headerCategories={mapCategoriesToDTO(headerCategories)}
         filterCategories={mapCategoriesToDTO(filterCategories)}
         settings={siteSettings}
       />
-      {siteSettings.enableTopVisited ? <TopVisitedSection products={enrichedProducts} /> : null}
+      {siteSettings.enableTopVisited ? <TopVisitedSection products={visibleProducts} /> : null}
       <TestimonialsSection show={enableTestimonials} />
       {siteSettings.enableStoryHighlights ? <StoryHighlightsSection /> : null}
       <HowToOrderSection />

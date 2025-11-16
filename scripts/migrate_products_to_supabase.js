@@ -13,6 +13,14 @@ require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.local') })
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
+if (!process.env.ALLOW_SUPABASE_MIGRATION) {
+  console.error(
+    'Este script solo puede ejecutarse cuando necesitas rehacer la base de datos. ' +
+      'Define ALLOW_SUPABASE_MIGRATION=1 si realmente quieres sobrescribir los datos desde los markdown.'
+  )
+  process.exit(1)
+}
+
 if (!supabaseUrl || !serviceKey) {
   console.error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY.')
   process.exit(1)

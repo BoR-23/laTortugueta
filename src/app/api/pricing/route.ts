@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getPricingTable, updateProductPrice } from '@/lib/pricing'
+import { revalidateProduct } from '@/lib/revalidation'
 
 export async function GET() {
   const pricing = await getPricingTable()
@@ -21,6 +22,7 @@ export async function POST(request: Request) {
     }
 
     const pricing = await updateProductPrice(productId, Number(priceValue.toFixed(2)))
+    revalidateProduct(productId)
     return NextResponse.json({ success: true, pricing })
   } catch (error) {
     console.error(error)

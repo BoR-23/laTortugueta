@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { replaceProductMediaAssets, MediaAssetInput } from '@/lib/products'
-import { revalidatePath } from 'next/cache'
+import { revalidateProduct } from '@/lib/revalidation'
 
 const requireAdminSession = async () => {
   const session = await getServerSession(authOptions)
@@ -34,9 +34,7 @@ export async function PUT(
 
     await replaceProductMediaAssets(id, assets, placeholders)
 
-    revalidatePath('/')
-    revalidatePath(`/${id}`)
-    revalidatePath('/admin')
+    revalidateProduct(id)
 
     return NextResponse.json({ ok: true })
   } catch (error) {
