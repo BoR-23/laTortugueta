@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import { cache } from 'react'
 
 import { createSupabaseServerClient } from '../supabaseClient'
 
@@ -52,7 +53,7 @@ export async function getAllProductIds() {
   }))
 }
 
-export async function getProductData(id: string): Promise<Product> {
+const fetchProductFromSource = async (id: string): Promise<Product> => {
   if (canUseSupabase) {
     return await getSupabaseProductById(id)
   }
@@ -63,7 +64,7 @@ export async function getProductData(id: string): Promise<Product> {
   return buildProductFromMarkdown(id, fileContents)
 }
 
-export async function getAllProducts(): Promise<Product[]> {
+const fetchAllProductsFromSource = async (): Promise<Product[]> => {
   if (canUseSupabase) {
     return await getSupabaseProducts()
   }
@@ -77,6 +78,22 @@ export async function getAllProducts(): Promise<Product[]> {
   })
 
   return products.sort(compareByPriority)
+}
+
+let memoizedGetProduct = cache(fetchProductFromSource)
+let memoizedGetAllProducts = cache(fetchAllProductsFromSource)
+
+export const invalidateProductDataCache = () => {
+  memoizedGetProduct = cache(fetchProductFromSource)
+  memoizedGetAllProducts = cache(fetchAllProductsFromSource)
+}
+
+export async function getProductData(id: string): Promise<Product> {
+  return memoizedGetProduct(id)
+}
+
+export async function getAllProducts(): Promise<Product[]> {
+  return memoizedGetAllProducts()
 }
 
 export async function getProductsByTag(tag: string): Promise<Product[]> {

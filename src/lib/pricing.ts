@@ -1,6 +1,6 @@
 import fs from 'fs/promises'
 import path from 'path'
-import { canUseSupabase, clearProductCaches } from './products'
+import { canUseSupabase, clearProductCaches, invalidateProductDataCache } from './products'
 import { createSupabaseServerClient } from './supabaseClient'
 import { revalidatePath } from 'next/cache'
 
@@ -53,6 +53,7 @@ export const updateProductPrice = async (productId: string, price: number) => {
     }
 
     clearProductCaches()
+    invalidateProductDataCache()
     revalidatePath('/')
     revalidatePath(`/${productId}`)
     revalidatePath('/admin')
@@ -65,6 +66,7 @@ export const updateProductPrice = async (productId: string, price: number) => {
   await persistPricingFile(pricing)
 
   clearProductCaches()
+  invalidateProductDataCache()
   revalidatePath('/')
   revalidatePath(`/${productId}`)
   revalidatePath('/admin')

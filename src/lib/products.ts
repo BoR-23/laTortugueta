@@ -17,7 +17,8 @@ export {
   getProductData,
   getAllProducts,
   getProductsByTag,
-  getProductsByType
+  getProductsByType,
+  invalidateProductDataCache
 } from './products/repository'
 
 export {

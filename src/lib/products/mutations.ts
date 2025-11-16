@@ -7,6 +7,7 @@ import {
   normalisePriority,
   buildProductFromSupabase
 } from './builders'
+import { invalidateProductDataCache } from './repository'
 import type { MediaAssetInput, ProductMutationInput, ProductPriorityUpdate } from './types'
 
 const ensureSupabaseAvailable = () => {
@@ -47,6 +48,7 @@ export const updateProductPriorities = async (updates: ProductPriorityUpdate[]) 
   }
 
   clearProductCaches()
+  invalidateProductDataCache()
 }
 
 export const createProductRecord = async (input: ProductMutationInput) => {
@@ -75,6 +77,7 @@ export const createProductRecord = async (input: ProductMutationInput) => {
   }
 
   clearProductCaches()
+  invalidateProductDataCache()
   return buildProductFromSupabase(data)
 }
 
@@ -96,6 +99,7 @@ export const updateProductRecord = async (id: string, input: ProductMutationInpu
   }
 
   clearProductCaches()
+  invalidateProductDataCache()
   return buildProductFromSupabase(data)
 }
 
@@ -107,6 +111,7 @@ export const deleteProductRecord = async (id: string) => {
     throw new Error(error.message)
   }
   clearProductCaches()
+  invalidateProductDataCache()
 }
 
 export const replaceProductMediaAssets = async (
@@ -174,6 +179,7 @@ export const replaceProductMediaAssets = async (
     .eq('id', productId)
 
   clearProductCaches()
+  invalidateProductDataCache()
 }
 
 export const updateProductTags = async (productId: string, tags: string[]) => {
@@ -198,5 +204,6 @@ export const updateProductTags = async (productId: string, tags: string[]) => {
   }
 
   clearProductCaches()
+  invalidateProductDataCache()
   return cleaned
 }
