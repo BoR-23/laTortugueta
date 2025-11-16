@@ -290,7 +290,8 @@ export function CategoryManager({ initialCategories }: Props) {
         method: "DELETE"
       })
       if (!response.ok) {
-        throw new Error("No se pudo eliminar la categoría")
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.error ?? "No se pudo eliminar la categoría")
       }
       await refreshCategories()
     } catch (err) {

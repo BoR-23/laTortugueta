@@ -201,6 +201,11 @@ export const deleteCategoryRecord = async (id: string) => {
   const client = createSupabaseServerClient()
   const { error } = await client.from('categories').delete().in('id', Array.from(idsToDelete))
   if (error) {
+    if (error.code === '23503') {
+      const err = new Error('CATEGORY_IN_USE')
+      ;(err as Error & { code?: string }).code = 'CATEGORY_IN_USE'
+      throw err
+    }
     throw new Error(error.message)
   }
   return { deleted: idsToDelete.size }

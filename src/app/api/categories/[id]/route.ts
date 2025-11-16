@@ -81,6 +81,16 @@ export async function DELETE(
     return NextResponse.json(result)
   } catch (error) {
     console.error(error)
+    const code = (error as Error & { code?: string }).code
+    if (code === 'CATEGORY_IN_USE') {
+      return NextResponse.json(
+        {
+          error:
+            'No puedes eliminar esta categoría porque todavía hay productos usándola. Mueve esos productos a otra categoría o fusiónala antes de eliminarla.'
+        },
+        { status: 409 }
+      )
+    }
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })
   }
 }
