@@ -31,7 +31,7 @@ interface ProductShowcaseProps {
   showLocalSuggestions?: boolean
 }
 
-const DEFAULT_SIZES = ['35-36', '37-38', '39-40', '41-42']
+const DEFAULT_SIZES = [...Array.from({ length: 49 }, (_, index) => index.toString().padStart(2, '0')), 'A medida']
 
 type ProductStory = {
   title: string
@@ -104,9 +104,15 @@ export function ProductShowcase({
   const [priceStatus, setPriceStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle')
   const [galleryError, setGalleryError] = useState<string | null>(null)
   const [gallerySaving, setGallerySaving] = useState(false)
+  const [adminPreviewMode, setAdminPreviewMode] = useState(false)
   const replaceInputRef = useRef<HTMLInputElement | null>(null)
   const addInputRef = useRef<HTMLInputElement | null>(null)
   const pendingReplaceIndex = useRef<number | null>(null)
+  const heroSwipeStateRef = useRef<{ startX: number; startY: number; active: boolean }>({
+    startX: 0,
+    startY: 0,
+    active: false
+  })
 
   useEffect(() => {
     setGallery(initialGallery)
@@ -147,6 +153,8 @@ export function ProductShowcase({
       cancelled = true
     }
   }, [isAdmin])
+
+  const adminModeEnabled = isAdmin && !adminPreviewMode
 
   const whatsappHref = useMemo(() => {
     const details = [
@@ -340,6 +348,21 @@ export function ProductShowcase({
     await syncGallery(nextGallery)
   }
 
+  const handleFeatureImage = async (index: number) => {
+    if (index === 0 || index >= gallery.length) {
+      return
+    }
+    const nextGallery = [...gallery]
+    const [entry] = nextGallery.splice(index, 1)
+    nextGallery.unshift(entry)
+    try {
+      await syncGallery(nextGallery)
+      setActiveIndex(0)
+    } catch (error) {
+      setGalleryError(error instanceof Error ? error.message : 'No se pudo destacar la imagen.')
+    }
+  }
+
   const handleReplaceFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     event.target.value = ''
@@ -371,6 +394,47 @@ export function ProductShowcase({
   const openReplacePicker = (index: number) => {
     pendingReplaceIndex.current = index
     replaceInputRef.current?.click()
+  }
+
+  const handleGoToPrev = () => {
+    if (gallery.length === 0) return
+    setActiveIndex(index => (index - 1 + gallery.length) % gallery.length)
+  }
+
+  const handleGoToNext = () => {
+    if (gallery.length === 0) return
+    setActiveIndex(index => (index + 1) % gallery.length)
+  }
+
+  const handleHeroTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    const touch = event.touches[0]
+    heroSwipeStateRef.current = {
+      startX: touch.clientX,
+      startY: touch.clientY,
+      active: true
+    }
+  }
+
+  const handleHeroTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (!heroSwipeStateRef.current.active) return
+    const touch = event.touches[0]
+    const deltaX = touch.clientX - heroSwipeStateRef.current.startX
+    const deltaY = Math.abs(touch.clientY - heroSwipeStateRef.current.startY)
+    if (deltaY > 70) {
+      heroSwipeStateRef.current.active = false
+      return
+    }
+    if (deltaX > 80) {
+      heroSwipeStateRef.current.active = false
+      handleGoToPrev()
+    } else if (deltaX < -80) {
+      heroSwipeStateRef.current.active = false
+      handleGoToNext()
+    }
+  }
+
+  const handleHeroTouchEnd = () => {
+    heroSwipeStateRef.current.active = false
   }
 
   const handlePriceSave = async () => {
@@ -406,8 +470,13 @@ export function ProductShowcase({
         <div className="mx-auto max-w-6xl 3xl:max-w-8xl px-4 py-16 sm:px-6 lg:px-8">
           <div className="grid gap-12 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
             <div className="space-y-6">
-              <div className="relative aspect-[3/4] overflow-hidden bg-white">
-                {isAdmin && (
+              <div
+                className="relative aspect-[3/4] overflow-hidden bg-white"
+                onTouchStart={handleHeroTouchStart}
+                onTouchMove={handleHeroTouchMove}
+                onTouchEnd={handleHeroTouchEnd}
+              >
+                {adminModeEnabled && (
                   <>
                     <input
                       ref={replaceInputRef}
@@ -438,7 +507,27 @@ export function ProductShowcase({
                     blurDataURL={heroPlaceholder}
                   />
                 )}
-                {isAdmin && (
+                {gallery.length > 1 && (
+                  <div className="pointer-events-none absolute inset-y-0 left-0 right-0 flex items-center justify-between px-2">
+                    <button
+                      type="button"
+                      className="pointer-events-auto rounded-full bg-white/80 px-2 py-1 text-xs uppercase tracking-[0.2em] text-neutral-600 shadow hover:bg-white"
+                      onClick={handleGoToPrev}
+                      aria-label="Ver imagen anterior"
+                    >
+                      ←
+                    </button>
+                    <button
+                      type="button"
+                      className="pointer-events-auto rounded-full bg-white/80 px-2 py-1 text-xs uppercase tracking-[0.2em] text-neutral-600 shadow hover:bg-white"
+                      onClick={handleGoToNext}
+                      aria-label="Ver imagen siguiente"
+                    >
+                      →
+                    </button>
+                  </div>
+                )}
+                {adminModeEnabled && (
                   <div className="pointer-events-none absolute inset-0 flex items-start justify-end gap-2 p-3">
                     <div className="pointer-events-auto flex flex-col gap-2">
                       <button
@@ -456,6 +545,14 @@ export function ProductShowcase({
                         disabled={gallerySaving}
                       >
                         Eliminar
+                      </button>
+                      <button
+                        type="button"
+                        className="rounded-full border border-white/60 bg-black/60 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-white"
+                        onClick={() => handleFeatureImage(activeIndex)}
+                        disabled={gallerySaving || activeIndex === 0}
+                      >
+                        Destacar
                       </button>
                       <button
                         type="button"
@@ -491,7 +588,7 @@ export function ProductShowcase({
                           placeholder={thumbPlaceholder ? 'blur' : 'empty'}
                           blurDataURL={thumbPlaceholder}
                         />
-                        {isAdmin && (
+                        {adminModeEnabled && (
                           <div className="pointer-events-none absolute inset-0 flex items-start justify-end p-1">
                             <button
                               type="button"
@@ -512,7 +609,12 @@ export function ProductShowcase({
                   })}
                 </div>
               )}
-              {isAdmin && !uploadsEnabled && (
+              {gallery.length > 1 && (
+                <p className="text-xs text-neutral-500">
+                  Consejo: puedes usar las flechas ← → para cambiar de foto sin abrir el modo ampliado.
+                </p>
+              )}
+              {adminModeEnabled && !uploadsEnabled && (
                 <p className="text-xs text-red-500">
                   Configura las credenciales privadas de R2 (R2_ACCESS_KEY_ID/SECRET, R2_ENDPOINT, R2_BUCKET_NAME)
                   y NEXT_PUBLIC_R2_PUBLIC_URL para habilitar la edición directa de la galería.
@@ -538,20 +640,32 @@ export function ProductShowcase({
                 <p className="text-sm leading-relaxed text-neutral-600">{product.description}</p>
               </div>
 
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
+            <div className="space-y-4">
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => setAdminPreviewMode(mode => !mode)}
+                  className="w-full rounded-full border border-neutral-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-neutral-600 transition hover:border-neutral-900 hover:text-neutral-900"
+                >
+                  {adminPreviewMode ? 'Volver a modo gestión' : 'Ver como visitante'}
+                </button>
+              )}
+              <div className="flex items-start gap-3">
+                <div className="flex flex-wrap items-baseline gap-2">
                   <p className="text-3xl font-semibold text-neutral-900">{Number(priceInput).toFixed(2)} €</p>
-                  {isAdmin && (
-                    <button
-                      type="button"
-                      className="text-xs uppercase tracking-[0.3em] text-neutral-500 underline"
-                      onClick={() => setPriceInput(product.price.toFixed(2))}
-                    >
-                      Reset
-                    </button>
-                  )}
+                  <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">+ gastos de envío</p>
                 </div>
-                {isAdmin && (
+                {adminModeEnabled && (
+                  <button
+                    type="button"
+                    className="text-xs uppercase tracking-[0.3em] text-neutral-500 underline"
+                    onClick={() => setPriceInput(product.price.toFixed(2))}
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
+                {adminModeEnabled && (
                   <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-700">
                     <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">Actualizar precio</p>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -579,7 +693,7 @@ export function ProductShowcase({
                     )}
                   </div>
                 )}
-                {isAdmin && (
+                {adminModeEnabled && (
                   <div className="space-y-3 rounded-2xl border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-700">
                     <div>
                       <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">Etiquetas del calcetín</p>
@@ -594,7 +708,7 @@ export function ProductShowcase({
                             key={tag}
                             type="button"
                             onClick={() => handleRemoveTag(tag)}
-                            className="rounded-full border border-neutral-400 px-3 py-1 text-xs uppercase tracking-[0.2em] text-neutral-600 hover:border-neutral-900 hover:text-neutral-900"
+                            className="rounded-full border border-neutral-400 bg-neutral-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-neutral-800 hover:border-neutral-900 hover:bg-white"
                             disabled={tagSaving}
                           >
                             {tag} ×
@@ -792,29 +906,23 @@ export function ProductShowcase({
       )}
 
       {lightboxOpen && gallery.length > 0 && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/95 px-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 px-4">
           <button
             type="button"
             onClick={() => setLightboxOpen(false)}
-            className="absolute right-6 top-6 text-xs uppercase tracking-[0.3em] text-neutral-500 hover:text-neutral-900"
+            className="absolute right-6 top-6 text-xs uppercase tracking-[0.3em] text-white/70 transition hover:text-white"
           >
             Cerrar
           </button>
-          <button
-            type="button"
-            onClick={() => setActiveIndex(index => (index - 1 + gallery.length) % gallery.length)}
-            className="absolute left-6 top-1/2 -translate-y-1/2 text-xs uppercase tracking-[0.3em] text-neutral-500 hover:text-neutral-900"
-          >
-            Anterior
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveIndex(index => (index + 1) % gallery.length)}
-            className="absolute right-6 top-1/2 -translate-y-1/2 text-xs uppercase tracking-[0.3em] text-neutral-500 hover:text-neutral-900"
-          >
-            Siguiente
-          </button>
-          <div className="relative aspect-[3/4] w-full max-w-3xl bg-white">
+          <div className="relative aspect-[3/4] w-full max-w-3xl bg-black">
+            <button
+              type="button"
+              onClick={() => setActiveIndex(index => (index - 1 + gallery.length) % gallery.length)}
+              className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/70 px-3 py-2 text-2xl text-white transition hover:bg-black/90"
+              aria-label="Ver imagen anterior"
+            >
+              ←
+            </button>
             <Image
               src={getProductImageVariant(activeImage, 'full')}
               alt={`${product.name} ampliada ${activeIndex + 1}`}
@@ -824,6 +932,14 @@ export function ProductShowcase({
               placeholder={heroPlaceholder ? 'blur' : 'empty'}
               blurDataURL={heroPlaceholder}
             />
+            <button
+              type="button"
+              onClick={() => setActiveIndex(index => (index + 1) % gallery.length)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/70 px-3 py-2 text-2xl text-white transition hover:bg-black/90"
+              aria-label="Ver imagen siguiente"
+            >
+              →
+            </button>
           </div>
         </div>
       )}
@@ -880,7 +996,10 @@ export function ProductShowcase({
                         {item.category ?? 'Archivo'}
                       </p>
                       <h3 className="text-base font-medium text-neutral-900">{item.name}</h3>
-                      <p className="text-sm text-neutral-600">{item.price.toFixed(2)} €</p>
+                      <p className="text-sm text-neutral-600">
+                        {item.price.toFixed(2)} €
+                        <span className="ml-1 text-xs uppercase tracking-[0.2em] text-neutral-500">+ gastos de envío</span>
+                      </p>
                       {typeof item.viewCount === 'number' && item.viewCount > 0 ? (
                         <p className="text-xs text-neutral-400">{item.viewCount} visitas</p>
                       ) : null}
@@ -934,7 +1053,10 @@ export function ProductShowcase({
                         {item.category ?? 'Archivo'}
                       </p>
                       <h3 className="text-base font-medium text-neutral-900">{item.name}</h3>
-                      <p className="text-sm text-neutral-600">{item.price.toFixed(2)} €</p>
+                      <p className="text-sm text-neutral-600">
+                        {item.price.toFixed(2)} €
+                        <span className="ml-1 text-xs uppercase tracking-[0.2em] text-neutral-500">+ gastos de envío</span>
+                      </p>
                     </div>
                   </Link>
                 )
@@ -946,3 +1068,10 @@ export function ProductShowcase({
     </div>
   )
 }
+  const handleGoToPrev = () => {
+    setActiveIndex(index => (index - 1 + gallery.length) % gallery.length)
+  }
+
+  const handleGoToNext = () => {
+    setActiveIndex(index => (index + 1) % gallery.length)
+  }

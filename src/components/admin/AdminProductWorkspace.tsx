@@ -540,8 +540,8 @@ const handlePlaceholderChange = (productId: string, placeholders: Record<string,
         </div>
       )}
 
-      <div className="mt-10 grid gap-10 lg:grid-cols-[2fr_1fr]">
-        <div className="space-y-10">
+      <div className="mt-10 grid gap-10 xl:grid-cols-[minmax(0,2.2fr)_minmax(320px,1fr)]">
+        <div className="space-y-10 order-2 xl:order-1">
           <section className="rounded-3xl border border-neutral-200 bg-white p-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -584,7 +584,7 @@ const handlePlaceholderChange = (productId: string, placeholders: Record<string,
             </div>
           </section>
         </div>
-        <div className="space-y-10">
+        <div className="space-y-10 order-1 xl:order-2 xl:sticky xl:top-6">
           <SiteSettingsPanel initialSettings={siteSettings} onChange={setSiteSettings} />
           <ProductPerformancePanel
             products={products}

@@ -67,7 +67,10 @@ export function TopVisitedSection({ products }: TopVisitedSectionProps) {
               <div className="space-y-1">
                 <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">{product.category ?? 'Archivo'}</p>
                 <h3 className="text-lg font-semibold text-neutral-900">{product.name}</h3>
-                <p className="text-sm text-neutral-600">{product.price.toFixed(2)} €</p>
+                <p className="text-sm text-neutral-600">
+                  {product.price.toFixed(2)} €
+                  <span className="ml-1 text-xs uppercase tracking-[0.2em] text-neutral-500">+ gastos de envío</span>
+                </p>
               </div>
             </Link>
           ))}

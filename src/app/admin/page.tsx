@@ -51,7 +51,7 @@ export default async function AdminPricingPage() {
   const siteSettings = await getSiteSettings()
 
   return (
-    <div className="mx-auto max-w-6xl 3xl:max-w-8xl px-4 py-12 sm:px-6 lg:px-10">
+    <div className="mx-auto max-w-7xl 2xl:max-w-8xl px-4 py-12 sm:px-6 lg:px-10">
       <div className="rounded-3xl border border-neutral-200 bg-white px-6 py-8 lg:px-10">
         <h1 className="text-2xl font-semibold text-neutral-900">Panel de gestión</h1>
         <p className="mt-3 text-sm text-neutral-600">
