@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 
-export const revalidateProduct = (productId?: string) => {
+export const revalidateProduct = async (productId?: string) => {
   revalidatePath('/')
   if (productId) {
     revalidatePath(`/${productId}`)
@@ -10,7 +10,7 @@ export const revalidateProduct = (productId?: string) => {
   revalidatePath('/admin')
 }
 
-export const revalidateCatalog = () => {
+export const revalidateCatalog = async () => {
   revalidatePath('/')
   revalidatePath('/admin')
 }
