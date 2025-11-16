@@ -16,13 +16,31 @@ export default function GoogleAnalytics({ GA_MEASUREMENT_ID }: { GA_MEASUREMENT_
   const [shouldLoad, setShouldLoad] = useState(false)
 
   useEffect(() => {
-    const enable = () => setShouldLoad(true)
     if (typeof window === 'undefined') return
+
+    const enable = () => setShouldLoad(true)
+    let timeoutId: ReturnType<typeof setTimeout> | null = null
+    let idleId: number | null = null
+
     if ('requestIdleCallback' in window) {
-      ;(window as Window & { requestIdleCallback: (cb: () => void) => number }).requestIdleCallback(enable)
+      idleId = (window as Window & { requestIdleCallback: (cb: () => void) => number }).requestIdleCallback(() => {
+        idleId = null
+        enable()
+      })
     } else {
-      const timer = window.setTimeout(enable, 2000)
-      return () => window.clearTimeout(timer)
+      timeoutId = setTimeout(() => {
+        timeoutId = null
+        enable()
+      }, 2000)
+    }
+
+    return () => {
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId)
+      }
+      if (idleId !== null && 'cancelIdleCallback' in window) {
+        ;(window as Window & { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback?.(idleId)
+      }
     }
   }, [])
 
