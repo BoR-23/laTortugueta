@@ -1068,10 +1068,3 @@ export function ProductShowcase({
     </div>
   )
 }
-  const handleGoToPrev = () => {
-    setActiveIndex(index => (index - 1 + gallery.length) % gallery.length)
-  }
-
-  const handleGoToNext = () => {
-    setActiveIndex(index => (index + 1) % gallery.length)
-  }
