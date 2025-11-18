@@ -36,7 +36,7 @@ const DEFAULT_VIRTUALIZATION_BUFFER_ROWS = 2
 const DEFAULT_MIN_ROWS_WITHOUT_VIRTUALIZATION = 4
 const COMPACT_VIRTUALIZATION_BUFFER_ROWS = 6
 const COMPACT_MIN_ROWS_WITHOUT_VIRTUALIZATION = 8
-const COMPACT_VIEWPORT_BREAKPOINT = 768
+const COMPACT_VIEWPORT_BREAKPOINT = 1024
 
 export const ProductGrid = ({
   products,
@@ -52,6 +52,7 @@ export const ProductGrid = ({
   const [containerWidth, setContainerWidth] = useState(0)
   const [windowHeight, setWindowHeight] = useState(0)
   const [viewportWidth, setViewportWidth] = useState(0)
+  const [isTouchDevice, setIsTouchDevice] = useState(false)
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -69,6 +70,7 @@ export const ProductGrid = ({
     const updateViewportSize = () => {
       setWindowHeight(window.innerHeight || 0)
       setViewportWidth(window.innerWidth || 0)
+      setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0)
     }
     updateViewportSize()
     window.addEventListener('resize', updateViewportSize)
@@ -103,6 +105,7 @@ export const ProductGrid = ({
   const rowCount = Math.max(1, Math.ceil(products.length / columnCount))
   const virtualizationEnabled =
     !isCompactViewport &&
+    !isTouchDevice &&
     containerWidth > 0 &&
     rowMetrics.rowHeight > 0 &&
     rowCount > minRowsWithoutVirtualization
@@ -232,9 +235,9 @@ export const ProductGrid = ({
                       sizes="(min-width: 1280px) 22vw, (min-width: 1024px) 30vw, (min-width: 640px) 40vw, 90vw"
                       placeholder={product.imagePlaceholder ? 'blur' : 'empty'}
                       blurDataURL={product.imagePlaceholder}
-                      priority={isPriorityCard}
-                      loading={isPriorityCard ? 'eager' : undefined}
-                      fetchPriority={isPriorityCard ? 'high' : 'auto'}
+                      priority={false}
+                      loading="lazy"
+                      fetchPriority="auto"
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center text-xs uppercase tracking-[0.3em] text-neutral-400">

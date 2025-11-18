@@ -5,8 +5,8 @@ import { INSTAGRAM_URL } from '@/lib/contact'
 
 const SITE_NAME = 'La Tortugueta — Taller de calcetines a medida y bordados tradicionales'
 const SITE_DESCRIPTION =
-  'Taller familiar en Alcoi que borda calcetines tradicionales y encargos personalizados. Más de 300 diseños históricos, envíos a toda España.'
-const SITE_TAGLINE = 'Calcetines bordados para fiestas y encargos especiales'
+  'Taller familiar en Alcoi que reproduce calcetines tradicionales históricos y atiende encargos artesanales a medida. Más de 300 diseños documentados, envíos a toda España.'
+const SITE_TAGLINE = 'Calcetines artesanales bordados en Alcoi desde 1989.'
 const SITE_LOCALE = 'es_ES'
 const DEFAULT_SOCIAL_PROFILES = [INSTAGRAM_URL.replace(/\/$/, '')]
 
