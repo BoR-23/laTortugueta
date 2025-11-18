@@ -3,10 +3,10 @@ import type { BlogPost } from '@/lib/blog'
 import { getProductImageVariant } from '@/lib/images'
 import { INSTAGRAM_URL } from '@/lib/contact'
 
-const SITE_NAME = 'La Tortugueta'
+const SITE_NAME = 'La Tortugueta — Taller de calcetines a medida y bordados tradicionales'
 const SITE_DESCRIPTION =
-  'Archivo vivo de calcetines artesanales tradicionales tejidos en Alcoi desde 1989. Más de 300 diseños documentados y producidos bajo pedido.'
-const SITE_TAGLINE = 'Calcetines artesanales tradicionales'
+  'Taller familiar en Alcoi que borda calcetines tradicionales y encargos personalizados. Más de 300 diseños históricos, envíos a toda España.'
+const SITE_TAGLINE = 'Calcetines bordados para fiestas y encargos especiales'
 const SITE_LOCALE = 'es_ES'
 const DEFAULT_SOCIAL_PROFILES = [INSTAGRAM_URL.replace(/\/$/, '')]
 
@@ -19,10 +19,12 @@ export const siteMetadata = {
   locale: SITE_LOCALE,
   keywords: [
     'calcetines artesanales',
+    'calcetines bordados',
+    'calcetines personalizados',
     'indumentaria tradicional',
     'calcetería valenciana',
-    'medias bordadas',
-    'La Tortugueta'
+    'La Tortugueta',
+    'taller de calcetines en Alcoi'
   ]
 }
 

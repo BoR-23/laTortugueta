@@ -102,7 +102,10 @@ export const ProductGrid = ({
 
   const rowCount = Math.max(1, Math.ceil(products.length / columnCount))
   const virtualizationEnabled =
-    containerWidth > 0 && rowMetrics.rowHeight > 0 && rowCount > minRowsWithoutVirtualization
+    !isCompactViewport &&
+    containerWidth > 0 &&
+    rowMetrics.rowHeight > 0 &&
+    rowCount > minRowsWithoutVirtualization
 
   const [visibleRows, setVisibleRows] = useState<{ start: number; end: number }>({
     start: 0,
