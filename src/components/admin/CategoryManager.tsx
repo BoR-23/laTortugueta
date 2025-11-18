@@ -88,6 +88,7 @@ export function CategoryManager({ initialCategories }: Props) {
   const [isLoading, setIsLoading] = useState(false)
   const [formState, setFormState] = useState<FormMode | null>(null)
   const [formValues, setFormValues] = useState({ name: "", tagKey: "", parentId: "" })
+  const [autoTagSync, setAutoTagSync] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [openIds, setOpenIds] = useState<string[]>([])
 
@@ -156,6 +157,7 @@ export function CategoryManager({ initialCategories }: Props) {
 
   const openCreateForm = () => {
     setFormValues({ name: "", tagKey: "", parentId: "" })
+    setAutoTagSync(true)
     setFormState({ type: "create" })
   }
 
@@ -165,6 +167,7 @@ export function CategoryManager({ initialCategories }: Props) {
       tagKey: category.tagKey ?? "",
       parentId: category.parentId ?? ""
     })
+    setAutoTagSync(!category.tagKey || category.tagKey === category.name)
     setFormState({ type: "edit", category })
   }
 
@@ -394,7 +397,14 @@ export function CategoryManager({ initialCategories }: Props) {
                 <input
                   type="text"
                   value={formValues.name}
-                  onChange={event => setFormValues(values => ({ ...values, name: event.target.value }))}
+                  onChange={event => {
+                    const nextName = event.target.value
+                    setFormValues(values => ({
+                      ...values,
+                      name: nextName,
+                      tagKey: autoTagSync ? nextName : values.tagKey
+                    }))
+                  }}
                   className="mt-2 w-full rounded-2xl border border-neutral-200 px-4 py-2 text-neutral-900 focus:border-neutral-900 focus:outline-none"
                   required
                 />
@@ -404,13 +414,32 @@ export function CategoryManager({ initialCategories }: Props) {
                 <input
                   type="text"
                   value={formValues.tagKey}
-                  onChange={event => setFormValues(values => ({ ...values, tagKey: event.target.value }))}
+                  onChange={event => {
+                    setFormValues(values => ({ ...values, tagKey: event.target.value }))
+                    setAutoTagSync(false)
+                  }}
                   placeholder="Ej: Calces De Ratlles"
-                  className="mt-2 w-full rounded-2xl border border-neutral-200 px-4 py-2 text-neutral-900 focus:border-neutral-900 focus:outline-none"
+                  className="mt-2 w-full rounded-2xl border border-neutral-200 px-4 py-2 text-neutral-900 focus:border-neutral-900 focus:outline-none disabled:bg-neutral-100"
+                  disabled={autoTagSync}
                 />
-                <span className="mt-1 block text-xs text-neutral-400">
-                  Este valor se utiliza para filtrar productos. Debe coincidir con el tag real del catálogo.
-                </span>
+                <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-neutral-500">
+                  <span>
+                    Este valor se usa para filtrar productos. Si no necesitas algo distinto, se sincroniza con el
+                    nombre automáticamente.
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAutoTagSync(!autoTagSync)
+                      if (autoTagSync) {
+                        setFormValues(values => ({ ...values, tagKey: values.name }))
+                      }
+                    }}
+                    className="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-600 underline-offset-4 hover:text-neutral-900"
+                  >
+                    {autoTagSync ? 'Editar manualmente' : 'Sincronizar con el nombre'}
+                  </button>
+                </div>
               </label>
               <label className="block text-sm font-medium text-neutral-700">
                 Subcategoría de

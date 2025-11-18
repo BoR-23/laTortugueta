@@ -1,10 +1,9 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { getProductImageVariant } from '@/lib/images'
+import { ProductImage } from '@/components/common/ProductImage'
 
 import type { CatalogProduct, FilterState } from './catalogFiltering'
 
@@ -221,8 +220,9 @@ export const ProductGrid = ({
                     </div>
                   ) : null}
                   {product.image ? (
-                    <Image
-                      src={getProductImageVariant(product.image, 'thumb')}
+                    <ProductImage
+                      imagePath={product.image}
+                      variant="thumb"
                       alt={product.name}
                       fill
                       className="object-contain transition-transform duration-700 group-hover:scale-[1.03]"

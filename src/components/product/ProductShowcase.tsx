@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
+import { ProductImage } from '@/components/common/ProductImage'
 import type { Product } from '@/lib/products'
 import { getLocalCoViewGraph, registerProductView, trackEvent } from '@/lib/analytics'
 import {
@@ -395,8 +395,9 @@ export function ProductShowcase({
                   </>
                 )}
                 {gallery.length > 0 && (
-                  <Image
-                    src={getProductImageVariant(activeImage, 'full')}
+                  <ProductImage
+                    imagePath={activeImage}
+                    variant="full"
                     alt={`${product.name} · ${product.category ?? 'calcetines artesanales'} · vista ${activeIndex + 1}`}
                     fill
                     priority
@@ -480,29 +481,42 @@ export function ProductShowcase({
                           activeIndex === index ? 'border-neutral-900' : 'border-neutral-200'
                         }`}
                       >
-                        <Image
-                          src={getProductImageVariant(photo, 'thumb')}
-                          alt={`Miniatura ${index + 1} · ${product.name} · ${product.color || 'color artesanal'}`}
-                          fill
-                          className="object-contain"
-                          sizes="80px"
-                          placeholder={thumbPlaceholder ? 'blur' : 'empty'}
-                          blurDataURL={thumbPlaceholder}
-                        />
+                      <ProductImage
+                        imagePath={photo}
+                        variant="thumb"
+                        alt={`Miniatura ${index + 1} · ${product.name} · ${product.color || 'color artesanal'}`}
+                        fill
+                        className="object-contain"
+                        sizes="80px"
+                        placeholder={thumbPlaceholder ? 'blur' : 'empty'}
+                        blurDataURL={thumbPlaceholder}
+                      />
                         {adminModeEnabled && (
                           <div className="pointer-events-none absolute inset-0 flex items-start justify-end p-1">
-                            <button
-                              type="button"
-                              className="pointer-events-auto rounded-full bg-black/60 px-2 text-[11px] text-white"
+                            <span
+                              role="button"
+                              tabIndex={0}
+                              aria-label="Reemplazar imagen"
+                              className={`pointer-events-auto rounded-full bg-black/60 px-2 text-[11px] text-white ${
+                                !uploadsEnabled || gallerySaving ? 'opacity-40' : ''
+                              }`}
                               onClick={event => {
+                                if (!uploadsEnabled || gallerySaving) return
                                 event.preventDefault()
                                 event.stopPropagation()
                                 openReplacePicker(index)
                               }}
-                              disabled={!uploadsEnabled || gallerySaving}
+                              onKeyDown={event => {
+                                if (!uploadsEnabled || gallerySaving) return
+                                if (event.key === 'Enter' || event.key === ' ') {
+                                  event.preventDefault()
+                                  event.stopPropagation()
+                                  openReplacePicker(index)
+                                }
+                              }}
                             >
                               ✎
-                            </button>
+                            </span>
                           </div>
                         )}
                       </button>
@@ -666,8 +680,8 @@ export function ProductShowcase({
                       key={url}
                       className="relative h-32 overflow-hidden rounded-2xl border border-neutral-100 bg-white"
                     >
-                      <Image
-                        src={url}
+                      <ProductImage
+                        imagePath={url}
                         alt={`Historia ${product.name}`}
                         fill
                         className="object-cover"
@@ -700,8 +714,9 @@ export function ProductShowcase({
             >
               ←
             </button>
-            <Image
-              src={getProductImageVariant(activeImage, 'full')}
+            <ProductImage
+              imagePath={activeImage}
+              variant="full"
               alt={`${product.name} ampliada ${activeIndex + 1}`}
               fill
               className="object-contain"
@@ -754,8 +769,9 @@ export function ProductShowcase({
                   >
                     <div className="relative mx-auto aspect-[3/4] w-full overflow-hidden bg-white">
                       {item.image ? (
-                        <Image
-                          src={getProductImageVariant(item.image, 'thumb')}
+                        <ProductImage
+                          imagePath={item.image}
+                          variant="thumb"
                           alt={item.name}
                           fill
                           className="object-contain transition-transform duration-500 group-hover:scale-105"
@@ -811,8 +827,9 @@ export function ProductShowcase({
                   >
                     <div className="relative mx-auto aspect-[3/4] w-full overflow-hidden bg-white">
                       {item.image ? (
-                        <Image
-                          src={getProductImageVariant(item.image, 'thumb')}
+                        <ProductImage
+                          imagePath={item.image}
+                          variant="thumb"
                           alt={item.name}
                           fill
                           className="object-contain transition-transform duration-500 group-hover:scale-105"

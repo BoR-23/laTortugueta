@@ -81,3 +81,33 @@ begin
   where id = p_product_id;
 end;
 $$;
+
+create or replace function public.rename_product_tag(old_tag text, new_tag text)
+returns integer
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  affected integer := 0;
+begin
+  if old_tag is null or new_tag is null or old_tag = new_tag then
+    return 0;
+  end if;
+
+  update public.products
+  set tags = (
+    select coalesce(
+      jsonb_agg(
+        case when elem = old_tag then new_tag else elem end
+      ),
+      '[]'::jsonb
+    )
+    from jsonb_array_elements_text(tags) as t(elem)
+  )
+  where tags @> to_jsonb(array[old_tag]);
+
+  get diagnostics affected = row_count;
+  return affected;
+end;
+$$;

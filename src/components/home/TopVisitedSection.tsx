@@ -1,10 +1,9 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 
 import type { CatalogProductSummary } from '@/components/catalog/prepareCatalogProducts'
-import { getProductImageVariant } from '@/lib/images'
+import { ProductImage } from '@/components/common/ProductImage'
 
 interface TopVisitedSectionProps {
   products: CatalogProductSummary[]
@@ -45,8 +44,9 @@ export function TopVisitedSection({ products }: TopVisitedSectionProps) {
             >
               <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-white">
                 {product.image ? (
-                  <Image
-                    src={getProductImageVariant(product.image, 'thumb')}
+                  <ProductImage
+                    imagePath={product.image}
+                    variant="thumb"
                     alt={product.name}
                     fill
                     className="object-contain transition-transform duration-500 group-hover:scale-105"

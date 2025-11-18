@@ -181,7 +181,33 @@ export const updateCategoryRecord = async (
     throw new Error(error?.message ?? 'No se pudo actualizar la categoría.')
   }
 
-  return mapRowToRecord(data as CategoryRow)
+  const updatedRecord = mapRowToRecord(data as CategoryRow)
+
+  const prevTag = prev.tagKey
+  const nextTag = updatedRecord.tagKey
+  if (prevTag && nextTag && prevTag !== nextTag) {
+    const { error: renameError } = await client.rpc('rename_product_tag', {
+      old_tag: prevTag,
+      new_tag: nextTag
+    })
+    if (renameError) {
+      const rollbackPayload = {
+        name: prev.name,
+        tag_key: prev.tagKey,
+        parent_id: prev.parentId,
+        updated_at: new Date().toISOString()
+      }
+      await client
+        .from('categories')
+        .update(rollbackPayload)
+        .eq('id', id)
+      throw new Error(
+        renameError.message || 'No se pudieron actualizar las etiquetas de los productos.'
+      )
+    }
+  }
+
+  return updatedRecord
 }
 
 export const deleteCategoryRecord = async (id: string) => {
