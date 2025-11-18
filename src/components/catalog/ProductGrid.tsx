@@ -33,8 +33,11 @@ const GRID_GAP_BY_COLUMNS: Record<GridColumns, number> = {
 }
 
 const ESTIMATED_TEXT_HEIGHT = 140
-const VIRTUALIZATION_BUFFER_ROWS = 2
-const MIN_ROWS_WITHOUT_VIRTUALIZATION = 4
+const DEFAULT_VIRTUALIZATION_BUFFER_ROWS = 2
+const DEFAULT_MIN_ROWS_WITHOUT_VIRTUALIZATION = 4
+const COMPACT_VIRTUALIZATION_BUFFER_ROWS = 6
+const COMPACT_MIN_ROWS_WITHOUT_VIRTUALIZATION = 8
+const COMPACT_VIEWPORT_BREAKPOINT = 768
 
 export const ProductGrid = ({
   products,
@@ -49,6 +52,7 @@ export const ProductGrid = ({
   const containerRef = useRef<HTMLDivElement | null>(null)
   const [containerWidth, setContainerWidth] = useState(0)
   const [windowHeight, setWindowHeight] = useState(0)
+  const [viewportWidth, setViewportWidth] = useState(0)
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -63,11 +67,22 @@ export const ProductGrid = ({
   }, [])
 
   useEffect(() => {
-    const updateHeight = () => setWindowHeight(window.innerHeight || 0)
-    updateHeight()
-    window.addEventListener('resize', updateHeight)
-    return () => window.removeEventListener('resize', updateHeight)
+    const updateViewportSize = () => {
+      setWindowHeight(window.innerHeight || 0)
+      setViewportWidth(window.innerWidth || 0)
+    }
+    updateViewportSize()
+    window.addEventListener('resize', updateViewportSize)
+    return () => window.removeEventListener('resize', updateViewportSize)
   }, [])
+
+  const isCompactViewport = viewportWidth > 0 && viewportWidth < COMPACT_VIEWPORT_BREAKPOINT
+  const bufferRows = isCompactViewport
+    ? COMPACT_VIRTUALIZATION_BUFFER_ROWS
+    : DEFAULT_VIRTUALIZATION_BUFFER_ROWS
+  const minRowsWithoutVirtualization = isCompactViewport
+    ? COMPACT_MIN_ROWS_WITHOUT_VIRTUALIZATION
+    : DEFAULT_MIN_ROWS_WITHOUT_VIRTUALIZATION
 
   const gap = GRID_GAP_BY_COLUMNS[gridColumns]
   const columnCount = gridColumns
@@ -88,39 +103,60 @@ export const ProductGrid = ({
 
   const rowCount = Math.max(1, Math.ceil(products.length / columnCount))
   const virtualizationEnabled =
-    containerWidth > 0 && rowMetrics.rowHeight > 0 && rowCount > MIN_ROWS_WITHOUT_VIRTUALIZATION
+    containerWidth > 0 && rowMetrics.rowHeight > 0 && rowCount > minRowsWithoutVirtualization
 
-  const [visibleRows, setVisibleRows] = useState<{ start: number; end: number }>({ start: 0, end: 6 })
+  const [visibleRows, setVisibleRows] = useState<{ start: number; end: number }>({
+    start: 0,
+    end: minRowsWithoutVirtualization
+  })
 
   useEffect(() => {
     if (!virtualizationEnabled) return
-    const updateRange = () => {
-      if (!containerRef.current || rowMetrics.rowHeight === 0) return
-      const rect = containerRef.current.getBoundingClientRect()
-      const viewportHeight = window.innerHeight || 0
-      const offsetTop = Math.max(-rect.top, 0)
-      const visibleHeight = Math.max(0, Math.min(viewportHeight, rect.bottom) - Math.max(0, rect.top))
-      const startRow = Math.max(Math.floor(offsetTop / rowMetrics.rowHeight) - VIRTUALIZATION_BUFFER_ROWS, 0)
-      const endRow = Math.min(
-        Math.ceil((offsetTop + visibleHeight) / rowMetrics.rowHeight) + VIRTUALIZATION_BUFFER_ROWS,
-        rowCount
-      )
-      setVisibleRows({ start: startRow, end: Math.max(endRow, startRow + MIN_ROWS_WITHOUT_VIRTUALIZATION) })
+    let raf: number | null = null
+    const scheduleUpdate = () => {
+      if (raf !== null) return
+      raf = requestAnimationFrame(() => {
+        raf = null
+        if (!containerRef.current || rowMetrics.rowHeight === 0) return
+        const rect = containerRef.current.getBoundingClientRect()
+        const viewportHeight = window.innerHeight || 0
+        const offsetTop = Math.max(-rect.top, 0)
+        const visibleHeight = Math.max(0, Math.min(viewportHeight, rect.bottom) - Math.max(0, rect.top))
+        const startRow = Math.max(Math.floor(offsetTop / rowMetrics.rowHeight) - bufferRows, 0)
+        const endRow = Math.min(
+          Math.ceil((offsetTop + visibleHeight) / rowMetrics.rowHeight) + bufferRows,
+          rowCount
+        )
+        setVisibleRows({
+          start: startRow,
+          end: Math.max(endRow, startRow + minRowsWithoutVirtualization)
+        })
+      })
     }
-    updateRange()
-    window.addEventListener('scroll', updateRange, { passive: true })
-    window.addEventListener('resize', updateRange)
+    scheduleUpdate()
+    window.addEventListener('scroll', scheduleUpdate, { passive: true })
+    window.addEventListener('resize', scheduleUpdate)
     return () => {
-      window.removeEventListener('scroll', updateRange)
-      window.removeEventListener('resize', updateRange)
+      window.removeEventListener('scroll', scheduleUpdate)
+      window.removeEventListener('resize', scheduleUpdate)
+      if (raf !== null) {
+        cancelAnimationFrame(raf)
+      }
     }
-  }, [virtualizationEnabled, rowMetrics.rowHeight, rowCount])
+  }, [virtualizationEnabled, rowMetrics.rowHeight, rowCount, bufferRows, minRowsWithoutVirtualization])
 
   useEffect(() => {
     if (!virtualizationEnabled) {
       setVisibleRows({ start: 0, end: rowCount })
     }
   }, [virtualizationEnabled, rowCount])
+
+  useEffect(() => {
+    setVisibleRows(prev => ({
+      start: 0,
+      end: Math.max(prev.end, minRowsWithoutVirtualization)
+    }))
+  }, [minRowsWithoutVirtualization])
 
   const startIndex = virtualizationEnabled ? visibleRows.start * columnCount : 0
   const endIndex = virtualizationEnabled ? Math.min(products.length, visibleRows.end * columnCount) : products.length
@@ -129,7 +165,7 @@ export const ProductGrid = ({
   const bottomPadding = virtualizationEnabled ? Math.max(rowCount - visibleRows.end, 0) * rowMetrics.rowHeight : 0
 
   const gridHeightEstimate = virtualizationEnabled
-    ? Math.max(windowHeight - 280, rowMetrics.rowHeight * MIN_ROWS_WITHOUT_VIRTUALIZATION)
+    ? Math.max(windowHeight - 280, rowMetrics.rowHeight * minRowsWithoutVirtualization)
     : undefined
 
   const renderProducts = products.slice(startIndex, endIndex)
