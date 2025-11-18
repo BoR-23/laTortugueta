@@ -21,7 +21,6 @@ create table if not exists public.products (
   material text,
   care text,
   origin text,
-  category_id text,
   tags jsonb default '[]'::jsonb,
   sizes jsonb default '[]'::jsonb,
   photos integer default 0,
@@ -67,11 +66,9 @@ alter table public.products
 alter table public.products
   drop column if exists category;
 alter table public.products
-  add column if not exists category_id text;
+  drop column if exists category_id;
 alter table public.products
-  add constraint if not exists fk_products_category
-  foreign key (category_id) references public.categories(id)
-  on delete restrict;
+  drop constraint if exists fk_products_category;
 
 create or replace function public.increment_product_view(p_product_id text)
 returns void
@@ -82,27 +79,5 @@ begin
   set view_count = coalesce(view_count, 0) + 1,
       last_viewed_at = now()
   where id = p_product_id;
-end;
-$$;
-
-create or replace function public.merge_categories(
-  target_category_id text,
-  source_category_ids text[]
-)
-returns void
-language plpgsql
-security definer
-as $$
-begin
-  update public.products
-  set category_id = target_category_id
-  where category_id = any(source_category_ids);
-
-  update public.categories
-  set parent_id = target_category_id
-  where parent_id = any(source_category_ids);
-
-  delete from public.categories
-  where id = any(source_category_ids);
 end;
 $$;

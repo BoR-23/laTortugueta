@@ -89,10 +89,6 @@ export function CategoryManager({ initialCategories }: Props) {
   const [formState, setFormState] = useState<FormMode | null>(null)
   const [formValues, setFormValues] = useState({ name: "", tagKey: "", parentId: "" })
   const [error, setError] = useState<string | null>(null)
-  const [mergeError, setMergeError] = useState<string | null>(null)
-  const [mergeSuccess, setMergeSuccess] = useState<string | null>(null)
-  const [mergeTargetId, setMergeTargetId] = useState("")
-  const [mergeSourceIds, setMergeSourceIds] = useState<string[]>([])
   const [openIds, setOpenIds] = useState<string[]>([])
 
   const scopedCategories = useMemo(
@@ -177,10 +173,6 @@ export function CategoryManager({ initialCategories }: Props) {
     setError(null)
   }
 
-  useEffect(() => {
-    setMergeSourceIds(prev => prev.filter(id => id !== mergeTargetId))
-  }, [mergeTargetId])
-
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
     try {
@@ -210,38 +202,6 @@ export function CategoryManager({ initialCategories }: Props) {
     } catch (err) {
       console.error(err)
       setError(err instanceof Error ? err.message : "Error desconocido al guardar la categoría")
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleMergeCategories = async (event: React.FormEvent) => {
-    event.preventDefault()
-    if (!mergeTargetId || mergeSourceIds.length === 0) {
-      setMergeError("Selecciona una categoría destino y al menos una categoría a fusionar.")
-      return
-    }
-    try {
-      setIsLoading(true)
-      setMergeError(null)
-      setMergeSuccess(null)
-      const response = await fetch("/api/categories/merge", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ targetId: mergeTargetId, sourceIds: mergeSourceIds })
-      })
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}))
-        throw new Error(data.error ?? "No se pudo fusionar las categorías")
-      }
-      setMergeSuccess("Categorías fusionadas correctamente.")
-      setMergeSourceIds([])
-      await refreshCategories()
-    } catch (err) {
-      console.error(err)
-      setMergeError(
-        err instanceof Error ? err.message : "No se pudo fusionar las categorías. Inténtalo de nuevo."
-      )
     } finally {
       setIsLoading(false)
     }
@@ -415,88 +375,6 @@ export function CategoryManager({ initialCategories }: Props) {
             }}
           />
         </DndProvider>
-      </div>
-
-      <div className="rounded-3xl border border-neutral-200 bg-white p-4">
-        <h3 className="text-sm font-semibold uppercase tracking-[0.25em] text-neutral-500">
-          Fusionar categorías
-        </h3>
-        <p className="mt-2 text-sm text-neutral-500">
-          Mueve todos los productos y subcategorías a una categoría destino y elimina las seleccionadas.
-        </p>
-        <form onSubmit={handleMergeCategories} className="mt-4 space-y-4">
-          <label className="block text-sm font-medium text-neutral-700">
-            Categoría destino
-            <select
-              value={mergeTargetId}
-              onChange={event => setMergeTargetId(event.target.value)}
-              className="mt-2 w-full rounded-2xl border border-neutral-200 bg-white px-4 py-2 text-neutral-900 focus:border-neutral-900 focus:outline-none"
-            >
-              <option value="">Selecciona destino</option>
-              {scopedCategories
-                .sort((a, b) => a.name.localeCompare(b.name, "es"))
-                .map(category => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-            </select>
-          </label>
-          <label className="block text-sm font-medium text-neutral-700">
-            Categorías a fusionar
-            <select
-              multiple
-              value={mergeSourceIds}
-              onChange={event =>
-                setMergeSourceIds(Array.from(event.target.selectedOptions).map(option => option.value))
-              }
-              className="mt-2 w-full rounded-2xl border border-neutral-200 bg-white px-4 py-2 text-neutral-900 focus:border-neutral-900 focus:outline-none"
-            >
-              {scopedCategories
-                .filter(category => category.id !== mergeTargetId)
-                .sort((a, b) => a.name.localeCompare(b.name, "es"))
-                .map(category => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-            </select>
-            <span className="mt-1 block text-xs text-neutral-400">
-              Mantén pulsado Ctrl/⌘ para seleccionar varias opciones.
-            </span>
-          </label>
-          {mergeError && (
-            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">
-              {mergeError}
-            </p>
-          )}
-          {mergeSuccess && (
-            <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
-              {mergeSuccess}
-            </p>
-          )}
-          <div className="flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                setMergeTargetId("")
-                setMergeSourceIds([])
-                setMergeError(null)
-                setMergeSuccess(null)
-              }}
-              className="rounded-full border border-neutral-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500"
-            >
-              Limpiar
-            </button>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="rounded-full border border-neutral-900 bg-neutral-900 px-5 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-white transition hover:opacity-90 disabled:opacity-50"
-            >
-              Fusionar
-            </button>
-          </div>
-        </form>
       </div>
 
       {formState ? (

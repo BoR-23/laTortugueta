@@ -22,7 +22,6 @@ const normaliseDraftPayload = (payload: any): AdminProductFormValues => {
     id: String(asObject.id ?? '').trim(),
     name: String(asObject.name ?? ''),
     description: String(asObject.description ?? ''),
-     categoryId: String(asObject.categoryId ?? ''),
     category: String(asObject.category ?? ''),
     type: String(asObject.type ?? ''),
     color: String(asObject.color ?? ''),

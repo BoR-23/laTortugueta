@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { AdminProductFormValues } from '@/types/admin'
 import { listProductTypes, getProductTypeConfig, mergeTypeMetadata } from '@/lib/productTypes'
-import type { CategoryDTO } from '@/types/categories'
 
 export type ProductFormValues = AdminProductFormValues
 
@@ -15,7 +14,6 @@ interface ProductFormProps {
   mode: 'create' | 'edit'
   canSubmit?: boolean
   publishBlockedReason?: string
-  categories: CategoryDTO[]
 }
 
 const parseList = (value: string) =>
@@ -36,8 +34,7 @@ export function ProductForm({
   onCancel,
   mode,
   canSubmit = true,
-  publishBlockedReason,
-  categories
+  publishBlockedReason
 }: ProductFormProps) {
   const [values, setValues] = useState<ProductFormValues>(() => buildInitialState(initialValues))
   const [saving, setSaving] = useState(false)
@@ -46,11 +43,6 @@ export function ProductForm({
 
   const productTypes = useMemo(() => listProductTypes(), [])
   const typeConfig = useMemo(() => getProductTypeConfig(values.type), [values.type])
-  const categoryOptions = useMemo(
-    () => categories.filter(category => category.scope === 'filter'),
-    [categories]
-  )
-  const selectedCategory = categoryOptions.find(category => category.id === values.categoryId)
   const metadata = values.metadata ?? {}
   const storyImagesInput = Array.isArray(metadata.storyImages)
     ? (metadata.storyImages as string[]).join(', ')
@@ -74,15 +66,6 @@ export function ProductForm({
       ...prev,
       type: nextType,
       metadata: mergeTypeMetadata(nextType, prev.metadata ?? {}) as ProductFormValues['metadata']
-    }))
-  }
-
-  const handleCategoryChange = (categoryId: string) => {
-    const selected = categoryOptions.find(category => category.id === categoryId)
-    setValues(prev => ({
-      ...prev,
-      categoryId,
-      category: selected?.name ?? ''
     }))
   }
 
@@ -164,33 +147,7 @@ export function ProductForm({
         />
       </label>
 
-      <div className="grid gap-5 md:grid-cols-3">
-        <label className="text-xs uppercase tracking-[0.3em] text-neutral-500">
-          Categoría
-          <select
-            value={values.categoryId}
-            onChange={event => handleCategoryChange(event.target.value)}
-            className="mt-2 w-full rounded-full border border-neutral-300 px-4 py-3 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none focus:ring-0"
-          >
-            <option value="">Sin categoría</option>
-            {categoryOptions.map(category => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-          {!categoryOptions.length && (
-            <span className="mt-1 block text-[11px] uppercase tracking-[0.2em] text-neutral-400">
-              Crea categorías en la sección “Gestión de categorías”.
-            </span>
-          )}
-          {selectedCategory && (
-            <span className="mt-1 block text-[11px] uppercase tracking-[0.2em] text-neutral-500">
-              {selectedCategory.name}
-            </span>
-          )}
-        </label>
-
+      <div className="grid gap-5 md:grid-cols-2">
         <label className="text-xs uppercase tracking-[0.3em] text-neutral-500">
           Tipo de producto
           <select
@@ -259,6 +216,9 @@ export function ProductForm({
             onChange={event => handleChange('tags', parseList(event.target.value))}
             className="mt-2 w-full rounded-full border border-neutral-300 px-4 py-3 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none focus:ring-0"
           />
+          <span className="mt-1 block text-[11px] uppercase tracking-[0.2em] text-neutral-400">
+            El planificador de menú usa estas etiquetas (tag keys) para filtrar productos.
+          </span>
         </label>
 
         <label className="text-xs uppercase tracking-[0.3em] text-neutral-500">

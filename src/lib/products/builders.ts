@@ -40,10 +40,6 @@ export const sanitiseProductInput = (input: ProductMutationInput) => {
       ? input.type.trim()
       : inferProductTypeFromCategory(input.category)
   const metadataValue = sanitizeTypeMetadata(typeValue, input.metadata ?? {}) as ProductMetadata
-  const categoryIdValue =
-    typeof input.categoryId === 'string' && input.categoryId.trim().length > 0
-      ? input.categoryId.trim()
-      : undefined
   return {
     ...input,
     id: input.id.trim(),
@@ -56,7 +52,7 @@ export const sanitiseProductInput = (input: ProductMutationInput) => {
     priority: normalisePriority(input.priority),
     type: typeValue,
     metadata: metadataValue,
-    categoryId: categoryIdValue
+    category: typeof input.category === 'string' ? input.category.trim() : undefined
   }
 }
 
@@ -75,7 +71,6 @@ export const supabasePayloadFromInput = (input: ProductMutationInput, withTimest
     name: input.name,
     description: input.description,
     price: input.price ?? 0,
-    category_id: input.categoryId ?? null,
     color: input.color ?? '',
     tags: input.tags ?? [],
     sizes: input.sizes ?? [],
@@ -147,11 +142,29 @@ export const buildProductFromMarkdown = (id: string, fileContents: string) => {
     product.price = priceFromTable
   }
 
-  product.categoryId = typeof rawData.category === 'string' ? rawData.category : undefined
   return product
 }
 
-export const buildProductFromSupabase = (record: Record<string, any>): Product => {
+const deriveCategoryName = (tags: unknown, lookup?: Map<string, string>) => {
+  if (!lookup || !Array.isArray(tags)) {
+    return undefined
+  }
+  for (const tag of tags) {
+    if (typeof tag !== 'string') continue
+    const trimmed = tag.trim()
+    if (!trimmed) continue
+    const match = lookup.get(trimmed)
+    if (match) {
+      return match
+    }
+  }
+  return undefined
+}
+
+export const buildProductFromSupabase = (
+  record: Record<string, any>,
+  categoryLookup?: Map<string, string>
+): Product => {
   // Las URLs vienen de Supabase como rutas locales (/images/products/...)
   // Las dejamos así porque getProductImageVariant las convertirá a R2 cuando sea necesario
   const gallery = Array.isArray(record.media_assets)
@@ -160,10 +173,17 @@ export const buildProductFromSupabase = (record: Record<string, any>): Product =
         .map(asset => asset.url)
     : []
 
+  const categoryFromTags = deriveCategoryName(record.tags, categoryLookup)
+  const explicitCategory =
+    typeof record.category === 'string' && record.category.trim().length > 0
+      ? record.category.trim()
+      : undefined
+  const categoryName = categoryFromTags ?? explicitCategory
+
   const baseType =
     typeof record.type === 'string' && record.type.trim().length > 0
       ? record.type.trim()
-      : inferProductTypeFromCategory(record.categories?.name || record.category)
+      : inferProductTypeFromCategory(categoryName)
 
   const metadata =
     record.metadata && typeof record.metadata === 'object'
@@ -183,8 +203,7 @@ export const buildProductFromSupabase = (record: Record<string, any>): Product =
     care: record.care || '',
     origin: record.origin || '',
     content: record.description || '',
-    categoryId: record.category_id || null,
-    category: record.categories?.name || record.category || '',
+    category: categoryName,
     photos: record.photos || gallery.length,
     gallery,
     sizes: Array.isArray(record.sizes) ? record.sizes : undefined,

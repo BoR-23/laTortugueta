@@ -4,7 +4,6 @@ export interface AdminProductFormValues {
   id: string
   name: string
   description: string
-  categoryId: string
   category?: string
   type: string
   color: string

@@ -16,7 +16,6 @@ import {
 } from './PublicationChecklist'
 import type { AdminProductFormValues } from '@/types/admin'
 import type { SiteSettings } from '@/lib/settings'
-import type { CategoryDTO } from '@/types/categories'
 import {
   DEFAULT_PRODUCT_TYPE,
   getProductTypeConfig,
@@ -30,14 +29,12 @@ import { extractProductPlaceholderMap } from '@/lib/images'
 interface AdminProductWorkspaceProps {
   initialProducts: AdminProductFormValues[]
   initialSettings: SiteSettings
-  categories: CategoryDTO[]
 }
 
 const blankProduct: AdminProductFormValues = {
   id: '',
   name: '',
   description: '',
-  categoryId: '',
   category: '',
   type: DEFAULT_PRODUCT_TYPE,
   color: '',
@@ -60,18 +57,6 @@ const sortByPriority = (items: AdminProductFormValues[]) =>
   })
 
 const mapApiProductToFormValues = (payload: Record<string, any>): AdminProductFormValues => {
-  const categoryId =
-    typeof payload.categoryId === 'string'
-      ? payload.categoryId
-      : typeof payload.category_id === 'string'
-        ? payload.category_id
-        : ''
-  const categoryName =
-    typeof payload.category === 'string'
-      ? payload.category
-      : typeof payload.categories?.name === 'string'
-        ? payload.categories.name
-        : ''
   const type =
     typeof payload.type === 'string' && payload.type.trim().length > 0
       ? payload.type.trim()
@@ -81,8 +66,7 @@ const mapApiProductToFormValues = (payload: Record<string, any>): AdminProductFo
     id: payload.id,
     name: payload.name ?? '',
     description: payload.description ?? '',
-    categoryId,
-    category: categoryName,
+    category: typeof payload.category === 'string' ? payload.category : '',
     type,
     color: payload.color ?? '',
     price: Number(payload.price ?? 0),
@@ -230,8 +214,7 @@ const mapDraftResponse = (payload: any): DraftInfo => ({
 
 export function AdminProductWorkspace({
   initialProducts,
-  initialSettings,
-  categories
+  initialSettings
 }: AdminProductWorkspaceProps) {
   const [products, setProducts] = useState<AdminProductFormValues[]>(sortByPriority(initialProducts))
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(initialSettings)
@@ -645,7 +628,6 @@ const handlePlaceholderChange = (productId: string, placeholders: Record<string,
                 key={productForForm.id || 'new'}
                 initialValues={productForForm}
                 mode={formMode}
-                categories={categories}
                 canSubmit={checklistComplete}
                 publishBlockedReason={
                   !checklistComplete

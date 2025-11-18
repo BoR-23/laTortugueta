@@ -9,7 +9,6 @@ import { LoginForm } from '@/components/admin/LoginForm'
 import { AdminProductWorkspace } from '@/components/admin/AdminProductWorkspace'
 import type { AdminProductFormValues } from '@/types/admin'
 import { getSiteSettings } from '@/lib/settings'
-import { getCategories } from '@/lib/categories'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,14 +26,13 @@ export default async function AdminPricingPage() {
   const priorityOf = (value?: number) =>
     typeof value === 'number' ? value : DEFAULT_PRODUCT_PRIORITY
 
-  const [productsRaw, categories] = await Promise.all([getAllProducts(), getCategories()])
+  const productsRaw = await getAllProducts()
 
   const products: AdminProductFormValues[] = productsRaw
     .map(product => ({
       id: product.id,
       name: product.name,
       description: product.description,
-      categoryId: product.categoryId ?? '',
       category: product.category ?? '',
       type: product.type ?? DEFAULT_PRODUCT_TYPE,
       color: product.color ?? '',
@@ -71,11 +69,7 @@ export default async function AdminPricingPage() {
         </div>
       </div>
 
-      <AdminProductWorkspace
-        initialProducts={products}
-        initialSettings={siteSettings}
-        categories={categories}
-      />
+      <AdminProductWorkspace initialProducts={products} initialSettings={siteSettings} />
     </div>
   )
 }

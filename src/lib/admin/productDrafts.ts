@@ -24,7 +24,6 @@ const sanitiseDraftValues = (input: Partial<AdminProductFormValues>): AdminProdu
   id: String(input.id ?? '').trim(),
   name: String(input.name ?? ''),
   description: String(input.description ?? ''),
-  categoryId: String(input.categoryId ?? ''),
   category: String(input.category ?? ''),
   type: String(input.type ?? ''),
   color: String(input.color ?? ''),
