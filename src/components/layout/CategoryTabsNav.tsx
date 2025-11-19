@@ -221,11 +221,11 @@ export function CategoryTabsNav({ tabs }: CategoryTabsNavProps) {
           }
 
           return (
-            <div key={tab.id} className="inline-flex items-center gap-1">
+            <div key={tab.id} className="inline-flex items-center gap-1 flex-shrink-0">
               <button
                 type="button"
                 onClick={handleLabelClick}
-                className={`inline-flex items-center px-0 py-1 transition ${
+                className={`inline-flex items-center whitespace-nowrap px-0 py-1 transition ${
                   isActive || isOpen ? 'text-neutral-900' : 'text-neutral-500 hover:text-neutral-900'
                 }`}
                 aria-current={isActive ? 'page' : undefined}
