@@ -1,17 +1,7 @@
-import fs from 'fs'
-import path from 'path'
-import matter from 'gray-matter'
-
 import { DEFAULT_PRODUCT_PRIORITY } from '../productDefaults'
 import { DEFAULT_PRODUCT_TYPE, sanitizeTypeMetadata } from '../productTypes'
 import { inferProductTypeFromCategory } from '../categoryMappings'
 
-import {
-  getProductGallery,
-  getPricingTable,
-  productsDirectory,
-  ensureProductsDirectory
-} from './cache'
 import type { Product, ProductMutationInput, MediaAssetRecord, ProductMetadata } from './types'
 
 export const toStringArray = (value?: unknown) => {
@@ -56,14 +46,6 @@ export const sanitiseProductInput = (input: ProductMutationInput) => {
   }
 }
 
-export const persistMarkdownProduct = (input: ProductMutationInput) => {
-  ensureProductsDirectory()
-  const targetPath = path.join(productsDirectory, `${input.id}.md`)
-  const { description, ...frontmatter } = input
-  const markdown = matter.stringify(description ?? '', frontmatter)
-  fs.writeFileSync(targetPath, markdown, 'utf8')
-}
-
 export const supabasePayloadFromInput = (input: ProductMutationInput, withTimestamps = true) => {
   const now = new Date().toISOString()
   const payload = {
@@ -89,62 +71,6 @@ export const supabasePayloadFromInput = (input: ProductMutationInput, withTimest
 
   return payload
 }
-
-export const buildProductFromMarkdown = (id: string, fileContents: string) => {
-  const matterResult = matter(fileContents)
-  const rawData = matterResult.data as Record<string, unknown>
-  const gallery = getProductGallery(id)
-
-  const photoCount =
-    gallery.length > 0
-      ? gallery.length
-      : typeof rawData.photos === 'number'
-        ? rawData.photos
-        : 0
-
-  const product = {
-    id,
-    content: matterResult.content,
-    ...rawData
-  } as Product & Record<string, unknown>
-
-  product.gallery = gallery
-  product.photos = photoCount
-
-  const rawPrice =
-    typeof rawData.price === 'number' ? rawData.price : Number(rawData.price ?? 0)
-  product.price = Number.isFinite(rawPrice) ? rawPrice : 0
-
-  const fallbackImage = typeof rawData.image === 'string' ? rawData.image : ''
-  product.image = gallery.length > 0 ? gallery[0] : fallbackImage
-  product.tags = Array.isArray(product.tags) ? product.tags : []
-  product.sizes = Array.isArray(rawData.sizes)
-    ? (rawData.sizes as unknown[]).map(value => String(value))
-    : undefined
-  product.available =
-    typeof rawData.available === 'boolean' ? rawData.available : product.photos > 0
-  product.priority = normalisePriority(rawData.priority)
-  const rawType =
-    typeof rawData.type === 'string' && rawData.type.trim().length > 0
-      ? rawData.type.trim()
-      : inferProductTypeFromCategory(product.category)
-  product.type = rawType || DEFAULT_PRODUCT_TYPE
-  const rawMetadata =
-    rawData.metadata && typeof rawData.metadata === 'object'
-      ? (rawData.metadata as Record<string, unknown>)
-      : {}
-  product.metadata = sanitizeTypeMetadata(product.type, rawMetadata) as ProductMetadata
-  product.viewCount = typeof (rawData as Record<string, any>).view_count === 'number' ? Number((rawData as Record<string, any>).view_count) : 0
-
-  const pricingTable = getPricingTable()
-  const priceFromTable = pricingTable[id]
-  if (typeof priceFromTable === 'number') {
-    product.price = priceFromTable
-  }
-
-  return product
-}
-
 const deriveCategoryName = (tags: unknown, lookup?: Map<string, string>) => {
   if (!lookup || !Array.isArray(tags)) {
     return undefined

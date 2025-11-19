@@ -92,6 +92,38 @@ export const readCategories = async (): Promise<CategoryRecord[]> => {
   return readCategoriesFromDisk()
 }
 
+const replaceTagForProducts = async (
+  client: ReturnType<typeof createSupabaseServerClient>,
+  previousTag: string,
+  nextTag: string
+) => {
+  const { data, error } = await client.from('products').select('id, tags')
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  if (!data || data.length === 0) {
+    return
+  }
+
+  const now = new Date().toISOString()
+  for (const product of data) {
+    const currentTags = Array.isArray(product.tags) ? product.tags : []
+    if (!currentTags.includes(previousTag)) {
+      continue
+    }
+    const nextTags = currentTags.map(tag => (tag === previousTag ? nextTag : tag))
+    const { error: updateError } = await client
+      .from('products')
+      .update({ tags: nextTags, updated_at: now })
+      .eq('id', product.id)
+
+    if (updateError) {
+      throw new Error(updateError.message)
+    }
+  }
+}
+
 export const getCategories = async (scope?: CategoryScope) => {
   const all = await readCategories()
   const filtered = scope ? all.filter(category => category.scope === scope) : all
@@ -191,19 +223,15 @@ export const updateCategoryRecord = async (
       new_tag: nextTag
     })
     if (renameError) {
-      const rollbackPayload = {
-        name: prev.name,
-        tag_key: prev.tagKey,
-        parent_id: prev.parentId,
-        updated_at: new Date().toISOString()
+      try {
+        await replaceTagForProducts(client, prevTag, nextTag)
+      } catch (fallbackError) {
+        throw new Error(
+          fallbackError instanceof Error
+            ? fallbackError.message
+            : renameError.message || 'No se pudieron actualizar las etiquetas de los productos.'
+        )
       }
-      await client
-        .from('categories')
-        .update(rollbackPayload)
-        .eq('id', id)
-      throw new Error(
-        renameError.message || 'No se pudieron actualizar las etiquetas de los productos.'
-      )
     }
   }
 

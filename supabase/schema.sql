@@ -103,9 +103,9 @@ begin
       ),
       '[]'::jsonb
     )
-    from jsonb_array_elements_text(tags) as t(elem)
+    from jsonb_array_elements_text(coalesce(tags, '[]'::jsonb)) as t(elem)
   )
-  where tags @> to_jsonb(array[old_tag]);
+  where coalesce(tags, '[]'::jsonb) @> jsonb_build_array(old_tag);
 
   get diagnostics affected = row_count;
   return affected;

@@ -1,6 +1,5 @@
 import { createSupabaseServerClient } from '../supabaseClient'
 
-import { canUseSupabase, clearProductCaches } from './cache'
 import {
   sanitiseProductInput,
   supabasePayloadFromInput,
@@ -9,14 +8,6 @@ import {
 } from './builders'
 import { invalidateProductDataCache } from './repository'
 import type { MediaAssetInput, ProductMutationInput, ProductPriorityUpdate } from './types'
-
-const ensureSupabaseAvailable = () => {
-  if (!canUseSupabase) {
-    throw new Error(
-      'La gestión de productos requiere Supabase configurado. Define NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY y SUPABASE_SERVICE_ROLE_KEY.'
-    )
-  }
-}
 
 export const updateProductPriorities = async (updates: ProductPriorityUpdate[]) => {
   const sanitised = updates
@@ -30,7 +21,6 @@ export const updateProductPriorities = async (updates: ProductPriorityUpdate[]) 
     return
   }
 
-  ensureSupabaseAvailable()
   const client = createSupabaseServerClient()
   const now = new Date().toISOString()
   const { error } = await client
@@ -47,7 +37,6 @@ export const updateProductPriorities = async (updates: ProductPriorityUpdate[]) 
     throw new Error(error.message)
   }
 
-  clearProductCaches()
   invalidateProductDataCache()
 }
 
@@ -62,7 +51,6 @@ export const createProductRecord = async (input: ProductMutationInput) => {
     throw new Error('El nombre es obligatorio.')
   }
 
-  ensureSupabaseAvailable()
   const client = createSupabaseServerClient()
   const supabasePayload = supabasePayloadFromInput(payload)
   supabasePayload.created_at = new Date().toISOString()
@@ -76,7 +64,6 @@ export const createProductRecord = async (input: ProductMutationInput) => {
     throw new Error(error?.message ?? 'No se pudo crear el producto.')
   }
 
-  clearProductCaches()
   invalidateProductDataCache()
   return buildProductFromSupabase(data)
 }
@@ -84,7 +71,6 @@ export const createProductRecord = async (input: ProductMutationInput) => {
 export const updateProductRecord = async (id: string, input: ProductMutationInput) => {
   const payload = sanitiseProductInput({ ...input, id })
 
-  ensureSupabaseAvailable()
   const client = createSupabaseServerClient()
   const supabasePayload = supabasePayloadFromInput(payload)
   const { data, error } = await client
@@ -98,19 +84,16 @@ export const updateProductRecord = async (id: string, input: ProductMutationInpu
     throw new Error(error?.message ?? 'No se pudo actualizar el producto.')
   }
 
-  clearProductCaches()
   invalidateProductDataCache()
   return buildProductFromSupabase(data)
 }
 
 export const deleteProductRecord = async (id: string) => {
-  ensureSupabaseAvailable()
   const client = createSupabaseServerClient()
   const { error } = await client.from('products').delete().eq('id', id)
   if (error) {
     throw new Error(error.message)
   }
-  clearProductCaches()
   invalidateProductDataCache()
 }
 
@@ -119,7 +102,6 @@ export const replaceProductMediaAssets = async (
   assets: MediaAssetInput[],
   placeholders?: Record<string, string>
 ) => {
-  ensureSupabaseAvailable()
   const client = createSupabaseServerClient()
   await client.from('media_assets').delete().eq('product_id', productId)
 
@@ -178,12 +160,10 @@ export const replaceProductMediaAssets = async (
     .update({ metadata: existingMetadata, updated_at: now })
     .eq('id', productId)
 
-  clearProductCaches()
   invalidateProductDataCache()
 }
 
 export const updateProductTags = async (productId: string, tags: string[]) => {
-  ensureSupabaseAvailable()
   const client = createSupabaseServerClient()
   const cleaned = Array.from(
     new Set(
@@ -203,7 +183,6 @@ export const updateProductTags = async (productId: string, tags: string[]) => {
     throw new Error(error.message)
   }
 
-  clearProductCaches()
   invalidateProductDataCache()
   return cleaned
 }

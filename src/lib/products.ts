@@ -8,11 +8,6 @@ export type {
 } from './products/types'
 
 export {
-  canUseSupabase,
-  clearProductCaches
-} from './products/cache'
-
-export {
   getAllProductIds,
   getProductData,
   getAllProducts,
