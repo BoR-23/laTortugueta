@@ -6,12 +6,7 @@ import dynamic from 'next/dynamic'
 import { ProductImage } from '@/components/common/ProductImage'
 import type { Product } from '@/lib/products'
 import { getLocalCoViewGraph, registerProductView, trackEvent } from '@/lib/analytics'
-import {
-  buildProductPlaceholderMap,
-  extractProductPlaceholderMap,
-  getImagePlaceholder,
-  getProductImageVariant
-} from '@/lib/images'
+import { buildProductPlaceholderMap, extractProductPlaceholderMap, getImagePlaceholder } from '@/lib/images'
 import { WHATSAPP_LINK } from '@/lib/contact'
 import { uploadProductImage } from '@/lib/client/uploadProductImage'
 
@@ -123,21 +118,6 @@ export function ProductShowcase({
   useEffect(() => {
     setPlaceholderMap(initialPlaceholders)
   }, [initialPlaceholders])
-
-  useEffect(() => {
-    if (!initialGallery[0]) return
-    const link = document.createElement('link')
-    link.rel = 'preload'
-    link.as = 'image'
-    link.href = getProductImageVariant(initialGallery[0], 'full')
-    link.setAttribute('fetchpriority', 'high')
-    document.head.appendChild(link)
-    return () => {
-      if (link.parentNode) {
-        link.parentNode.removeChild(link)
-      }
-    }
-  }, [initialGallery])
 
   const adminModeEnabled = isAdmin && !adminPreviewMode
 

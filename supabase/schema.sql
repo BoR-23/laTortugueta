@@ -53,9 +53,15 @@ create table if not exists public.site_settings (
 );
 
 create unique index if not exists products_slug_idx on public.products (id);
+create index if not exists products_tags_gin_idx on public.products using gin (tags);
 create index if not exists media_assets_product_idx on public.media_assets (product_id, position);
 create index if not exists categories_scope_idx on public.categories (scope, sort_order);
 create unique index if not exists users_admin_email_idx on public.users_admin (lower(email));
+
+alter table public.media_assets
+  drop constraint if exists media_assets_url_format_check;
+alter table public.media_assets
+  add constraint media_assets_url_format_check check (url ~ '^(/|https?://)');
 
 alter table public.products
   add column if not exists metadata jsonb default '{}'::jsonb;
@@ -111,3 +117,26 @@ begin
   return affected;
 end;
 $$;
+
+-- Row Level Security configuration
+alter table if exists public.products enable row level security;
+alter table if exists public.categories enable row level security;
+alter table if exists public.media_assets enable row level security;
+
+drop policy if exists "Permitir lectura pública de productos" on public.products;
+create policy "Permitir lectura pública de productos"
+  on public.products
+  for select
+  using (true);
+
+drop policy if exists "Permitir lectura pública de categorías" on public.categories;
+create policy "Permitir lectura pública de categorías"
+  on public.categories
+  for select
+  using (true);
+
+drop policy if exists "Permitir lectura pública de media" on public.media_assets;
+create policy "Permitir lectura pública de media"
+  on public.media_assets
+  for select
+  using (true);
