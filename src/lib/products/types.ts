@@ -30,6 +30,7 @@ export interface Product {
   available?: boolean
   metadata?: ProductMetadata
   viewCount?: number
+  updatedAt?: string
 }
 
 export type MediaAssetRecord = {

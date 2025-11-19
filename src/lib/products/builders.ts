@@ -136,6 +136,7 @@ export const buildProductFromSupabase = (
     available: typeof record.available === 'boolean' ? record.available : gallery.length > 0,
     metadata: sanitizeTypeMetadata(baseType || DEFAULT_PRODUCT_TYPE, metadata) as ProductMetadata,
     priority: normalisePriority(record.priority),
-    viewCount: typeof record.view_count === 'number' ? Number(record.view_count) : 0
+    viewCount: typeof record.view_count === 'number' ? Number(record.view_count) : 0,
+    updatedAt: typeof record.updated_at === 'string' ? record.updated_at : undefined
   }
 }

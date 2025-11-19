@@ -28,6 +28,7 @@ export function ProductImage({
   imagePath,
   variant = 'original',
   onError,
+  alt,
   ...props
 }: ProductImageProps) {
   const [useAlternateExtension, setUseAlternateExtension] = useState(false)
@@ -56,6 +57,7 @@ export function ProductImage({
   return (
     <Image
       {...props}
+      alt={alt ?? ''}
       src={src || resolvedPath}
       onError={event => {
         onError?.(event)
