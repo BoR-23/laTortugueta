@@ -16,7 +16,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   entries.push(
     ...products.map(product => ({
       url: absoluteUrl(`/${product.id}`),
-      lastModified: now
+      lastModified: product.updatedAt ? new Date(product.updatedAt) : now
     }))
   )
 
