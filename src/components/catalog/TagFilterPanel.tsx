@@ -92,13 +92,17 @@ const flattenNavNodes = (nodes: CategoryTreeNode[]): CategoryNavNode[] =>
     children: node.children.length ? flattenNavNodes(node.children) : undefined
   }))
 
-const mapTreeForSidebar = (nodes: CategoryTreeNode[]): CategorySidebarNode[] =>
-  nodes.map(node => ({
+const mapTreeForSidebar = (nodes: CategoryTreeNode[]): CategorySidebarNode[] => {
+  const sorted = [...nodes].sort((a, b) =>
+    a.name.localeCompare(b.name, 'es', { sensitivity: 'base' })
+  )
+  return sorted.map(node => ({
     id: node.id,
     name: node.name,
     tagKey: node.tagKey,
     children: mapTreeForSidebar(node.children)
   }))
+}
 
 const buildFallbackTreeFromTags = (
   tags: ReturnType<typeof summariseTags>,

@@ -31,18 +31,23 @@ const supabase = createClient(supabaseUrl, serviceKey, {
 
 const main = async () => {
   const passwordHash = await bcrypt.hash(password, 10)
-  const { error } = await supabase.from('users_admin').insert({
-    email: email.toLowerCase(),
-    password_hash: passwordHash,
-    role: 'admin'
-  })
+  const { error } = await supabase
+    .from('users_admin')
+    .upsert(
+      {
+        email: email.toLowerCase(),
+        password_hash: passwordHash,
+        role: 'admin'
+      },
+      { onConflict: 'email' }
+    )
 
   if (error) {
-    console.error('Failed to create admin user:', error.message)
+    console.error('Failed to create/update admin user:', error.message)
     process.exit(1)
   }
 
-  console.log(`Admin user created for ${email}`)
+  console.log(`Admin user created/updated for ${email}`)
 }
 
 main()

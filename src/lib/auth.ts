@@ -43,13 +43,20 @@ const findSupabaseAdmin = async (email: string, password: string) => {
     return null
   }
 
+  const normalizedEmail = email.trim().toLowerCase()
+
   const { data, error } = await supabaseAdminClient
     .from('users_admin')
     .select('id, email, password_hash, role')
-    .eq('email', email)
+    .ilike('email', normalizedEmail)
     .maybeSingle()
 
-  if (error || !data || !data.password_hash) {
+  if (error) {
+    console.error('Supabase admin lookup failed:', error.message)
+    return null
+  }
+
+  if (!data || !data.password_hash) {
     return null
   }
 
@@ -60,7 +67,7 @@ const findSupabaseAdmin = async (email: string, password: string) => {
 
   return {
     id: data.id ?? data.email,
-    email: data.email,
+    email: data.email?.toLowerCase?.() ?? data.email,
     role: data.role ?? 'admin'
   }
 }

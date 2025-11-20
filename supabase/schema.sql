@@ -104,12 +104,13 @@ begin
   update public.products
   set tags = (
     select coalesce(
-      jsonb_agg(
-        case when elem = old_tag then new_tag else elem end
-      ),
+      jsonb_agg(DISTINCT mapped_elem),
       '[]'::jsonb
     )
-    from jsonb_array_elements_text(coalesce(tags, '[]'::jsonb)) as t(elem)
+    from (
+      select case when elem = old_tag then new_tag else elem end as mapped_elem
+      from jsonb_array_elements_text(coalesce(tags, '[]'::jsonb)) as t(elem)
+    ) mapped
   )
   where coalesce(tags, '[]'::jsonb) @> jsonb_build_array(old_tag);
 
