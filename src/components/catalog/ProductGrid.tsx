@@ -246,9 +246,6 @@ export const ProductGrid = ({
                   )}
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">
-                    {product.category ?? 'Archivo'}
-                  </p>
                   <h2 className="text-base font-medium text-neutral-900">{product.name}</h2>
                   <p className="text-sm text-neutral-600">
                     {product.price.toFixed(2)} €
