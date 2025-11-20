@@ -4,12 +4,17 @@ import bcrypt from 'bcryptjs'
 
 import { createSupabaseServerClient } from './supabaseClient'
 
-const fallbackAdmins: Array<{ email: string; passwordHash: string }> = [
-  {
-    email: 'bor.arroyo@gmail.com',
-    passwordHash: '$2b$10$AnDHUF.V4Yl89TWzdxqfP.4XIQbuKooPMfvGhf7slqsAP2zr1aXZm'
-  }
-]
+const envFallbackEmail = process.env.ADMIN_EMAIL?.toLowerCase()
+const envFallbackHash = process.env.ADMIN_PASSWORD_HASH
+const fallbackAdmins: Array<{ email: string; passwordHash: string }> =
+  envFallbackEmail && envFallbackHash
+    ? [{ email: envFallbackEmail, passwordHash: envFallbackHash }]
+    : [
+        {
+          email: 'bor.arroyo@gmail.com',
+          passwordHash: '$2b$10$AnDHUF.V4Yl89TWzdxqfP.4XIQbuKooPMfvGhf7slqsAP2zr1aXZm'
+        }
+      ]
 
 const supabaseAdminClient = (() => {
   try {
