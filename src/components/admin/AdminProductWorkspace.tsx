@@ -418,6 +418,32 @@ const handlePlaceholderChange = (productId: string, placeholders: Record<string,
   }
 }
 
+const handleReviewChange = (productId: string, reviewMap: Record<string, boolean>) => {
+  setProducts(current =>
+    current.map(product =>
+      product.id === productId
+        ? {
+            ...product,
+            metadata: {
+              ...(product.metadata ?? {}),
+              imageReview: reviewMap
+            }
+          }
+        : product
+    )
+  )
+
+  if (selectedProduct?.id === productId) {
+    setSelectedProduct({
+      ...selectedProduct,
+      metadata: {
+        ...(selectedProduct.metadata ?? {}),
+        imageReview: reviewMap
+      }
+    })
+  }
+}
+
   const handleInlinePriceUpdate = async (productId: string, price: number) => {
     setGlobalError(null)
     const response = await fetch('/api/pricing', {
@@ -679,11 +705,15 @@ const handlePlaceholderChange = (productId: string, placeholders: Record<string,
                 productId={productForForm.id}
                 initialGallery={productForForm.gallery}
                 initialPlaceholders={productPlaceholderMap}
+                initialReviewMap={
+                  (productForForm.metadata?.imageReview as Record<string, boolean> | undefined) ?? {}
+                }
                 disabled={!selectedProduct}
                 onGalleryChange={gallery => handleGalleryChange(productForForm.id, gallery)}
                 onPlaceholdersChange={placeholders =>
                   handlePlaceholderChange(productForForm.id, placeholders)
                 }
+                onReviewChange={reviewMap => handleReviewChange(productForForm.id, reviewMap)}
               />
             </div>
           </div>

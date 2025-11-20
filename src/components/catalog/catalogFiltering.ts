@@ -50,7 +50,7 @@ export type SortDirection = 'asc' | 'desc'
 export const getDefaultSortDirection = (sortKey: SortKey): SortDirection =>
   sortKey === 'views' ? 'desc' : 'asc'
 
-const COLOR_CODE_REGEX = /^color\s+(\d{3})$/i
+export const COLOR_CODE_REGEX = /^color\s+(\d{3})$/i
 
 const COLOR_COUNT_PATTERNS: Record<string, string> = {
   'dos colors': '2',
@@ -337,4 +337,4 @@ export const hasActiveFilters = (
   )
 }
 
-export { COLOR_CODE_REGEX, COLOR_COUNT_PATTERNS, NORMALISE }
+export { COLOR_COUNT_PATTERNS, NORMALISE }

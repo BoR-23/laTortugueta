@@ -6,7 +6,12 @@ import dynamic from 'next/dynamic'
 import { ProductImage } from '@/components/common/ProductImage'
 import type { Product } from '@/lib/products'
 import { getLocalCoViewGraph, registerProductView, trackEvent } from '@/lib/analytics'
-import { buildProductPlaceholderMap, extractProductPlaceholderMap, getImagePlaceholder } from '@/lib/images'
+import {
+  buildProductPlaceholderMap,
+  extractProductPlaceholderMap,
+  getImagePlaceholder,
+  getProductImageVariant
+} from '@/lib/images'
 import { WHATSAPP_LINK } from '@/lib/contact'
 import { uploadProductImage } from '@/lib/client/uploadProductImage'
 
@@ -85,8 +90,16 @@ export function ProductShowcase({
     () => extractProductPlaceholderMap(product.metadata),
     [product.metadata]
   )
+  const initialReviewMap = useMemo(() => {
+    const meta = product.metadata
+    if (meta && typeof meta.imageReview === 'object') {
+      return meta.imageReview as Record<string, boolean>
+    }
+    return {}
+  }, [product.metadata])
   const [gallery, setGallery] = useState(initialGallery)
   const [placeholderMap, setPlaceholderMap] = useState(initialPlaceholders)
+  const [reviewMap, setReviewMap] = useState<Record<string, boolean>>(initialReviewMap)
   const [activeIndex, setActiveIndex] = useState(0)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const sizeOptions = product.sizes && product.sizes.length > 0 ? product.sizes : DEFAULT_SIZES
@@ -118,6 +131,10 @@ export function ProductShowcase({
   useEffect(() => {
     setPlaceholderMap(initialPlaceholders)
   }, [initialPlaceholders])
+
+  useEffect(() => {
+    setReviewMap(initialReviewMap)
+  }, [initialReviewMap])
 
   const adminModeEnabled = isAdmin && !adminPreviewMode
 
@@ -218,7 +235,8 @@ export function ProductShowcase({
 
   const syncGallery = async (
     nextGallery: string[],
-    additions: Record<string, string> = {}
+    additions: Record<string, string> = {},
+    nextReview: Record<string, boolean> = reviewMap
   ) => {
     setGallerySaving(true)
     setGalleryError(null)
@@ -229,7 +247,8 @@ export function ProductShowcase({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           assets: nextGallery.map((url, index) => ({ url, position: index })),
-          placeholders: nextPlaceholders
+          placeholders: nextPlaceholders,
+          reviewed: nextReview
         })
       })
       if (!response.ok) {
@@ -238,6 +257,7 @@ export function ProductShowcase({
       }
       setGallery(nextGallery)
       setPlaceholderMap(nextPlaceholders)
+      setReviewMap(nextReview)
       if (nextGallery.length === 0) {
         setActiveIndex(0)
       } else if (activeIndex >= nextGallery.length) {
@@ -252,7 +272,12 @@ export function ProductShowcase({
 
   const handleRemoveImage = async (index: number) => {
     const nextGallery = gallery.filter((_, idx) => idx !== index)
-    await syncGallery(nextGallery)
+    const nextReview = { ...reviewMap }
+    const removed = gallery[index]
+    if (removed) {
+      delete nextReview[removed]
+    }
+    await syncGallery(nextGallery, {}, nextReview)
   }
 
   const handleFeatureImage = async (index: number) => {
@@ -262,8 +287,12 @@ export function ProductShowcase({
     const nextGallery = [...gallery]
     const [entry] = nextGallery.splice(index, 1)
     nextGallery.unshift(entry)
+    const nextReview: Record<string, boolean> = {}
+    nextGallery.forEach(url => {
+      nextReview[url] = reviewMap[url] ?? false
+    })
     try {
-      await syncGallery(nextGallery)
+      await syncGallery(nextGallery, {}, nextReview)
       setActiveIndex(0)
     } catch (error) {
       setGalleryError(error instanceof Error ? error.message : 'No se pudo destacar la imagen.')
@@ -280,7 +309,8 @@ export function ProductShowcase({
       const result = await uploadProductImage(product.id, file)
       const nextGallery = [...gallery]
       nextGallery[targetIndex] = result.path
-      await syncGallery(nextGallery, { [result.path]: result.placeholder })
+      const nextReview = { ...reviewMap, [result.path]: false }
+      await syncGallery(nextGallery, { [result.path]: result.placeholder }, nextReview)
     } catch (error) {
       setGalleryError(error instanceof Error ? error.message : 'No se pudo reemplazar la imagen.')
     }
@@ -292,7 +322,8 @@ export function ProductShowcase({
     if (!file) return
     try {
       const result = await uploadProductImage(product.id, file)
-      await syncGallery([...gallery, result.path], { [result.path]: result.placeholder })
+      const nextReview = { ...reviewMap, [result.path]: false }
+      await syncGallery([...gallery, result.path], { [result.path]: result.placeholder }, nextReview)
     } catch (error) {
       setGalleryError(error instanceof Error ? error.message : 'No se pudo subir la imagen.')
     }
@@ -311,6 +342,36 @@ export function ProductShowcase({
   const handleGoToNext = () => {
     if (gallery.length === 0) return
     setActiveIndex(index => (index + 1) % gallery.length)
+  }
+
+  const handleToggleReview = async (url: string) => {
+    const nextReview = { ...reviewMap, [url]: !reviewMap[url] }
+    try {
+      await syncGallery(gallery, {}, nextReview)
+    } catch (error) {
+      setGalleryError(error instanceof Error ? error.message : 'No se pudo actualizar la galería.')
+    }
+  }
+
+  const handleDownloadImage = async (url: string) => {
+    try {
+      const proxyUrl = `/api/media-proxy?url=${encodeURIComponent(url)}`
+      const response = await fetch(proxyUrl)
+      if (!response.ok) {
+        throw new Error('No se pudo descargar la imagen.')
+      }
+      const blob = await response.blob()
+      const objectUrl = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = objectUrl
+      link.download = url.split('/').pop() || 'imagen'
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(objectUrl)
+    } catch (error) {
+      setGalleryError(error instanceof Error ? error.message : 'No se pudo descargar la imagen.')
+    }
   }
 
   const handleHeroTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
@@ -410,7 +471,31 @@ export function ProductShowcase({
                   </div>
                 )}
                 {adminModeEnabled && (
-                  <div className="pointer-events-none absolute inset-0 flex items-start justify-end gap-2 p-3">
+                    <div className="pointer-events-none absolute inset-0 flex items-start justify-between gap-2 p-3">
+                    <div className="pointer-events-auto flex flex-col gap-2">
+                      <button
+                        type="button"
+                        className={`rounded-full border px-3 py-1 text-[11px] uppercase tracking-[0.2em] ${
+                          reviewMap[activeImage]
+                            ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                            : 'border-white/60 bg-black/40 text-white'
+                        }`}
+                        onClick={() => handleToggleReview(activeImage)}
+                        disabled={gallerySaving}
+                      >
+                        {reviewMap[activeImage] ? 'Revisado' : 'Marcar revisado'}
+                      </button>
+                      <button
+                        type="button"
+                        className="rounded-full border border-white/60 bg-black/40 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-white"
+                        onClick={() =>
+                          handleDownloadImage(getProductImageVariant(activeImage, 'original') || activeImage)
+                        }
+                        disabled={gallerySaving}
+                      >
+                        Descargar
+                      </button>
+                    </div>
                     <div className="pointer-events-auto flex flex-col gap-2">
                       <button
                         type="button"

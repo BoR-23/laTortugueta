@@ -12,8 +12,10 @@ type MediaGalleryManagerProps = {
   productId: string
   initialGallery: string[]
   initialPlaceholders?: PlaceholderMap
+  initialReviewMap?: Record<string, boolean>
   onGalleryChange: (gallery: string[]) => void
   onPlaceholdersChange?: (placeholders: PlaceholderMap) => void
+  onReviewChange?: (reviewMap: Record<string, boolean>) => void
   disabled?: boolean
 }
 
@@ -22,17 +24,21 @@ export function MediaGalleryManager(props: MediaGalleryManagerProps) {
     productId,
     initialGallery,
     initialPlaceholders = {},
+    initialReviewMap = {},
     onGalleryChange,
     onPlaceholdersChange,
+    onReviewChange,
     disabled
   } = props
 
   const [gallery, setGallery] = useState(initialGallery)
   const [placeholders, setPlaceholders] = useState<PlaceholderMap>(initialPlaceholders)
+  const [reviewMap, setReviewMap] = useState<Record<string, boolean>>(initialReviewMap)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [pendingReplaceIndex, setPendingReplaceIndex] = useState<number | null>(null)
   const [replacingIndex, setReplacingIndex] = useState<number | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
   const addInputRef = useRef<HTMLInputElement | null>(null)
   const replaceInputRef = useRef<HTMLInputElement | null>(null)
 
@@ -44,9 +50,14 @@ export function MediaGalleryManager(props: MediaGalleryManagerProps) {
     setPlaceholders(initialPlaceholders)
   }, [initialPlaceholders])
 
+  useEffect(() => {
+    setReviewMap(initialReviewMap)
+  }, [initialReviewMap])
+
   const syncGallery = async (
     nextGallery: string[],
-    additions: PlaceholderMap = {}
+    additions: PlaceholderMap = {},
+    nextReview: Record<string, boolean> = reviewMap
   ) => {
     setBusy(true)
     try {
@@ -56,7 +67,8 @@ export function MediaGalleryManager(props: MediaGalleryManagerProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           assets: nextGallery.map((url, index) => ({ url, position: index })),
-          placeholders: nextPlaceholders
+          placeholders: nextPlaceholders,
+          reviewed: nextReview
         })
       })
       if (!response.ok) {
@@ -65,20 +77,32 @@ export function MediaGalleryManager(props: MediaGalleryManagerProps) {
       }
       setGallery(nextGallery)
       setPlaceholders(nextPlaceholders)
+      setReviewMap(nextReview)
       onGalleryChange(nextGallery)
       onPlaceholdersChange?.(nextPlaceholders)
+      onReviewChange?.(nextReview)
       setError(null)
     } finally {
       setBusy(false)
     }
   }
 
-  const handleUpload = async (file: File) => {
+  const handleUploadMultiple = async (files: File[]) => {
+    if (!files.length) return
     setBusy(true)
     setError(null)
     try {
-      const result = await uploadProductImage(productId, file)
-      await syncGallery([...gallery, result.path], { [result.path]: result.placeholder })
+      const additions: PlaceholderMap = {}
+      const nextGallery = [...gallery]
+      const nextReview: Record<string, boolean> = { ...reviewMap }
+      for (const file of files) {
+        const result = await uploadProductImage(productId, file)
+        nextGallery.push(result.path)
+        additions[result.path] = result.placeholder
+        // nuevo asset marcado como no revisado por defecto
+        nextReview[result.path] = false
+      }
+      await syncGallery(nextGallery, additions, nextReview)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudieron subir las imágenes.')
     } finally {
@@ -90,7 +114,7 @@ export function MediaGalleryManager(props: MediaGalleryManagerProps) {
     const file = event.target.files?.[0]
     event.target.value = ''
     if (!file || !productId) return
-    void handleUpload(file)
+    void handleUploadMultiple([file])
   }
 
   const handleReplaceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -107,7 +131,10 @@ export function MediaGalleryManager(props: MediaGalleryManagerProps) {
         const result = await uploadProductImage(productId, file)
         const nextGallery = [...gallery]
         nextGallery[targetIndex] = result.path
-        await syncGallery(nextGallery, { [result.path]: result.placeholder })
+        const nextReview: Record<string, boolean> = { ...reviewMap }
+        // al reemplazar, marcar como no revisado hasta revisar de nuevo
+        nextReview[result.path] = false
+        await syncGallery(nextGallery, { [result.path]: result.placeholder }, nextReview)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'No se pudo reemplazar la imagen.')
       } finally {
@@ -118,8 +145,10 @@ export function MediaGalleryManager(props: MediaGalleryManagerProps) {
 
   const handleRemove = async (url: string) => {
     const nextGallery = gallery.filter(item => item !== url)
+    const nextReview = { ...reviewMap }
+    delete nextReview[url]
     try {
-      await syncGallery(nextGallery)
+      await syncGallery(nextGallery, {}, nextReview)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo actualizar la galería.')
     }
@@ -130,8 +159,21 @@ export function MediaGalleryManager(props: MediaGalleryManagerProps) {
     const nextGallery = [...gallery]
     const [entry] = nextGallery.splice(index, 1)
     nextGallery.unshift(entry)
+    const nextReview: Record<string, boolean> = {}
+    nextGallery.forEach(url => {
+      nextReview[url] = reviewMap[url] ?? false
+    })
     try {
-      await syncGallery(nextGallery)
+      await syncGallery(nextGallery, {}, nextReview)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo actualizar la galería.')
+    }
+  }
+
+  const handleToggleReview = async (url: string) => {
+    const nextReview = { ...reviewMap, [url]: !reviewMap[url] }
+    try {
+      await syncGallery(gallery, {}, nextReview)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo actualizar la galería.')
     }
@@ -142,10 +184,37 @@ export function MediaGalleryManager(props: MediaGalleryManagerProps) {
     replaceInputRef.current?.click()
   }
 
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    if (isDisabled || busy) return
+    event.dataTransfer.dropEffect = 'copy'
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = () => {
+    setIsDragging(false)
+  }
+
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    if (isDisabled || busy) return
+    setIsDragging(false)
+    const files = Array.from(event.dataTransfer.files || []).filter(file => file.type.startsWith('image/'))
+    if (!files.length) return
+    void handleUploadMultiple(files)
+  }
+
   const isDisabled = disabled || !productId
 
   return (
-    <div className="rounded-3xl border border-neutral-200 bg-white p-6">
+    <div
+      className={`rounded-3xl border border-neutral-200 bg-white p-6 transition ${
+        isDragging ? 'border-neutral-900 bg-neutral-50' : ''
+      }`}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+      onDragLeave={handleDragLeave}
+    >
       <input
         ref={addInputRef}
         type="file"
@@ -168,6 +237,7 @@ export function MediaGalleryManager(props: MediaGalleryManagerProps) {
           <p className="text-xs text-neutral-500">
             Las fotos se suben y optimizan automáticamente (WebP en varias resoluciones).
           </p>
+          <p className="text-[11px] text-neutral-400">Arrastra imágenes aquí o usa el botón.</p>
         </div>
         <button
           type="button"
@@ -229,6 +299,26 @@ export function MediaGalleryManager(props: MediaGalleryManagerProps) {
                     className="rounded-full border border-neutral-300 px-3 py-1 hover:border-neutral-900 hover:text-neutral-900"
                   >
                     Destacar
+                  </button>
+                  <a
+                    href={displayUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    download
+                    className="rounded-full border border-neutral-300 px-3 py-1 text-center hover:border-neutral-900 hover:text-neutral-900"
+                  >
+                    Descargar
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleReview(url)}
+                    className={`rounded-full border px-3 py-1 ${
+                      reviewMap[url]
+                        ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                        : 'border-neutral-300 text-neutral-600 hover:border-neutral-900 hover:text-neutral-900'
+                    }`}
+                  >
+                    {reviewMap[url] ? 'Revisado' : 'Marcar revisado'}
                   </button>
                   <button
                     type="button"

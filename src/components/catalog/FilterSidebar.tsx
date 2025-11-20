@@ -353,9 +353,9 @@ export const FilterSidebar = ({
               <section className="space-y-3">
                 <p className={sectionTitleClasses}>Colecciones</p>
                 <div className="space-y-1.5">
-                  {collectionTags.map(tag => (
+                  {collectionTags.map((tag, index) => (
                     <button
-                      key={tag.label}
+                      key={`${tag.label}-${index}`}
                       type="button"
                       onClick={() => onToggleTag(tag.label)}
                       className={listTagClasses(filterState.tags.includes(tag.label))}
@@ -371,9 +371,9 @@ export const FilterSidebar = ({
               <section className="space-y-3">
                 <p className={sectionTitleClasses}>Atributos / patrones</p>
                 <div className="space-y-1.5">
-                  {descriptorTags.map(tag => (
+                  {descriptorTags.map((tag, index) => (
                     <button
-                      key={tag.label}
+                      key={`${tag.label}-${index}`}
                       type="button"
                       onClick={() => onToggleTag(tag.label)}
                       className={listTagClasses(filterState.tags.includes(tag.label))}

@@ -7,6 +7,7 @@ export type ProductMetadata = {
   storyBody?: string
   storyImages?: string[] | string
   imagePlaceholders?: ImagePlaceholderMap
+  imageReview?: Record<string, boolean>
 } & Record<string, unknown>
 
 export interface Product {

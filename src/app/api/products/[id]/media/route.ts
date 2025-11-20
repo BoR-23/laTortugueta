@@ -31,8 +31,12 @@ export async function PUT(
       payload.placeholders && typeof payload.placeholders === 'object'
         ? (payload.placeholders as Record<string, string>)
         : undefined
+    const reviewed =
+      payload.reviewed && typeof payload.reviewed === 'object'
+        ? (payload.reviewed as Record<string, boolean>)
+        : undefined
 
-    await replaceProductMediaAssets(id, assets, placeholders)
+    await replaceProductMediaAssets(id, assets, placeholders, reviewed)
 
     revalidateProduct(id)
 

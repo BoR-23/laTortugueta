@@ -16,6 +16,7 @@ import type {
   SortKey
 } from './catalogFiltering'
 import {
+  COLOR_CODE_REGEX,
   computePriceStats,
   summariseTags,
   summariseColorCodes,
@@ -103,6 +104,20 @@ const mapTreeForSidebar = (nodes: CategoryTreeNode[]): CategorySidebarNode[] => 
     children: mapTreeForSidebar(node.children)
   }))
 }
+
+const stripColorCodeNodes = (nodes: CategoryTreeNode[]): CategoryTreeNode[] =>
+  nodes
+    .map(node => {
+      if (node.tagKey && COLOR_CODE_REGEX.test(node.tagKey)) {
+        return null
+      }
+      const children = stripColorCodeNodes(node.children)
+      if (!node.tagKey && children.length === 0) {
+        return null
+      }
+      return { ...node, children }
+    })
+    .filter((node): node is CategoryTreeNode => Boolean(node))
 
 const buildFallbackTreeFromTags = (
   tags: ReturnType<typeof summariseTags>,
@@ -250,11 +265,12 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
     if (tree.length) return tree
     return buildFallbackTreeFromTags(collectionTags, 'filter')
   }, [filterCategories, collectionTags])
+  const sanitizedFilterTree = useMemo(() => stripColorCodeNodes(filterTree), [filterTree])
 
   const headerNavTabs: CategoryNavNode[] = useMemo(() => flattenNavNodes(headerTree), [headerTree])
   const managedFilterTree: CategorySidebarNode[] = useMemo(
-    () => mapTreeForSidebar(filterTree),
-    [filterTree]
+    () => mapTreeForSidebar(sanitizedFilterTree),
+    [sanitizedFilterTree]
   )
 
   const { favorites, favoriteSet, toggleFavorite } = useFavorites()

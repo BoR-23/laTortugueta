@@ -144,6 +144,29 @@ const nextOrderForParent = (records: CategoryRecord[], scope: CategoryScope, par
   return Math.max(...siblings.map(record => record.order)) + 1
 }
 
+const mergeDuplicateCategories = async (
+  client: ReturnType<typeof createSupabaseServerClient>,
+  keepId: string,
+  scope: CategoryScope,
+  tagKey: string | null
+) => {
+  if (!tagKey) return
+  const { data, error } = await client
+    .from('categories')
+    .select('id')
+    .eq('scope', scope)
+    .ilike('tag_key', tagKey)
+
+  if (error || !data) return
+  const duplicates = data.map(row => row.id).filter(id => id !== keepId)
+  for (const dupId of duplicates) {
+    // Reasignar hijos al ganador
+    await client.from('categories').update({ parent_id: keepId }).eq('parent_id', dupId)
+    // Eliminar duplicado
+    await client.from('categories').delete().eq('id', dupId)
+  }
+}
+
 export const createCategoryRecord = async (input: {
   name: string
   tagKey?: string | null
@@ -180,7 +203,9 @@ export const createCategoryRecord = async (input: {
     throw new Error(error?.message ?? 'No se pudo crear la categoría.')
   }
 
-  return mapRowToRecord(data as CategoryRow)
+  const created = mapRowToRecord(data as CategoryRow)
+  await mergeDuplicateCategories(client, created.id, created.scope, created.tagKey)
+  return created
 }
 
 export const updateCategoryRecord = async (
@@ -234,6 +259,8 @@ export const updateCategoryRecord = async (
       }
     }
   }
+
+  await mergeDuplicateCategories(client, updatedRecord.id, updatedRecord.scope, updatedRecord.tagKey)
 
   return updatedRecord
 }

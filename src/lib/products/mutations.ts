@@ -100,7 +100,8 @@ export const deleteProductRecord = async (id: string) => {
 export const replaceProductMediaAssets = async (
   productId: string,
   assets: MediaAssetInput[],
-  placeholders?: Record<string, string>
+  placeholders?: Record<string, string>,
+  reviewed?: Record<string, boolean>
 ) => {
   const client = createSupabaseServerClient()
   await client.from('media_assets').delete().eq('product_id', productId)
@@ -137,11 +138,21 @@ export const replaceProductMediaAssets = async (
     existingMetadata.imagePlaceholders && typeof existingMetadata.imagePlaceholders === 'object'
       ? (existingMetadata.imagePlaceholders as Record<string, string>)
       : {}
+  const existingReview =
+    existingMetadata.imageReview && typeof existingMetadata.imageReview === 'object'
+      ? (existingMetadata.imageReview as Record<string, boolean>)
+      : {}
 
   const filteredPlaceholders: Record<string, string> = {}
   Object.entries(existingPlaceholders).forEach(([url, value]) => {
     if (urls.has(url) && value) {
       filteredPlaceholders[url] = value
+    }
+  })
+  const filteredReview: Record<string, boolean> = {}
+  Object.entries(existingReview).forEach(([url, value]) => {
+    if (urls.has(url)) {
+      filteredReview[url] = Boolean(value)
     }
   })
 
@@ -152,8 +163,16 @@ export const replaceProductMediaAssets = async (
       }
     })
   }
+  if (reviewed) {
+    Object.entries(reviewed).forEach(([url, value]) => {
+      if (urls.has(url)) {
+        filteredReview[url] = Boolean(value)
+      }
+    })
+  }
 
   existingMetadata.imagePlaceholders = filteredPlaceholders
+  existingMetadata.imageReview = filteredReview
 
   await client
     .from('products')
