@@ -51,7 +51,7 @@ export const HeroCarousel = ({ slides }: HeroCarouselProps) => {
                   className="object-cover object-center"
                   priority={index === 0}
                 />
-                <div className="absolute inset-0 bg-black/30" />
+                {(slide.title || slide.subtitle) && <div className="absolute inset-0 bg-black/30" />}
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white p-4">
                   {slide.title && (
                     <h2 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl drop-shadow-lg">
