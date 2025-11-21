@@ -5,31 +5,37 @@ const faqs = [
   {
     question: '¿Cómo se hacen los calcetines?',
     answer:
-      'Cada par se teje a mano en telares históricos. Documentamos patrón, colores y etiquetas antes de comenzar el hilado.'
+      'Cada par es único y se teje a mano en telares manuales. No trabajamos con stock estándar: confeccionamos cada calcetín a medida según número de pie, altura de caña y ancho de gemelo. Marcamos los colores en la etiqueta antes de tejer. Usamos exclusivamente algodón 100% Guisa.'
   },
   {
     question: '¿Cuánto tarda un pedido?',
-    answer: 'Normalmente 15-20 días laborables. Los encargos urgentes tienen suplemento y necesitan confirmación previa.'
+    answer:
+      'Entre 15 y 40 días según época y carga de trabajo. No aceptamos encargos urgentes: el proceso es 100% artesanal.'
   },
   {
     question: '¿Cómo se cuidan los calcetines?',
     answer:
-      'Lávalos a mano con agua fría, sin frotar en seco. Evita la secadora y usa jabón neutro. Si se desgastan revisamos reparaciones bajo pedido.'
+      'Lavado: siempre a mano con agua fría y jabón neutro, sin frotar. Secado: nada de secadora ni tenderlos; sécalos entre dos toallas. Colocación: uñas cortas y ponlos desde la punta del pie, subiendo poco a poco para evitar enganches.'
+  },
+  {
+    question: '¿Puedo personalizar colores o diseño?',
+    answer:
+      'Sí. Te enviamos la carta de colores; el precio base cubre hasta 3 colores. Diseños con 4+ colores (ej. rayas de 10) llevan recargo bajo presupuesto. Podemos recrear modelos antiguos si nos envías una foto. Tallas grandes (44+) o cañas muy altas llevan suplemento.'
   },
   {
     question: '¿Hacéis envíos internacionales?',
-    answer: 'Sí. Enviamos a España, Europa y resto del mundo con seguimiento. Calculamos el coste en el momento del pago.'
+    answer: 'Sí. Enviamos a España, Europa y resto del mundo con seguimiento. El coste exacto se calcula en el momento del pago.'
   },
   {
-    question: '¿Puedo cambiar una etiqueta o color?',
-    answer:
-      'Claro. Cada diseño se adapta a tu petición. Incluye detalles en el formulario o en WhatsApp y te mandamos presupuesto.'
+    question: '¿Tienes otra duda?',
+    answer: 'Escríbenos y te respondemos encantados sobre confección, tiempos, colores o cuidado de los calcetines.'
   }
 ]
 
 export const metadata: Metadata = {
   title: 'Preguntas frecuentes',
-  description: 'Resolvemos dudas sobre pedidos, telas, envío y cuidado de los calcetines de La Tortugueta.',
+  description:
+    'Resolvemos dudas sobre confección, tiempos, personalización, envíos y cuidado de los calcetines artesanales de La Tortugueta.',
   alternates: {
     canonical: absoluteUrl('/faq')
   }
