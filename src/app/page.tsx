@@ -8,7 +8,9 @@ import { TestimonialsSection } from '@/components/home/TestimonialsSection'
 import { HowToOrderSection } from '@/components/home/HowToOrderSection'
 import { StoryHighlightsSection } from '@/components/home/StoryHighlightsSection'
 import { TopVisitedSection } from '@/components/home/TopVisitedSection'
+import { HeroCarousel } from '@/components/home/HeroCarousel'
 import { getSiteSettings } from '@/lib/settings'
+import { getHeroSlides } from '@/lib/banners'
 
 const mapCategoriesToDTO = (records: Awaited<ReturnType<typeof getCategories>>) =>
   records.map(record => ({
@@ -34,7 +36,12 @@ export const metadata: Metadata = {
   title: 'Catálogo',
   description: siteMetadata.description,
   alternates: {
-    canonical: '/'
+    canonical: '/',
+    languages: {
+      'es': '/',
+      'ca': '/ca',
+      'en': '/en'
+    }
   },
   openGraph: {
     title: `${siteMetadata.name} · Catálogo`,
@@ -57,6 +64,7 @@ export default async function Home() {
     getCategories("filter")
   ])
   const siteSettings = await getSiteSettings()
+  const slides = await getHeroSlides()
 
   const headerNameMap = buildCategoryNameMap(headerCategories)
   const filterNameMap = buildCategoryNameMap(filterCategories)
@@ -84,12 +92,15 @@ export default async function Home() {
         suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: JSON.stringify(catalogJsonLd) }}
       />
-      <TagFilterPanelClient
-        products={visibleProducts}
-        headerCategories={mapCategoriesToDTO(headerCategories)}
-        filterCategories={mapCategoriesToDTO(filterCategories)}
-        settings={siteSettings}
-      />
+      <HeroCarousel slides={slides} />
+      <div id="catalogo">
+        <TagFilterPanelClient
+          products={visibleProducts}
+          headerCategories={mapCategoriesToDTO(headerCategories)}
+          filterCategories={mapCategoriesToDTO(filterCategories)}
+          settings={siteSettings}
+        />
+      </div>
       {siteSettings.enableTopVisited ? <TopVisitedSection products={visibleProducts} /> : null}
       <TestimonialsSection show={enableTestimonials} />
       {siteSettings.enableStoryHighlights ? <StoryHighlightsSection /> : null}

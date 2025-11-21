@@ -66,6 +66,12 @@ export default async function AdminPricingPage() {
           >
             Gestión de categorías
           </Link>
+          <Link
+            href="/admin/banners"
+            className="rounded-full border border-neutral-900 px-4 py-2 text-neutral-900 transition hover:bg-neutral-900 hover:text-white"
+          >
+            Gestión de Banners
+          </Link>
         </div>
       </div>
 

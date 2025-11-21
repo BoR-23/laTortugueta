@@ -4,6 +4,8 @@ import type { ReactNode } from 'react'
 import { footerNavLinks, primaryNavLinks } from '@/lib/navigation'
 import { HeaderActions } from './HeaderActions'
 import { CookieBanner } from '@/components/ui/CookieBanner'
+import { LanguageSwitcher } from './LanguageSwitcher'
+import { HeaderNav } from './HeaderNav'
 
 interface LayoutShellProps {
   children: ReactNode
@@ -26,29 +28,9 @@ export function LayoutShell({ children }: LayoutShellProps) {
             La Tortugueta
           </Link>
           <div className="flex flex-1 items-center justify-end gap-6 pl-6">
+            <LanguageSwitcher />
             <HeaderActions />
-            <nav
-              className="hidden flex-wrap items-center gap-4 text-[10px] font-semibold uppercase tracking-[0.25em] text-neutral-400 lg:flex"
-              aria-label="Navegación secundaria"
-            >
-              {primaryNavLinks.map(link =>
-                link.external ? (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="transition hover:text-neutral-900"
-                  >
-                    {link.label}
-                  </a>
-                ) : (
-                  <Link key={link.label} href={link.href} className="transition hover:text-neutral-900">
-                    {link.label}
-                  </Link>
-                )
-              )}
-            </nav>
+            <HeaderNav />
           </div>
         </div>
       </header>
