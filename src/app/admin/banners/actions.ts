@@ -31,7 +31,7 @@ export async function createBanner(formData: FormData) {
         throw new Error('Image URL is required')
     }
 
-    let mobile_crop = { x: 50, y: 50, size: 56 }
+    let mobile_crop = { x: 50, y: 50, size: 100 }
     if (mobile_crop_str) {
         try {
             mobile_crop = JSON.parse(mobile_crop_str)

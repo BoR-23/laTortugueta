@@ -10,7 +10,7 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroSlide[] 
     const [banners, setBanners] = useState(initialBanners)
     const [isEditing, setIsEditing] = useState<string | null>(null)
     const [isCreating, setIsCreating] = useState(false)
-    const [currentCrop, setCurrentCrop] = useState<{ x: number; y: number; size: number }>({ x: 50, y: 50, size: 56 })
+    const [currentCrop, setCurrentCrop] = useState<{ x: number; y: number; size: number }>({ x: 50, y: 50, size: 100 })
     const [newBannerImageUrl, setNewBannerImageUrl] = useState('')
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -24,7 +24,7 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroSlide[] 
             if (isCreating) {
                 await createBanner(formData)
                 setIsCreating(false)
-                setCurrentCrop({ x: 50, y: 50, size: 56 }) // Reset
+                setCurrentCrop({ x: 50, y: 50, size: 100 }) // Reset
                 setNewBannerImageUrl('') // Reset
             } else if (isEditing) {
                 await updateBanner(isEditing, formData)
@@ -75,7 +75,7 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroSlide[] 
                                     const imageUrl = e.target.value
                                     setNewBannerImageUrl(imageUrl) // Update the state
                                     if (imageUrl) {
-                                        setCurrentCrop({ x: 50, y: 50, size: 56 }) // Reset crop when image changes
+                                        setCurrentCrop({ x: 50, y: 50, size: 100 }) // Reset crop when image changes
                                     }
                                 }}
                             />
@@ -171,7 +171,7 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroSlide[] 
                                 {/* Mobile Crop Selector for editing */}
                                 <MobileCropSelector
                                     imageUrl={banner.image_url}
-                                    initialCrop={banner.mobile_crop || { x: 50, y: 50, size: 56 }}
+                                    initialCrop={banner.mobile_crop || { x: 50, y: 50, size: 100 }}
                                     onChange={setCurrentCrop}
                                 />
 

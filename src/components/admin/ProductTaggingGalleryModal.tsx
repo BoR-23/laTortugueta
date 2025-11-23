@@ -23,6 +23,9 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
     const [loadingTags, setLoadingTags] = useState(false)
     const [loadingExif, setLoadingExif] = useState(false)
     const [exif, setExif] = useState<any>(null)
+    const [showMoveModal, setShowMoveModal] = useState(false)
+    const [targetProducts, setTargetProducts] = useState<Array<{ id: string, name: string }>>([])
+    const [movingTo, setMovingTo] = useState<string | null>(null)
 
     const currentUrl = gallery[currentIndex]
 
@@ -88,7 +91,23 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
                 if (exifDataFromDb?.exif) {
                     setExif(exifDataFromDb.exif)
                 } else {
-                    setExif(null)
+                    // Fallback to API if not in DB
+                    try {
+                        const res = await fetch('/api/media/exif', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ url: currentUrl })
+                        })
+                        if (res.ok) {
+                            const { exif } = await res.json()
+                            setExif(exif)
+                        } else {
+                            setExif(null)
+                        }
+                    } catch (e) {
+                        console.error('Error fetching EXIF from API:', e)
+                        setExif(null)
+                    }
                 }
             } catch (error) {
                 console.error('Error fetching image data:', error)
@@ -162,6 +181,57 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
             alert('Error al guardar tags')
         } finally {
             setSaving(false)
+        }
+    }
+
+    const loadProducts = async () => {
+        if (!supabaseBrowserClient) return
+        try {
+            const { data } = await supabaseBrowserClient
+                .from('products')
+                .select('id, name')
+                .order('name')
+
+            setTargetProducts(data || [])
+        } catch (err) {
+            console.error('Error loading products:', err)
+        }
+    }
+
+    const handleMovePhoto = async (targetProductId: string, targetProductName: string) => {
+        setMovingTo(targetProductId)
+        try {
+            const res = await fetch('/api/media/move', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    assetUrl: currentUrl,
+                    targetProductId,
+                    targetProductName
+                })
+            })
+
+            if (!res.ok) throw new Error('Failed to move photo')
+
+            // Remove from current gallery and close modal if it was the last one
+            const newGallery = gallery.filter(url => url !== currentUrl)
+            if (newGallery.length === 0) {
+                onClose()
+            } else {
+                // Adjust index if needed
+                if (currentIndex >= newGallery.length) {
+                    setCurrentIndex(newGallery.length - 1)
+                }
+                // Force parent to refresh (close and reopen)
+                onClose()
+            }
+
+            setShowMoveModal(false)
+        } catch (err) {
+            console.error('Error moving photo:', err)
+            alert('Error al mover la foto')
+        } finally {
+            setMovingTo(null)
         }
     }
 
@@ -385,16 +455,57 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
 
                     {/* Footer */}
                     <div className="mt-6 flex justify-end gap-3 border-t border-neutral-100 pt-6">
+                        {/* Save button */}
+                        <button
+                            onClick={() => {
+                                loadProducts()
+                                setShowMoveModal(true)
+                            }}
+                            className="w-full rounded-lg border border-neutral-900 bg-white px-4 py-2 text-sm font-medium text-neutral-900 hover:bg-neutral-50"
+                        >
+                            Enviar a...
+                        </button>
+
                         <button
                             onClick={handleSave}
                             disabled={saving}
-                            className="w-full rounded-full bg-neutral-900 px-6 py-3 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
+                            className="w-full rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
                         >
-                            {saving ? 'Guardando...' : 'Guardar cambios'}
+                            {saving ? 'Guardando...' : 'Guardar Tags'}
                         </button>
                     </div>
                 </div>
             </div>
+
+            {/* Move Modal */}
+            {showMoveModal && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4" onClick={() => setShowMoveModal(false)}>
+                    <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+                        <h3 className="mb-4 text-lg font-semibold">Enviar foto a otro producto</h3>
+
+                        <div className="max-h-96 space-y-2 overflow-y-auto">
+                            {targetProducts.map(product => (
+                                <button
+                                    key={product.id}
+                                    onClick={() => handleMovePhoto(product.id, product.name)}
+                                    disabled={movingTo === product.id}
+                                    className="w-full rounded-lg border border-neutral-200 p-3 text-left hover:border-neutral-900 hover:bg-neutral-50 disabled:opacity-50"
+                                >
+                                    {product.name}
+                                    {movingTo === product.id && <span className="ml-2 text-xs text-neutral-500">Moviendo...</span>}
+                                </button>
+                            ))}
+                        </div>
+
+                        <button
+                            onClick={() => setShowMoveModal(false)}
+                            className="mt-4 w-full rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium hover:bg-neutral-50"
+                        >
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

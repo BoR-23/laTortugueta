@@ -55,26 +55,18 @@ export const HeroCarousel = ({ slides }: HeroCarouselProps) => {
                   style={{ backgroundImage: `url(${slide.image_url})` }}
                 />
 
-                {/* Mobile - cropped to selected area with transform */}
+                {/* Mobile - full height, adjustable horizontal center */}
                 <div
-                  className="block sm:hidden absolute inset-0 overflow-hidden"
-                >
-                  <div
-                    className="absolute inset-0 bg-cover bg-no-repeat"
-                    style={{
-                      backgroundImage: `url(${slide.image_url})`,
-                      backgroundPosition: slide.mobile_crop
-                        ? `${slide.mobile_crop.x}% ${slide.mobile_crop.y}%`
-                        : 'center center',
-                      transform: slide.mobile_crop
-                        ? `scale(${100 / slide.mobile_crop.size})`
-                        : 'scale(1)',
-                      transformOrigin: slide.mobile_crop
-                        ? `${slide.mobile_crop.x}% ${slide.mobile_crop.y}%`
-                        : 'center center'
-                    }}
-                  />
-                </div>
+                  className="block sm:hidden absolute inset-0"
+                  style={{
+                    backgroundImage: `url(${slide.image_url})`,
+                    backgroundSize: 'auto 100%',
+                    backgroundPosition: slide.mobile_crop
+                      ? `${slide.mobile_crop.x}% center`
+                      : 'center',
+                    backgroundRepeat: 'no-repeat'
+                  }}
+                />
 
                 {(slide.title || slide.subtitle) && <div className="absolute inset-0 bg-black/30" />}
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white p-4">

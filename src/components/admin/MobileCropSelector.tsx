@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 
 interface MobileCrop {
@@ -16,75 +16,29 @@ interface MobileCropSelectorProps {
 }
 
 export function MobileCropSelector({ imageUrl, initialCrop, onChange }: MobileCropSelectorProps) {
-    const [crop, setCrop] = useState(initialCrop || { x: 50, y: 50, size: 56 })
-    const [isDragging, setIsDragging] = useState(false)
+    // Only track X position - Y is always centered (50), size is always 100 (full height)
+    const [cropX, setCropX] = useState(initialCrop?.x || 50)
     const containerRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
-        onChange(crop)
-    }, [crop, onChange])
-
-    const handleMouseDown = (e: React.MouseEvent) => {
-        e.preventDefault()
-        setIsDragging(true)
-    }
-
-    const handleMouseMove = useCallback((e: MouseEvent) => {
-        if (!isDragging || !containerRef.current) return
-
-        const rect = containerRef.current.getBoundingClientRect()
-        const x = ((e.clientX - rect.left) / rect.width) * 100
-        const y = ((e.clientY - rect.top) / rect.height) * 100
-
-        // Mobile aspect ratio is ~9:16 (vertical), so height is larger than width
-        // For a 21:9 desktop image, a mobile crop should be narrower and taller
-        const mobileAspectRatio = 9 / 16 // width / height
-        const cropWidth = crop.size
-        const cropHeight = cropWidth / mobileAspectRatio // height is larger
-
-        setCrop(prev => ({
-            ...prev,
-            x: Math.max(cropWidth / 2, Math.min(100 - cropWidth / 2, x)),
-            y: Math.max(cropHeight / 2, Math.min(100 - cropHeight / 2, y))
-        }))
-    }, [isDragging, crop.size, containerRef])
-
-    const handleMouseUp = useCallback(() => {
-        setIsDragging(false)
-    }, [])
-
-    useEffect(() => {
-        if (isDragging) {
-            window.addEventListener('mousemove', handleMouseMove)
-            window.addEventListener('mouseup', handleMouseUp)
-            return () => {
-                window.removeEventListener('mousemove', handleMouseMove)
-                window.removeEventListener('mouseup', handleMouseUp)
-            }
-        }
-    }, [isDragging, handleMouseMove, handleMouseUp])
-
-    // Mobile is 9:16 aspect ratio
-    const mobileAspectRatio = 9 / 16
-    const cropWidth = crop.size
-    const cropHeight = cropWidth / mobileAspectRatio
-
-    const cropStyle = {
-        left: `${crop.x - cropWidth / 2}%`,
-        top: `${crop.y - cropHeight / 2}%`,
-        width: `${cropWidth}%`,
-        height: `${cropHeight}%`
-    }
+        onChange({ x: cropX, y: 50, size: 100 })
+    }, [cropX, onChange])
 
     return (
         <div className="space-y-4">
             <div>
                 <label className="block text-xs uppercase font-bold text-neutral-500 mb-2">
-                    Vista Móvil - Selecciona el área (9:16)
+                    Vista Móvil - Selecciona el centro horizontal
                 </label>
                 <div
                     ref={containerRef}
                     className="relative w-full aspect-[21/9] bg-neutral-100 rounded-lg overflow-hidden cursor-crosshair"
+                    onClick={(e) => {
+                        if (!containerRef.current) return
+                        const rect = containerRef.current.getBoundingClientRect()
+                        const x = ((e.clientX - rect.left) / rect.width) * 100
+                        setCropX(Math.max(0, Math.min(100, x)))
+                    }}
                 >
                     <Image
                         src={imageUrl}
@@ -95,16 +49,13 @@ export function MobileCropSelector({ imageUrl, initialCrop, onChange }: MobileCr
                         unoptimized
                     />
 
-                    {/* Crop overlay - vertical mobile format */}
+                    {/* Vertical line showing mobile center */}
                     <div
-                        className="absolute border-4 border-blue-500 bg-blue-500/20 cursor-move"
-                        style={cropStyle}
-                        onMouseDown={handleMouseDown}
+                        className="absolute top-0 bottom-0 w-1 bg-blue-500 cursor-ew-resize"
+                        style={{ left: `${cropX}%`, transform: 'translateX(-50%)' }}
                     >
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="bg-blue-500 text-white text-xs px-2 py-1 rounded font-mono">
-                                Vista Móvil
-                            </div>
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-blue-500 text-white text-xs px-2 py-1 rounded font-mono whitespace-nowrap">
+                            Centro: {Math.round(cropX)}%
                         </div>
                     </div>
 
@@ -118,47 +69,21 @@ export function MobileCropSelector({ imageUrl, initialCrop, onChange }: MobileCr
                 </div>
             </div>
 
-            {/* Controls */}
-            <div className="grid grid-cols-3 gap-4">
-                <div>
-                    <label className="block text-xs text-neutral-500 mb-1">Tamaño (%)</label>
-                    <input
-                        type="range"
-                        min="30"
-                        max="100"
-                        value={crop.size}
-                        onChange={(e) => setCrop(prev => ({ ...prev, size: Number(e.target.value) }))}
-                        className="w-full"
-                    />
-                    <div className="text-xs text-center font-mono text-neutral-700">{crop.size}%</div>
-                </div>
-                <div>
-                    <label className="block text-xs text-neutral-500 mb-1">Horizontal</label>
-                    <input
-                        type="range"
-                        min={crop.size / 2}
-                        max={100 - crop.size / 2}
-                        value={crop.x}
-                        onChange={(e) => setCrop(prev => ({ ...prev, x: Number(e.target.value) }))}
-                        className="w-full"
-                    />
-                    <div className="text-xs text-center font-mono text-neutral-700">{Math.round(crop.x)}%</div>
-                </div>
-                <div>
-                    <label className="block text-xs text-neutral-500 mb-1">Vertical</label>
-                    <input
-                        type="range"
-                        min={crop.size / 2}
-                        max={100 - crop.size / 2}
-                        value={crop.y}
-                        onChange={(e) => setCrop(prev => ({ ...prev, y: Number(e.target.value) }))}
-                        className="w-full"
-                    />
-                    <div className="text-xs text-center font-mono text-neutral-700">{Math.round(crop.y)}%</div>
-                </div>
+            {/* Slider control */}
+            <div>
+                <label className="block text-xs text-neutral-500 mb-1">Posición Horizontal</label>
+                <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={cropX}
+                    onChange={(e) => setCropX(Number(e.target.value))}
+                    className="w-full"
+                />
+                <div className="text-xs text-center font-mono text-neutral-700">{Math.round(cropX)}%</div>
             </div>
 
-            {/* Mobile preview */}
+            {/* Preview */}
             <div className="grid grid-cols-2 gap-4">
                 <div>
                     <label className="block text-xs text-neutral-500 mb-2">Preview Desktop</label>
@@ -174,24 +99,17 @@ export function MobileCropSelector({ imageUrl, initialCrop, onChange }: MobileCr
                     </div>
                 </div>
                 <div>
-                    <label className="block text-xs text-neutral-500 mb-2">Preview Móvil (9:16)</label>
+                    <label className="block text-xs text-neutral-500 mb-2">Preview Móvil</label>
                     <div className="relative w-full aspect-[9/16] bg-neutral-100 rounded-lg overflow-hidden">
                         <div
-                            className="relative w-full h-full"
+                            className="absolute inset-0"
                             style={{
-                                transform: `scale(${100 / crop.size})`,
-                                transformOrigin: `${crop.x}% ${crop.y}%`
+                                backgroundImage: `url(${imageUrl})`,
+                                backgroundSize: 'auto 100%',
+                                backgroundPosition: `${cropX}% center`,
+                                backgroundRepeat: 'no-repeat'
                             }}
-                        >
-                            <Image
-                                src={imageUrl}
-                                alt="Mobile preview"
-                                fill
-                                sizes="200px"
-                                className="object-cover"
-                                unoptimized
-                            />
-                        </div>
+                        />
                     </div>
                 </div>
             </div>
