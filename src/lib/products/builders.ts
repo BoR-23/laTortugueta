@@ -83,21 +83,6 @@ export const supabasePayloadFromInput = (input: ProductMutationInput, withTimest
 
   return payload
 }
-const deriveCategoryName = (tags: unknown, lookup?: Map<string, string>) => {
-  if (!lookup || !Array.isArray(tags)) {
-    return undefined
-  }
-  for (const tag of tags) {
-    if (typeof tag !== 'string') continue
-    const trimmed = tag.trim()
-    if (!trimmed) continue
-    const match = lookup.get(trimmed)
-    if (match) {
-      return match
-    }
-  }
-  return undefined
-}
 
 export const buildProductFromSupabase = (
   record: Record<string, any>,
@@ -111,17 +96,17 @@ export const buildProductFromSupabase = (
       .map(asset => asset.url)
     : []
 
-  const categoryFromTags = deriveCategoryName(record.tags, categoryLookup)
+  // Removed automatic tag-to-category mapping - categories are managed via product.type only
   const explicitCategory =
     typeof record.category === 'string' && record.category.trim().length > 0
       ? record.category.trim()
       : undefined
-  const categoryName = categoryFromTags ?? explicitCategory
 
   const baseType =
     typeof record.type === 'string' && record.type.trim().length > 0
       ? record.type.trim()
-      : inferProductTypeFromCategory(categoryName)
+      : inferProductTypeFromCategory(explicitCategory)
+
 
   const metadata =
     record.metadata && typeof record.metadata === 'object'
@@ -141,7 +126,7 @@ export const buildProductFromSupabase = (
     care: record.care || '',
     origin: record.origin || '',
     content: record.description || '',
-    category: categoryName,
+    category: explicitCategory,
     photos: record.photos || gallery.length,
     gallery,
     sizes: Array.isArray(record.sizes) ? record.sizes : undefined,

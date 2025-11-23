@@ -1,11 +1,17 @@
 'use client'
 
 import { usePathname, useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import { Locale } from '@/i18n/dictionaries'
 
 export function LanguageSwitcher() {
     const pathname = usePathname()
     const router = useRouter()
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
 
     const currentLocale = pathname.startsWith('/en') ? 'en' : pathname.startsWith('/ca') ? 'ca' : 'es'
 
@@ -19,7 +25,8 @@ export function LanguageSwitcher() {
         cleanPath.startsWith('/blog/') ||
         cleanPath === '/quienes-somos'
 
-    if (!isSupportedRoute) {
+    // Don't render on server or unsupported routes to prevent hydration mismatch
+    if (!mounted || !isSupportedRoute) {
         return null
     }
 
@@ -66,3 +73,4 @@ export function LanguageSwitcher() {
         </div>
     )
 }
+

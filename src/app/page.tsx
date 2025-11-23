@@ -71,17 +71,9 @@ export default async function Home() {
   const headerNameMap = buildCategoryNameMap(headerCategories)
   const filterNameMap = buildCategoryNameMap(filterCategories)
 
-  const enrichedProducts = catalogProducts.map(product => {
-    const normalizedTags = (product.tags ?? []).map(tag => tag.toLowerCase())
-    const match = normalizedTags.find(tag => filterNameMap.has(tag) || headerNameMap.has(tag))
-    const displayName = match ? filterNameMap.get(match) ?? headerNameMap.get(match) : null
-    return {
-      ...product,
-      category: displayName ?? product.category
-    }
-  })
+  // Removed automatic tag-to-category enrichment - categories managed via product.type only
+  const visibleProducts = catalogProducts.filter(product => product.price > 0)
 
-  const visibleProducts = enrichedProducts.filter(product => product.price > 0)
 
   const catalogJsonLd = buildCatalogJsonLd(visibleProducts.length)
   const enableTestimonials =

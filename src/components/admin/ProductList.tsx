@@ -302,7 +302,7 @@ export function ProductList({ products, onEdit, onDelete, onPriceUpdate, onToggl
                   </td>
                   <td className="px-4 py-4 align-top">
                     <span className="rounded-full border border-neutral-200 px-3 py-1 text-xs uppercase tracking-[0.25em] text-neutral-500">
-                      {product.category || 'N/A'}
+                      {product.type?.split(' ')[0] || product.category || 'N/A'}
                     </span>
                   </td>
                   <td className="px-4 py-4 align-top">
