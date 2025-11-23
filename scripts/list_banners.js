@@ -9,7 +9,7 @@ const supabase = createClient(
 async function listBanners() {
     const { data, error } = await supabase
         .from('hero_slides')
-        .select('id, title, subtitle, priority')
+        .select('id, title, subtitle, priority, image_url')
         .order('priority', { ascending: true });
 
     if (error) {
@@ -19,7 +19,7 @@ async function listBanners() {
 
     console.log('Current Banners:');
     data.forEach(banner => {
-        console.log(`[${banner.priority}] ID: ${banner.id} | Title: "${banner.title}"`);
+        console.log(`[${banner.priority}] ID: ${banner.id} | Title: "${banner.title}" | URL: ${banner.image_url}`);
     });
 }
 
