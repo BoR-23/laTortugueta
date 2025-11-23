@@ -50,13 +50,13 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
         url,
         images: image
           ? [
-              {
-                url: image,
-                width: 1200,
-                height: 630,
-                alt: product.name
-              }
-            ]
+            {
+              url: image,
+              width: 1200,
+              height: 630,
+              alt: product.name
+            }
+          ]
           : undefined
       },
       twitter: {
@@ -92,7 +92,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
     const breadcrumbs = [
       { label: 'Inicio', href: '/' },
       { label: 'Catálogo', href: '/#colecciones' },
-      { label: product.category ?? 'Catálogo', href: '/#colecciones' },
       { label: product.name, current: true }
     ]
     return (

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import Image from 'next/image'
 import { supabaseBrowserClient } from '@/lib/supabaseClient'
 import { getProductImageVariant } from '@/lib/images'
@@ -14,6 +14,7 @@ interface ProductTaggingGalleryModalProps {
 }
 
 export function ProductTaggingGalleryModal({ productName, gallery, initialIndex = 0, onClose, onImagesUpdated }: ProductTaggingGalleryModalProps) {
+    const [localGallery, setLocalGallery] = useState(gallery)
     const [currentIndex, setCurrentIndex] = useState(initialIndex)
     const [saving, setSaving] = useState(false)
     const [tags, setTags] = useState<string[]>([])
@@ -27,8 +28,28 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
     const [showMoveModal, setShowMoveModal] = useState(false)
     const [targetProducts, setTargetProducts] = useState<Array<{ id: string, name: string }>>([])
     const [movingTo, setMovingTo] = useState<string | null>(null)
+    const scrollContainerRef = useRef<HTMLDivElement>(null)
 
-    const currentUrl = gallery[currentIndex]
+    const currentUrl = localGallery[currentIndex]
+
+    // Sync local gallery if prop changes (e.g. if parent forces a full reload)
+    useEffect(() => {
+        setLocalGallery(gallery)
+    }, [gallery])
+
+    // Auto-scroll to current product in move modal
+    useEffect(() => {
+        if (showMoveModal && targetProducts.length > 0 && scrollContainerRef.current) {
+            const index = targetProducts.findIndex(p => p.name === productName)
+            if (index !== -1) {
+                // Scroll to center the item
+                const itemHeight = 50 // Approx height of button + gap
+                const containerHeight = scrollContainerRef.current.clientHeight
+                const scrollTop = (index * itemHeight) - (containerHeight / 2) + (itemHeight / 2)
+                scrollContainerRef.current.scrollTo({ top: scrollTop, behavior: 'instant' })
+            }
+        }
+    }, [showMoveModal, targetProducts, productName])
 
     // Fetch available tags
     useEffect(() => {
@@ -44,6 +65,7 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
                     .from('categories')
                     .select('tag_key')
                     .not('tag_key', 'is', null)
+                    .in('scope', ['header', 'filter'])
 
                 if (error) throw error
 
@@ -214,8 +236,50 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
 
             if (!res.ok) throw new Error('Failed to move photo')
 
-            // Remove from current gallery and close modal if it was the last one
-            const newGallery = gallery.filter(url => url !== currentUrl)
+            // Update local gallery
+            const newGallery = localGallery.filter(url => url !== currentUrl)
+            setLocalGallery(newGallery)
+
+            // Notify parent to refresh data (background)
+            if (onImagesUpdated) {
+                onImagesUpdated()
+            }
+
+            if (newGallery.length === 0) {
+                onClose()
+            } else {
+                // Adjust index if needed
+                if (currentIndex >= newGallery.length) {
+                    setCurrentIndex(newGallery.length - 1)
+                }
+                // Do NOT close, let user continue
+            }
+
+            setShowMoveModal(false)
+        } catch (err) {
+            console.error('Error moving photo:', err)
+            alert('Error al mover la foto')
+        } finally {
+            setMovingTo(null)
+        }
+    }
+
+    const handleDeletePhoto = async () => {
+        if (!confirm('¿Estás seguro de que quieres eliminar esta foto? Esta acción no se puede deshacer.')) return
+
+        setMovingTo('deleting') // Reuse state or add new one? Let's use movingTo for loading state
+        try {
+            const res = await fetch('/api/media/delete', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ assetUrl: currentUrl })
+            })
+
+            if (!res.ok) throw new Error('Failed to delete photo')
+
+            // Update local gallery
+            const newGallery = localGallery.filter(url => url !== currentUrl)
+            setLocalGallery(newGallery)
 
             // Notify parent to refresh data
             if (onImagesUpdated) {
@@ -229,21 +293,18 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
                 if (currentIndex >= newGallery.length) {
                     setCurrentIndex(newGallery.length - 1)
                 }
-                // Force parent to refresh (close and reopen)
-                onClose()
+                // Do NOT close
             }
-
-            setShowMoveModal(false)
         } catch (err) {
-            console.error('Error moving photo:', err)
-            alert('Error al mover la foto')
+            console.error('Error deleting photo:', err)
+            alert('Error al eliminar la foto')
         } finally {
             setMovingTo(null)
         }
     }
 
     const handleNext = () => {
-        if (currentIndex < gallery.length - 1) {
+        if (currentIndex < localGallery.length - 1) {
             setCurrentIndex(currentIndex + 1)
         }
     }
@@ -258,7 +319,7 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
         if (e.key === 'ArrowRight') handleNext()
         if (e.key === 'ArrowLeft') handlePrev()
         if (e.key === 'Escape') onClose()
-    }, [currentIndex, gallery.length, onClose])
+    }, [currentIndex, localGallery.length, onClose])
 
     useEffect(() => {
         window.addEventListener('keydown', handleKeyDown)
@@ -290,7 +351,7 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
                     {/* Navigation Controls */}
                     <div className="absolute inset-x-0 bottom-0 flex items-center justify-between p-6 text-white">
                         <div className="text-sm font-medium">
-                            {currentIndex + 1} / {gallery.length}
+                            {currentIndex + 1} / {localGallery.length}
                         </div>
                         <div className="flex gap-4">
                             <button
@@ -302,7 +363,7 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
                             </button>
                             <button
                                 onClick={handleNext}
-                                disabled={currentIndex === gallery.length - 1}
+                                disabled={currentIndex === localGallery.length - 1}
                                 className="rounded-full bg-white/10 px-4 py-2 hover:bg-white/20 disabled:opacity-30"
                             >
                                 Siguiente →
@@ -318,34 +379,47 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
                             <h3 className="text-lg font-semibold text-neutral-900">Etiquetado</h3>
                             <p className="text-xs text-neutral-500">{productName}</p>
                         </div>
-                        <button onClick={onClose} className="text-neutral-400 hover:text-neutral-900">
-                            ✕
-                        </button>
+                        <div className="flex items-center gap-2">
+                            <button onClick={onClose} className="text-neutral-400 hover:text-neutral-900">
+                                ✕
+                            </button>
+                        </div>
                     </div>
 
                     {/* Tags Section */}
                     <div className="flex-1 overflow-y-auto">
                         <div className="mb-6 space-y-6">
                             {/* General Tags */}
-                            <div>
+                            <div className="relative">
                                 <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.3em] text-neutral-500">
                                     Etiquetas Generales
                                 </label>
                                 <div className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        value={tagInput}
-                                        onChange={e => setTagInput(e.target.value)}
-                                        onKeyDown={e => e.key === 'Enter' && handleAddTag(tagInput, false)}
-                                        placeholder="Añadir etiqueta..."
-                                        list="available-general-tags"
-                                        className="flex-1 rounded-full border border-neutral-200 px-4 py-2 text-sm focus:border-neutral-900 focus:outline-none"
-                                    />
-                                    <datalist id="available-general-tags">
-                                        {availableGeneralTags.map(tag => (
-                                            <option key={tag} value={tag} />
-                                        ))}
-                                    </datalist>
+                                    <div className="relative flex-1">
+                                        <input
+                                            type="text"
+                                            value={tagInput}
+                                            onChange={e => setTagInput(e.target.value)}
+                                            onKeyDown={e => e.key === 'Enter' && handleAddTag(tagInput, false)}
+                                            placeholder="Añadir etiqueta..."
+                                            className="w-full rounded-full border border-neutral-200 px-4 py-2 text-sm focus:border-neutral-900 focus:outline-none"
+                                        />
+                                        {tagInput && availableGeneralTags.filter(t => t.toLowerCase().includes(tagInput.toLowerCase()) && !tags.includes(t)).length > 0 && (
+                                            <div className="absolute left-0 right-0 top-full z-10 mt-1 max-h-40 overflow-y-auto rounded-lg border border-neutral-100 bg-white shadow-lg">
+                                                {availableGeneralTags
+                                                    .filter(t => t.toLowerCase().includes(tagInput.toLowerCase()) && !tags.includes(t))
+                                                    .map(tag => (
+                                                        <button
+                                                            key={tag}
+                                                            onClick={() => handleAddTag(tag, false)}
+                                                            className="w-full px-4 py-2 text-left text-sm hover:bg-neutral-50"
+                                                        >
+                                                            {tag}
+                                                        </button>
+                                                    ))}
+                                            </div>
+                                        )}
+                                    </div>
                                     <button
                                         onClick={() => handleAddTag(tagInput, false)}
                                         className="rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
@@ -356,25 +430,36 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
                             </div>
 
                             {/* Color Tags */}
-                            <div>
+                            <div className="relative">
                                 <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.3em] text-neutral-500">
                                     Colores
                                 </label>
                                 <div className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        value={colorInput}
-                                        onChange={e => setColorInput(e.target.value)}
-                                        onKeyDown={e => e.key === 'Enter' && handleAddTag(colorInput, true)}
-                                        placeholder="Añadir color..."
-                                        list="available-color-tags"
-                                        className="flex-1 rounded-full border border-neutral-200 px-4 py-2 text-sm focus:border-neutral-900 focus:outline-none"
-                                    />
-                                    <datalist id="available-color-tags">
-                                        {availableColorTags.map(tag => (
-                                            <option key={tag} value={tag} />
-                                        ))}
-                                    </datalist>
+                                    <div className="relative flex-1">
+                                        <input
+                                            type="text"
+                                            value={colorInput}
+                                            onChange={e => setColorInput(e.target.value)}
+                                            onKeyDown={e => e.key === 'Enter' && handleAddTag(colorInput, true)}
+                                            placeholder="Añadir color..."
+                                            className="w-full rounded-full border border-neutral-200 px-4 py-2 text-sm focus:border-neutral-900 focus:outline-none"
+                                        />
+                                        {colorInput && availableColorTags.filter(t => t.toLowerCase().includes(colorInput.toLowerCase()) && !tags.includes(t)).length > 0 && (
+                                            <div className="absolute left-0 right-0 top-full z-10 mt-1 max-h-40 overflow-y-auto rounded-lg border border-neutral-100 bg-white shadow-lg">
+                                                {availableColorTags
+                                                    .filter(t => t.toLowerCase().includes(colorInput.toLowerCase()) && !tags.includes(t))
+                                                    .map(tag => (
+                                                        <button
+                                                            key={tag}
+                                                            onClick={() => handleAddTag(tag, true)}
+                                                            className="w-full px-4 py-2 text-left text-sm hover:bg-neutral-50"
+                                                        >
+                                                            {tag}
+                                                        </button>
+                                                    ))}
+                                            </div>
+                                        )}
+                                    </div>
                                     <button
                                         onClick={() => handleAddTag(colorInput, true)}
                                         className="rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
@@ -461,25 +546,38 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
                     </div>
 
                     {/* Footer */}
-                    <div className="mt-6 flex justify-end gap-3 border-t border-neutral-100 pt-6">
-                        {/* Save button */}
+                    <div className="mt-6 flex items-center justify-between border-t border-neutral-100 pt-6">
                         <button
-                            onClick={() => {
-                                loadProducts()
-                                setShowMoveModal(true)
-                            }}
-                            className="w-full rounded-lg border border-neutral-900 bg-white px-4 py-2 text-sm font-medium text-neutral-900 hover:bg-neutral-50"
+                            onClick={handleDeletePhoto}
+                            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-red-500 hover:bg-red-50 hover:text-red-600"
+                            title="Eliminar foto"
                         >
-                            Enviar a...
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                            </svg>
+                            Eliminar
                         </button>
 
-                        <button
-                            onClick={handleSave}
-                            disabled={saving}
-                            className="w-full rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
-                        >
-                            {saving ? 'Guardando...' : 'Guardar Tags'}
-                        </button>
+                        <div className="flex gap-3">
+                            {/* Save button */}
+                            <button
+                                onClick={() => {
+                                    loadProducts()
+                                    setShowMoveModal(true)
+                                }}
+                                className="rounded-lg border border-neutral-900 bg-white px-4 py-2 text-sm font-medium text-neutral-900 hover:bg-neutral-50"
+                            >
+                                Enviar a...
+                            </button>
+
+                            <button
+                                onClick={handleSave}
+                                disabled={saving}
+                                className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
+                            >
+                                {saving ? 'Guardando...' : 'Guardar Tags'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -490,7 +588,7 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
                     <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
                         <h3 className="mb-4 text-lg font-semibold">Enviar foto a otro producto</h3>
 
-                        <div className="max-h-96 space-y-2 overflow-y-auto">
+                        <div ref={scrollContainerRef} className="max-h-96 space-y-2 overflow-y-auto">
                             {targetProducts.map(product => (
                                 <button
                                     key={product.id}
