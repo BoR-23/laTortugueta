@@ -1,12 +1,18 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Image from 'next/image'
+
+interface MobileCrop {
+    x: number
+    y: number
+    size: number
+}
 
 interface MobileCropSelectorProps {
     imageUrl: string
-    initialCrop?: { x: number; y: number; size: number }
-    onChange: (crop: { x: number; y: number; size: number }) => void
+    initialCrop?: MobileCrop
+    onChange: (crop: MobileCrop) => void
 }
 
 export function MobileCropSelector({ imageUrl, initialCrop, onChange }: MobileCropSelectorProps) {
@@ -23,7 +29,7 @@ export function MobileCropSelector({ imageUrl, initialCrop, onChange }: MobileCr
         setIsDragging(true)
     }
 
-    const handleMouseMove = (e: MouseEvent) => {
+    const handleMouseMove = useCallback((e: MouseEvent) => {
         if (!isDragging || !containerRef.current) return
 
         const rect = containerRef.current.getBoundingClientRect()
@@ -41,11 +47,11 @@ export function MobileCropSelector({ imageUrl, initialCrop, onChange }: MobileCr
             x: Math.max(cropWidth / 2, Math.min(100 - cropWidth / 2, x)),
             y: Math.max(cropHeight / 2, Math.min(100 - cropHeight / 2, y))
         }))
-    }
+    }, [isDragging, crop.size, containerRef])
 
-    const handleMouseUp = () => {
+    const handleMouseUp = useCallback(() => {
         setIsDragging(false)
-    }
+    }, [])
 
     useEffect(() => {
         if (isDragging) {

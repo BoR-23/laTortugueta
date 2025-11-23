@@ -6,7 +6,7 @@ import { sanitizeTypeMetadata } from '@/lib/productTypes'
 
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     const session = await getServerSession(authOptions)
     if (!session) {
@@ -15,7 +15,8 @@ export async function POST(
 
     try {
         const { variant } = await request.json() // 'exact', 'bordado', 'con-letra', 'con-dos-letras'
-        const sourceProduct = await getProductData(params.id)
+        const resolvedParams = await params
+        const sourceProduct = await getProductData(resolvedParams.id)
 
         if (!sourceProduct) {
             return NextResponse.json({ error: 'Product not found' }, { status: 404 })
