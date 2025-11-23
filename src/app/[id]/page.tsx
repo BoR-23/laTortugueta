@@ -92,6 +92,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     const breadcrumbs = [
       { label: 'Inicio', href: '/' },
       { label: 'Catálogo', href: '/#colecciones' },
+      { label: product.type?.split(' ')[0] || 'Productos', href: '/#colecciones' },
       { label: product.name, current: true }
     ]
     return (

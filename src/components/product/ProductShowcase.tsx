@@ -136,6 +136,21 @@ export function ProductShowcase({
     setReviewMap(initialReviewMap)
   }, [initialReviewMap])
 
+  // Preload all gallery images for instant navigation
+  useEffect(() => {
+    if (gallery.length <= 1) return
+
+    // Preload all images in the background
+    gallery.forEach((imagePath, index) => {
+      if (index === activeIndex) return // Skip active image (already loaded)
+
+      const img = new Image()
+      const fullUrl = getProductImageVariant(imagePath, 'full') || imagePath
+      img.src = fullUrl
+    })
+  }, [gallery, activeIndex])
+
+
   const adminModeEnabled = isAdmin && !adminPreviewMode
 
   const whatsappHref = useMemo(() => {
@@ -553,6 +568,8 @@ export function ProductShowcase({
                           sizes="80px"
                           placeholder={thumbPlaceholder ? 'blur' : 'empty'}
                           blurDataURL={thumbPlaceholder}
+                          loading="eager"
+                          fetchPriority={index < 3 ? 'high' : 'auto'}
                         />
                         {adminModeEnabled && (
                           <div className="pointer-events-none absolute inset-0 flex items-start justify-end p-1">

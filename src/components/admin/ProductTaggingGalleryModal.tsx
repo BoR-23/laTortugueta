@@ -29,6 +29,9 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
     const [targetProducts, setTargetProducts] = useState<Array<{ id: string, name: string }>>([])
     const [movingTo, setMovingTo] = useState<string | null>(null)
     const scrollContainerRef = useRef<HTMLDivElement>(null)
+    const [tagInputFocused, setTagInputFocused] = useState(false)
+    const [colorInputFocused, setColorInputFocused] = useState(false)
+
 
     const currentUrl = localGallery[currentIndex]
 
@@ -326,6 +329,28 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
         return () => window.removeEventListener('keydown', handleKeyDown)
     }, [handleKeyDown])
 
+    // Preload next/prev images for instant navigation
+    useEffect(() => {
+        if (!localGallery.length) return
+
+        const preloadImage = (url: string) => {
+            const img = new window.Image()
+            img.src = getProductImageVariant(url, 'original') || url
+        }
+
+        // Preload next 3 images
+        for (let i = 1; i <= 3; i++) {
+            if (currentIndex + i < localGallery.length) {
+                preloadImage(localGallery[currentIndex + i])
+            }
+        }
+
+        // Preload previous image
+        if (currentIndex > 0) {
+            preloadImage(localGallery[currentIndex - 1])
+        }
+    }, [currentIndex, localGallery])
+
     if (!currentUrl) return null
 
     const displayUrl = getProductImageVariant(currentUrl, 'original') || currentUrl
@@ -373,8 +398,8 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
                 </div>
 
                 {/* Right: Controls */}
-                <div className="flex w-96 flex-col border-l border-neutral-200 bg-white p-6">
-                    <div className="mb-6 flex items-center justify-between">
+                <div className="flex w-96 flex-col border-l border-neutral-200 bg-white">
+                    <div className="flex items-center justify-between p-6">
                         <div>
                             <h3 className="text-lg font-semibold text-neutral-900">Etiquetado</h3>
                             <p className="text-xs text-neutral-500">{productName}</p>
@@ -387,166 +412,182 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
                     </div>
 
                     {/* Tags Section */}
-                    <div className="flex-1 overflow-y-auto">
-                        <div className="mb-6 space-y-6">
-                            {/* General Tags */}
+                    <div className="flex-1 overflow-y-auto px-6">
+                        {/* General Tags Section */}
+                        <div className="space-y-3">
+                            <label className="block text-xs font-semibold uppercase tracking-[0.3em] text-neutral-500">
+                                Etiquetas Generales
+                            </label>
                             <div className="relative">
-                                <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.3em] text-neutral-500">
-                                    Etiquetas Generales
-                                </label>
-                                <div className="flex gap-2">
-                                    <div className="relative flex-1">
-                                        <input
-                                            type="text"
-                                            value={tagInput}
-                                            onChange={e => setTagInput(e.target.value)}
-                                            onKeyDown={e => e.key === 'Enter' && handleAddTag(tagInput, false)}
-                                            placeholder="Añadir etiqueta..."
-                                            className="w-full rounded-full border border-neutral-200 px-4 py-2 text-sm focus:border-neutral-900 focus:outline-none"
-                                        />
-                                        {tagInput && availableGeneralTags.filter(t => t.toLowerCase().includes(tagInput.toLowerCase()) && !tags.includes(t)).length > 0 && (
-                                            <div className="absolute left-0 right-0 top-full z-10 mt-1 max-h-40 overflow-y-auto rounded-lg border border-neutral-100 bg-white shadow-lg">
-                                                {availableGeneralTags
-                                                    .filter(t => t.toLowerCase().includes(tagInput.toLowerCase()) && !tags.includes(t))
-                                                    .map(tag => (
-                                                        <button
-                                                            key={tag}
-                                                            onClick={() => handleAddTag(tag, false)}
-                                                            className="w-full px-4 py-2 text-left text-sm hover:bg-neutral-50"
-                                                        >
-                                                            {tag}
-                                                        </button>
-                                                    ))}
+                                <input
+                                    type="text"
+                                    value={tagInput}
+                                    onChange={e => setTagInput(e.target.value)}
+                                    onFocus={() => setTagInputFocused(true)}
+                                    onBlur={() => setTimeout(() => setTagInputFocused(false), 200)}
+                                    onKeyDown={e => {
+                                        if (e.key === 'Enter' && tagInput.trim()) {
+                                            e.preventDefault()
+                                            handleAddTag(tagInput, false)
+                                            setTagInput('')
+                                        }
+                                    }}
+                                    placeholder="Escribe para buscar o añadir..."
+                                    className="w-full rounded-lg border-2 border-neutral-200 bg-white px-4 py-3 text-sm font-medium text-neutral-700 focus:border-neutral-900 focus:outline-none"
+                                />
+                                {tagInputFocused && (
+                                    <div className="absolute left-0 right-0 top-full z-10 mt-1 max-h-60 overflow-y-auto rounded-lg border border-neutral-200 bg-white shadow-lg">
+                                        {availableGeneralTags
+                                            .filter(t => (tagInput ? t.toLowerCase().includes(tagInput.toLowerCase()) : true) && !tags.includes(t))
+                                            .map(tag => (
+                                                <button
+                                                    key={tag}
+                                                    onMouseDown={(e) => {
+                                                        e.preventDefault()
+                                                        handleAddTag(tag, false)
+                                                        setTagInput('')
+                                                    }}
+                                                    className="block w-full px-4 py-2 text-left text-sm hover:bg-neutral-50"
+                                                >
+                                                    {tag}
+                                                </button>
+                                            ))}
+                                        {availableGeneralTags.filter(t => (tagInput ? t.toLowerCase().includes(tagInput.toLowerCase()) : true) && !tags.includes(t)).length === 0 && tagInput && (
+                                            <div className="px-4 py-2 text-xs text-neutral-400">
+                                                Presiona Enter para añadir "{tagInput}"
                                             </div>
                                         )}
                                     </div>
-                                    <button
-                                        onClick={() => handleAddTag(tagInput, false)}
-                                        className="rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
-                                    >
-                                        +
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Color Tags */}
-                            <div className="relative">
-                                <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.3em] text-neutral-500">
-                                    Colores
-                                </label>
-                                <div className="flex gap-2">
-                                    <div className="relative flex-1">
-                                        <input
-                                            type="text"
-                                            value={colorInput}
-                                            onChange={e => setColorInput(e.target.value)}
-                                            onKeyDown={e => e.key === 'Enter' && handleAddTag(colorInput, true)}
-                                            placeholder="Añadir color..."
-                                            className="w-full rounded-full border border-neutral-200 px-4 py-2 text-sm focus:border-neutral-900 focus:outline-none"
-                                        />
-                                        {colorInput && availableColorTags.filter(t => t.toLowerCase().includes(colorInput.toLowerCase()) && !tags.includes(t)).length > 0 && (
-                                            <div className="absolute left-0 right-0 top-full z-10 mt-1 max-h-40 overflow-y-auto rounded-lg border border-neutral-100 bg-white shadow-lg">
-                                                {availableColorTags
-                                                    .filter(t => t.toLowerCase().includes(colorInput.toLowerCase()) && !tags.includes(t))
-                                                    .map(tag => (
-                                                        <button
-                                                            key={tag}
-                                                            onClick={() => handleAddTag(tag, true)}
-                                                            className="w-full px-4 py-2 text-left text-sm hover:bg-neutral-50"
-                                                        >
-                                                            {tag}
-                                                        </button>
-                                                    ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <button
-                                        onClick={() => handleAddTag(colorInput, true)}
-                                        className="rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
-                                    >
-                                        +
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Selected Tags Display */}
-                            <div className="flex flex-wrap gap-2">
-                                {loadingTags ? (
-                                    <span className="text-xs text-neutral-400">Cargando tags...</span>
-                                ) : tags.length > 0 ? (
-                                    tags.map(tag => (
-                                        <span
-                                            key={tag}
-                                            className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs ${tag.startsWith('Color') ? 'bg-blue-50 text-blue-700' : 'bg-neutral-100 text-neutral-700'}`}
-                                        >
-                                            {tag}
-                                            <button
-                                                onClick={() => handleRemoveTag(tag)}
-                                                className="ml-1 opacity-50 hover:opacity-100"
-                                            >
-                                                ×
-                                            </button>
-                                        </span>
-                                    ))
-                                ) : (
-                                    <span className="text-xs italic text-neutral-400">Sin etiquetas</span>
                                 )}
                             </div>
                         </div>
 
-                        {/* EXIF Section */}
-                        <div className="border-t border-neutral-100 pt-6">
-                            <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.3em] text-neutral-500">
-                                Información Original (EXIF)
+                        {/* Color Tags Section */}
+                        <div className="space-y-3">
+                            <label className="block text-xs font-semibold uppercase tracking-[0.3em] text-neutral-500">
+                                Colores
                             </label>
-                            {loadingExif ? (
-                                <span className="text-xs text-neutral-400">Cargando EXIF...</span>
-                            ) : exif ? (
-                                <div className="space-y-2 text-xs text-neutral-600">
-                                    {/* Try to find relevant fields based on inspect_exif_data.js output */}
-                                    {exif.ImageDescription && (
-                                        <div>
-                                            <span className="font-medium">Descripción:</span> {exif.ImageDescription}
-                                        </div>
-                                    )}
-                                    {exif.UserComment && (
-                                        <div>
-                                            <span className="font-medium">Comentario:</span> {exif.UserComment}
-                                        </div>
-                                    )}
-
-                                    {/* Show all other string fields that might be relevant */}
-                                    {Object.entries(exif).map(([key, val]) => {
-                                        if (
-                                            ['ImageDescription', 'UserComment'].includes(key) ||
-                                            typeof val !== 'string'
-                                        ) return null
-
-                                        if (key.toLowerCase().includes('path') || key.toLowerCase().includes('file')) {
-                                            return (
-                                                <div key={key}>
-                                                    <span className="font-medium">{key}:</span> {String(val)}
-                                                </div>
-                                            )
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    value={colorInput}
+                                    onChange={e => setColorInput(e.target.value)}
+                                    onFocus={() => setColorInputFocused(true)}
+                                    onBlur={() => setTimeout(() => setColorInputFocused(false), 200)}
+                                    onKeyDown={e => {
+                                        if (e.key === 'Enter' && colorInput.trim()) {
+                                            e.preventDefault()
+                                            handleAddTag(colorInput, true)
+                                            setColorInput('')
                                         }
-                                        return null
-                                    })}
+                                    }}
+                                    placeholder="Buscar color (ej: 118)..."
+                                    className="w-full rounded-lg border-2 border-neutral-200 bg-white px-4 py-3 text-sm font-medium text-neutral-700 focus:border-neutral-900 focus:outline-none"
+                                />
+                                {colorInputFocused && (
+                                    <div className="absolute left-0 right-0 top-full z-10 mt-1 max-h-60 overflow-y-auto rounded-lg border border-neutral-200 bg-white shadow-lg">
+                                        {availableColorTags
+                                            .filter(t => (colorInput ? t.toLowerCase().includes(colorInput.toLowerCase()) : true) && !tags.includes(t))
+                                            .map(tag => (
+                                                <button
+                                                    key={tag}
+                                                    onMouseDown={(e) => {
+                                                        e.preventDefault()
+                                                        handleAddTag(tag, true)
+                                                        setColorInput('')
+                                                    }}
+                                                    className="block w-full px-4 py-2 text-left text-sm hover:bg-blue-50 text-blue-700"
+                                                >
+                                                    {tag}
+                                                </button>
+                                            ))}
+                                        {availableColorTags.filter(t => (colorInput ? t.toLowerCase().includes(colorInput.toLowerCase()) : true) && !tags.includes(t)).length === 0 && colorInput && (
+                                            <div className="px-4 py-2 text-xs text-neutral-400">
+                                                Presiona Enter para añadir "{colorInput}"
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
 
-                                    <details>
-                                        <summary className="cursor-pointer text-neutral-400 hover:text-neutral-600">Ver todo</summary>
-                                        <pre className="mt-2 overflow-x-auto rounded bg-neutral-50 p-2 font-mono text-[10px]">
-                                            {JSON.stringify(exif, null, 2)}
-                                        </pre>
-                                    </details>
-                                </div>
+                        {/* Selected Tags Display */}
+                        <div className="flex flex-wrap gap-2">
+                            {loadingTags ? (
+                                <span className="text-xs text-neutral-400">Cargando tags...</span>
+                            ) : tags.length > 0 ? (
+                                tags.map(tag => (
+                                    <span
+                                        key={tag}
+                                        className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs ${tag.startsWith('Color') ? 'bg-blue-50 text-blue-700' : 'bg-neutral-100 text-neutral-700'}`}
+                                    >
+                                        {tag}
+                                        <button
+                                            onClick={() => handleRemoveTag(tag)}
+                                            className="ml-1 opacity-50 hover:opacity-100"
+                                        >
+                                            ×
+                                        </button>
+                                    </span>
+                                ))
                             ) : (
-                                <span className="text-xs italic text-neutral-400">No se encontró información EXIF.</span>
+                                <span className="text-xs italic text-neutral-400">Sin etiquetas</span>
                             )}
                         </div>
                     </div>
 
+                    {/* EXIF Section */}
+                    <div className="border-t border-neutral-100 px-6 py-6">
+                        <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.3em] text-neutral-500">
+                            Información Original (EXIF)
+                        </label>
+                        {loadingExif ? (
+                            <span className="text-xs text-neutral-400">Cargando EXIF...</span>
+                        ) : exif ? (
+                            <div className="space-y-2 text-xs text-neutral-600">
+                                {/* Try to find relevant fields based on inspect_exif_data.js output */}
+                                {exif.ImageDescription && (
+                                    <div>
+                                        <span className="font-medium">Descripción:</span> {exif.ImageDescription}
+                                    </div>
+                                )}
+                                {exif.UserComment && (
+                                    <div>
+                                        <span className="font-medium">Comentario:</span> {exif.UserComment}
+                                    </div>
+                                )}
+
+                                {/* Show all other string fields that might be relevant */}
+                                {Object.entries(exif).map(([key, val]) => {
+                                    if (
+                                        ['ImageDescription', 'UserComment'].includes(key) ||
+                                        typeof val !== 'string'
+                                    ) return null
+
+                                    if (key.toLowerCase().includes('path') || key.toLowerCase().includes('file')) {
+                                        return (
+                                            <div key={key}>
+                                                <span className="font-medium">{key}:</span> {String(val)}
+                                            </div>
+                                        )
+                                    }
+                                    return null
+                                })}
+
+                                <details>
+                                    <summary className="cursor-pointer text-neutral-400 hover:text-neutral-600">Ver todo</summary>
+                                    <pre className="mt-2 overflow-x-auto rounded bg-neutral-50 p-2 font-mono text-[10px]">
+                                        {JSON.stringify(exif, null, 2)}
+                                    </pre>
+                                </details>
+                            </div>
+                        ) : (
+                            <span className="text-xs italic text-neutral-400">No se encontró información EXIF.</span>
+                        )}
+                    </div>
+
                     {/* Footer */}
-                    <div className="mt-6 flex items-center justify-between border-t border-neutral-100 pt-6">
+                    <div className="flex items-center justify-between border-t border-neutral-100 px-6 py-6">
                         <button
                             onClick={handleDeletePhoto}
                             className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-red-500 hover:bg-red-50 hover:text-red-600"
@@ -580,37 +621,37 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Move Modal */}
-            {showMoveModal && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4" onClick={() => setShowMoveModal(false)}>
-                    <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
-                        <h3 className="mb-4 text-lg font-semibold">Enviar foto a otro producto</h3>
+                {/* Move Modal */}
+                {showMoveModal && (
+                    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4" onClick={() => setShowMoveModal(false)}>
+                        <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+                            <h3 className="mb-4 text-lg font-semibold">Enviar foto a otro producto</h3>
 
-                        <div ref={scrollContainerRef} className="max-h-96 space-y-2 overflow-y-auto">
-                            {targetProducts.map(product => (
-                                <button
-                                    key={product.id}
-                                    onClick={() => handleMovePhoto(product.id, product.name)}
-                                    disabled={movingTo === product.id}
-                                    className="w-full rounded-lg border border-neutral-200 p-3 text-left hover:border-neutral-900 hover:bg-neutral-50 disabled:opacity-50"
-                                >
-                                    {product.name}
-                                    {movingTo === product.id && <span className="ml-2 text-xs text-neutral-500">Moviendo...</span>}
-                                </button>
-                            ))}
+                            <div ref={scrollContainerRef} className="max-h-96 space-y-2 overflow-y-auto">
+                                {targetProducts.map(product => (
+                                    <button
+                                        key={product.id}
+                                        onClick={() => handleMovePhoto(product.id, product.name)}
+                                        disabled={movingTo === product.id}
+                                        className="w-full rounded-lg border border-neutral-200 p-3 text-left hover:border-neutral-900 hover:bg-neutral-50 disabled:opacity-50"
+                                    >
+                                        {product.name}
+                                        {movingTo === product.id && <span className="ml-2 text-xs text-neutral-500">Moviendo...</span>}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <button
+                                onClick={() => setShowMoveModal(false)}
+                                className="mt-4 w-full rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium hover:bg-neutral-50"
+                            >
+                                Cancelar
+                            </button>
                         </div>
-
-                        <button
-                            onClick={() => setShowMoveModal(false)}
-                            className="mt-4 w-full rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium hover:bg-neutral-50"
-                        >
-                            Cancelar
-                        </button>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     )
 }
