@@ -10,6 +10,11 @@ export interface HeroSlide {
     cta_link: string
     priority: number
     active: boolean
+    mobile_crop?: {
+        x: number  // horizontal center position (0-100%)
+        y: number  // vertical center position (0-100%)
+        size: number  // crop size as percentage (0-100%)
+    }
 }
 
 export const getHeroSlides = cache(async (): Promise<HeroSlide[]> => {

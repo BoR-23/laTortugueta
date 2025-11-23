@@ -1,0 +1,350 @@
+[
+  {
+    "action": "product.update",
+    "entity": "product",
+    "productId": "3-fonts",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "metadata": {
+      "changedFields": [
+        "name",
+        "description",
+        "category",
+        "priority",
+        "color",
+        "price",
+        "tags",
+        "sizes",
+        "available",
+        "type",
+        "material",
+        "care",
+        "origin",
+        "metadata"
+      ],
+      "name": ""
+    },
+    "timestamp": "2025-11-22T19:45:10.071Z"
+  },
+  {
+    "action": "product.update",
+    "entity": "product",
+    "productId": "3-fonts",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "metadata": {
+      "changedFields": [
+        "name",
+        "description",
+        "category",
+        "priority",
+        "color",
+        "price",
+        "tags",
+        "sizes",
+        "available",
+        "type",
+        "material",
+        "care",
+        "origin",
+        "metadata"
+      ],
+      "name": ""
+    },
+    "timestamp": "2025-11-22T19:48:53.825Z"
+  },
+  {
+    "action": "product.update",
+    "entity": "product",
+    "productId": "abdet",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "metadata": {
+      "changedFields": [
+        "name",
+        "description",
+        "category",
+        "priority",
+        "color",
+        "price",
+        "tags",
+        "sizes",
+        "available",
+        "type",
+        "material",
+        "care",
+        "origin",
+        "metadata"
+      ],
+      "name": ""
+    },
+    "timestamp": "2025-11-22T19:57:52.900Z"
+  },
+  {
+    "action": "product.update",
+    "entity": "product",
+    "productId": "3-fonts",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "metadata": {
+      "changedFields": [
+        "name",
+        "description",
+        "category",
+        "priority",
+        "color",
+        "price",
+        "tags",
+        "sizes",
+        "available",
+        "type",
+        "material",
+        "care",
+        "origin",
+        "metadata"
+      ],
+      "name": ""
+    },
+    "timestamp": "2025-11-22T20:00:02.419Z"
+  },
+  {
+    "action": "product.update",
+    "entity": "product",
+    "productId": "3-fonts",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "metadata": {
+      "changedFields": [
+        "name",
+        "description",
+        "category",
+        "priority",
+        "color",
+        "price",
+        "tags",
+        "sizes",
+        "available",
+        "type",
+        "material",
+        "care",
+        "origin",
+        "metadata"
+      ],
+      "name": ""
+    },
+    "timestamp": "2025-11-22T20:00:08.854Z"
+  },
+  {
+    "action": "product.update",
+    "entity": "product",
+    "productId": "3-fonts",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "metadata": {
+      "changedFields": [
+        "name",
+        "description",
+        "category",
+        "priority",
+        "color",
+        "price",
+        "tags",
+        "sizes",
+        "available",
+        "type",
+        "material",
+        "care",
+        "origin",
+        "metadata"
+      ],
+      "name": ""
+    },
+    "timestamp": "2025-11-22T20:05:52.049Z"
+  },
+  {
+    "action": "product.update",
+    "entity": "product",
+    "productId": "3-fonts",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "metadata": {
+      "changedFields": [
+        "name",
+        "description",
+        "category",
+        "priority",
+        "color",
+        "price",
+        "tags",
+        "sizes",
+        "available",
+        "type",
+        "material",
+        "care",
+        "origin",
+        "metadata"
+      ],
+      "name": ""
+    },
+    "timestamp": "2025-11-22T20:06:22.527Z"
+  },
+  {
+    "action": "product.update",
+    "entity": "product",
+    "productId": "3-fonts",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "metadata": {
+      "changedFields": [
+        "name",
+        "description",
+        "category",
+        "priority",
+        "color",
+        "price",
+        "tags",
+        "sizes",
+        "available",
+        "type",
+        "material",
+        "care",
+        "origin",
+        "metadata"
+      ],
+      "name": ""
+    },
+    "timestamp": "2025-11-22T20:18:28.441Z"
+  },
+  {
+    "action": "product.update",
+    "entity": "product",
+    "productId": "3-fonts",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "metadata": {
+      "changedFields": [
+        "name",
+        "description",
+        "category",
+        "priority",
+        "color",
+        "price",
+        "tags",
+        "sizes",
+        "available",
+        "type",
+        "material",
+        "care",
+        "origin",
+        "metadata"
+      ],
+      "name": ""
+    },
+    "timestamp": "2025-11-22T20:18:52.738Z"
+  },
+  {
+    "action": "product.update",
+    "entity": "product",
+    "productId": "3-fonts",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "metadata": {
+      "changedFields": [
+        "name",
+        "description",
+        "category",
+        "priority",
+        "color",
+        "price",
+        "tags",
+        "sizes",
+        "available",
+        "type",
+        "material",
+        "care",
+        "origin",
+        "metadata"
+      ],
+      "name": "3-Fonts"
+    },
+    "timestamp": "2025-11-23T09:18:55.727Z"
+  },
+  {
+    "action": "product.update",
+    "entity": "product",
+    "productId": "3-fonts",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "metadata": {
+      "changedFields": [
+        "name",
+        "description",
+        "category",
+        "priority",
+        "color",
+        "price",
+        "tags",
+        "sizes",
+        "available",
+        "type",
+        "material",
+        "care",
+        "origin",
+        "metadata"
+      ],
+      "name": "3-Fonts"
+    },
+    "timestamp": "2025-11-23T09:19:01.092Z"
+  },
+  {
+    "action": "product.update",
+    "entity": "product",
+    "productId": "abdet",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "metadata": {
+      "changedFields": [
+        "name",
+        "description",
+        "category",
+        "priority",
+        "color",
+        "price",
+        "tags",
+        "sizes",
+        "available",
+        "type",
+        "material",
+        "care",
+        "origin",
+        "metadata"
+      ],
+      "name": "Abdet"
+    },
+    "timestamp": "2025-11-23T09:19:14.819Z"
+  }
+]

@@ -471,15 +471,14 @@ export function ProductShowcase({
                   </div>
                 )}
                 {adminModeEnabled && (
-                    <div className="pointer-events-none absolute inset-0 flex items-start justify-between gap-2 p-3">
+                  <div className="pointer-events-none absolute inset-0 flex items-start justify-between gap-2 p-3">
                     <div className="pointer-events-auto flex flex-col gap-2">
                       <button
                         type="button"
-                        className={`rounded-full border px-3 py-1 text-[11px] uppercase tracking-[0.2em] ${
-                          reviewMap[activeImage]
-                            ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
-                            : 'border-white/60 bg-black/40 text-white'
-                        }`}
+                        className={`rounded-full border px-3 py-1 text-[11px] uppercase tracking-[0.2em] ${reviewMap[activeImage]
+                          ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                          : 'border-white/60 bg-black/40 text-white'
+                          }`}
                         onClick={() => handleToggleReview(activeImage)}
                         disabled={gallerySaving}
                       >
@@ -542,29 +541,27 @@ export function ProductShowcase({
                         key={photo}
                         type="button"
                         onClick={() => setActiveIndex(index)}
-                        className={`relative h-24 w-20 overflow-hidden border ${
-                          activeIndex === index ? 'border-neutral-900' : 'border-neutral-200'
-                        }`}
+                        className={`relative h-24 w-20 overflow-hidden border ${activeIndex === index ? 'border-neutral-900' : 'border-neutral-200'
+                          }`}
                       >
-                      <ProductImage
-                        imagePath={photo}
-                        variant="thumb"
-                        alt={`Miniatura ${index + 1} · ${product.name} · ${product.color || 'color artesanal'}`}
-                        fill
-                        className="object-contain"
-                        sizes="80px"
-                        placeholder={thumbPlaceholder ? 'blur' : 'empty'}
-                        blurDataURL={thumbPlaceholder}
-                      />
+                        <ProductImage
+                          imagePath={photo}
+                          variant="thumb"
+                          alt={`Miniatura ${index + 1} · ${product.name} · ${product.color || 'color artesanal'}`}
+                          fill
+                          className="object-contain"
+                          sizes="80px"
+                          placeholder={thumbPlaceholder ? 'blur' : 'empty'}
+                          blurDataURL={thumbPlaceholder}
+                        />
                         {adminModeEnabled && (
                           <div className="pointer-events-none absolute inset-0 flex items-start justify-end p-1">
                             <span
                               role="button"
                               tabIndex={0}
                               aria-label="Reemplazar imagen"
-                              className={`pointer-events-auto rounded-full bg-black/60 px-2 text-[11px] text-white ${
-                                !uploadsEnabled || gallerySaving ? 'opacity-40' : ''
-                              }`}
+                              className={`pointer-events-auto rounded-full bg-black/60 px-2 text-[11px] text-white ${!uploadsEnabled || gallerySaving ? 'opacity-40' : ''
+                                }`}
                               onClick={event => {
                                 if (!uploadsEnabled || gallerySaving) return
                                 event.preventDefault()
@@ -620,60 +617,70 @@ export function ProductShowcase({
                 <p className="text-sm leading-relaxed text-neutral-600">{product.description}</p>
               </div>
 
-            <div className="space-y-4">
-              {isAdmin && (
-                <button
-                  type="button"
-                  onClick={() => setAdminPreviewMode(mode => !mode)}
-                  className="w-full rounded-full border border-neutral-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-neutral-600 transition hover:border-neutral-900 hover:text-neutral-900"
-                >
-                  {adminPreviewMode ? 'Volver a modo gestión' : 'Ver como visitante'}
-                </button>
-              )}
-              <div className="flex items-start gap-3">
-                <div className="flex flex-wrap items-baseline gap-2">
-                  <p className="text-3xl font-semibold text-neutral-900">{Number(displayPrice).toFixed(2)} €</p>
-                  <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">+ gastos de envío</p>
+              <div className="space-y-4">
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => setAdminPreviewMode(mode => !mode)}
+                    className="w-full rounded-full border border-neutral-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-neutral-600 transition hover:border-neutral-900 hover:text-neutral-900"
+                  >
+                    {adminPreviewMode ? 'Volver a modo gestión' : 'Ver como visitante'}
+                  </button>
+                )}
+                <div className="flex items-start gap-3">
+                  <div className="flex flex-wrap items-baseline gap-2">
+                    <p className="text-3xl font-semibold text-neutral-900">{Number(displayPrice).toFixed(2)} €</p>
+                    <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">+ gastos de envío</p>
+                  </div>
+                </div>
+                {adminModeEnabled && (
+                  <ProductAdminPanel
+                    product={product}
+                    activeImage={activeImage}
+                    onPriceDisplayChange={setDisplayPrice}
+                    onImageTagsChange={(url, newTags) => {
+                      // Update the local product state to reflect tag changes immediately
+                      if (product.mediaAssets) {
+                        const assetIndex = product.mediaAssets.findIndex(a => a.url === url)
+                        if (assetIndex !== -1) {
+                          product.mediaAssets[assetIndex].tags = newTags
+                        }
+                      }
+                    }}
+                  />
+                )}
+                <div className="space-y-2">
+                  <label htmlFor="size" className="text-xs uppercase tracking-[0.3em] text-neutral-500">
+                    Talla
+                  </label>
+                  <select
+                    id="size"
+                    value={selectedSize}
+                    onChange={event => setSelectedSize(event.target.value)}
+                    className="w-full rounded-full border border-neutral-300 px-4 py-3 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none focus:ring-0"
+                  >
+                    {sizeOptions.map(size => (
+                      <option key={size} value={size}>
+                        {size}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex flex-col gap-3">
+                  <a
+                    href={whatsappHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-primary text-center"
+                    onClick={() => trackEvent('whatsapp_cta', { productId: product.id })}
+                  >
+                    Reservar vía WhatsApp
+                  </a>
+                  <Link href="/" className="btn-secondary text-center">
+                    Volver al catálogo
+                  </Link>
                 </div>
               </div>
-              {adminModeEnabled && (
-                <ProductAdminPanel
-                  product={product}
-                  onPriceDisplayChange={setDisplayPrice}
-                />
-              )}
-              <div className="space-y-2">
-                <label htmlFor="size" className="text-xs uppercase tracking-[0.3em] text-neutral-500">
-                  Talla
-                </label>
-                <select
-                  id="size"
-                  value={selectedSize}
-                  onChange={event => setSelectedSize(event.target.value)}
-                  className="w-full rounded-full border border-neutral-300 px-4 py-3 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none focus:ring-0"
-                >
-                  {sizeOptions.map(size => (
-                    <option key={size} value={size}>
-                      {size}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex flex-col gap-3">
-                <a
-                  href={whatsappHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-primary text-center"
-                  onClick={() => trackEvent('whatsapp_cta', { productId: product.id })}
-                >
-                  Reservar vía WhatsApp
-                </a>
-                <Link href="/" className="btn-secondary text-center">
-                  Volver al catálogo
-                </Link>
-              </div>
-            </div>
 
               <div className="space-y-4 text-sm leading-relaxed text-neutral-600">
                 <p>

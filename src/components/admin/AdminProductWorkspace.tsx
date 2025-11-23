@@ -6,13 +6,13 @@ import { ProductForm } from './ProductForm'
 import { PricingManager } from './PricingManager'
 import { MediaGalleryManager } from './MediaGalleryManager.client'
 import { CatalogOrderManager } from './CatalogOrderManager'
-import { ProductPerformancePanel } from './ProductPerformancePanel'
-import { SiteSettingsPanel } from './SiteSettingsPanel'
+
 import { DEFAULT_PRODUCT_PRIORITY } from '@/lib/productDefaults'
 import { ProductDraftPreview, type DraftDiffEntry } from './ProductDraftPreview'
 import {
   PublicationChecklist,
-  defaultChecklistState
+  defaultChecklistState,
+  completeChecklistState
 } from './PublicationChecklist'
 import type { AdminProductFormValues } from '@/types/admin'
 import type { SiteSettings } from '@/lib/settings'
@@ -28,7 +28,6 @@ import { extractProductPlaceholderMap } from '@/lib/images'
 
 interface AdminProductWorkspaceProps {
   initialProducts: AdminProductFormValues[]
-  initialSettings: SiteSettings
 }
 
 const blankProduct: AdminProductFormValues = {
@@ -93,34 +92,34 @@ const diffFields: Array<{
   label: string
   formatter?: (value: unknown) => string
 }> = [
-  { key: 'name', label: 'Nombre' },
-  { key: 'description', label: 'Descripción' },
-  { key: 'category', label: 'Categoría' },
-  { key: 'type', label: 'Tipo de producto' },
-  { key: 'color', label: 'Color' },
-  {
-    key: 'price',
-    label: 'Precio',
-    formatter: value =>
-      typeof value === 'number' ? `${value.toFixed(2)} EUR` : String(value ?? '')
-  },
-  { key: 'priority', label: 'Prioridad' },
-  {
-    key: 'tags',
-    label: 'Tags',
-    formatter: value => (Array.isArray(value) ? value.join(', ') : '')
-  },
-  {
-    key: 'sizes',
-    label: 'Tallas',
-    formatter: value => (Array.isArray(value) ? value.join(', ') : '')
-  },
-  {
-    key: 'available',
-    label: 'Disponibilidad',
-    formatter: value => (value ? 'Disponible' : 'Oculto')
-  }
-]
+    { key: 'name', label: 'Nombre' },
+    { key: 'description', label: 'Descripción' },
+    { key: 'category', label: 'Categoría' },
+    { key: 'type', label: 'Tipo de producto' },
+    { key: 'color', label: 'Color' },
+    {
+      key: 'price',
+      label: 'Precio',
+      formatter: value =>
+        typeof value === 'number' ? `${value.toFixed(2)} EUR` : String(value ?? '')
+    },
+    { key: 'priority', label: 'Prioridad' },
+    {
+      key: 'tags',
+      label: 'Tags',
+      formatter: value => (Array.isArray(value) ? value.join(', ') : '')
+    },
+    {
+      key: 'sizes',
+      label: 'Tallas',
+      formatter: value => (Array.isArray(value) ? value.join(', ') : '')
+    },
+    {
+      key: 'available',
+      label: 'Disponibilidad',
+      formatter: value => (value ? 'Disponible' : 'Oculto')
+    }
+  ]
 
 const formatValue = (key: keyof AdminProductFormValues, value: unknown) => {
   if (key === 'metadata') {
@@ -213,11 +212,9 @@ const mapDraftResponse = (payload: any): DraftInfo => ({
 })
 
 export function AdminProductWorkspace({
-  initialProducts,
-  initialSettings
+  initialProducts
 }: AdminProductWorkspaceProps) {
   const [products, setProducts] = useState<AdminProductFormValues[]>(sortByPriority(initialProducts))
-  const [siteSettings, setSiteSettings] = useState<SiteSettings>(initialSettings)
   const [selectedProduct, setSelectedProduct] = useState<AdminProductFormValues | null>(null)
   const [panelOpen, setPanelOpen] = useState(false)
   const [globalMessage, setGlobalMessage] = useState<string | null>(null)
@@ -353,7 +350,8 @@ export function AdminProductWorkspace({
     setSelectedProduct(product)
     setGlobalError(null)
     setGlobalMessage(null)
-    setChecklistState(defaultChecklistState())
+    // Si el producto ya esta disponible, asumimos que la checklist esta completa para facilitar la edicion rapida
+    setChecklistState(product.available ? completeChecklistState() : defaultChecklistState())
     setPanelOpen(true)
   }
 
@@ -381,68 +379,68 @@ export function AdminProductWorkspace({
     setGlobalMessage('Producto eliminado.')
   }
 
-const handleGalleryChange = (productId: string, gallery: string[]) => {
-  setProducts(current =>
-    current.map(product =>
-      product.id === productId ? { ...product, gallery } : product
+  const handleGalleryChange = (productId: string, gallery: string[]) => {
+    setProducts(current =>
+      current.map(product =>
+        product.id === productId ? { ...product, gallery } : product
+      )
     )
-  )
-  if (selectedProduct?.id === productId) {
-    setSelectedProduct({ ...selectedProduct, gallery })
+    if (selectedProduct?.id === productId) {
+      setSelectedProduct({ ...selectedProduct, gallery })
+    }
   }
-}
 
-const handlePlaceholderChange = (productId: string, placeholders: Record<string, string>) => {
-  setProducts(current =>
-    current.map(product =>
-      product.id === productId
-        ? {
+  const handlePlaceholderChange = (productId: string, placeholders: Record<string, string>) => {
+    setProducts(current =>
+      current.map(product =>
+        product.id === productId
+          ? {
             ...product,
             metadata: {
               ...(product.metadata ?? {}),
               imagePlaceholders: placeholders
             }
           }
-        : product
+          : product
+      )
     )
-  )
 
-  if (selectedProduct?.id === productId) {
-    setSelectedProduct({
-      ...selectedProduct,
-      metadata: {
-        ...(selectedProduct.metadata ?? {}),
-        imagePlaceholders: placeholders
-      }
-    })
+    if (selectedProduct?.id === productId) {
+      setSelectedProduct({
+        ...selectedProduct,
+        metadata: {
+          ...(selectedProduct.metadata ?? {}),
+          imagePlaceholders: placeholders
+        }
+      })
+    }
   }
-}
 
-const handleReviewChange = (productId: string, reviewMap: Record<string, boolean>) => {
-  setProducts(current =>
-    current.map(product =>
-      product.id === productId
-        ? {
+  const handleReviewChange = (productId: string, reviewMap: Record<string, boolean>) => {
+    setProducts(current =>
+      current.map(product =>
+        product.id === productId
+          ? {
             ...product,
             metadata: {
               ...(product.metadata ?? {}),
               imageReview: reviewMap
             }
           }
-        : product
+          : product
+      )
     )
-  )
 
-  if (selectedProduct?.id === productId) {
-    setSelectedProduct({
-      ...selectedProduct,
-      metadata: {
-        ...(selectedProduct.metadata ?? {}),
-        imageReview: reviewMap
-      }
-    })
+    if (selectedProduct?.id === productId) {
+      setSelectedProduct({
+        ...selectedProduct,
+        metadata: {
+          ...(selectedProduct.metadata ?? {}),
+          imageReview: reviewMap
+        }
+      })
+    }
   }
-}
 
   const handleInlinePriceUpdate = async (productId: string, price: number) => {
     setGlobalError(null)
@@ -461,6 +459,26 @@ const handleReviewChange = (productId: string, reviewMap: Record<string, boolean
     if (selectedProduct?.id === productId) {
       setSelectedProduct({ ...selectedProduct, price })
     }
+  }
+
+  const handleToggleAvailability = async (productId: string, current: boolean) => {
+    setGlobalError(null)
+    const next = !current
+    const response = await fetch(`/api/products/${productId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ available: next })
+    })
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => null)
+      throw new Error(error?.error ?? 'No se pudo actualizar la disponibilidad.')
+    }
+
+    const data = await response.json()
+    const mapped = mapApiProductToFormValues(data)
+    upsertProductInState(mapped)
+    setGlobalMessage(next ? 'Producto publicado.' : 'Producto archivado.')
   }
 
   const handleSaveDraft = async (values: AdminProductFormValues) => {
@@ -559,72 +577,58 @@ const handleReviewChange = (productId: string, reviewMap: Record<string, boolean
     <>
       {(globalMessage || globalError) && (
         <div
-          className={`mt-6 rounded-3xl border px-4 py-3 text-sm ${
-            globalError
-              ? 'border-red-200 bg-red-50 text-red-700'
-              : 'border-emerald-200 bg-emerald-50 text-emerald-700'
-          }`}
+          className={`mt-6 rounded-3xl border px-4 py-3 text-sm ${globalError
+            ? 'border-red-200 bg-red-50 text-red-700'
+            : 'border-emerald-200 bg-emerald-50 text-emerald-700'
+            }`}
         >
           {globalError ?? globalMessage}
         </div>
       )}
 
-      <div className="mt-10 grid gap-10 xl:grid-cols-[minmax(0,2.2fr)_minmax(320px,1fr)]">
-        <div className="space-y-10 order-2 xl:order-1">
-          <section className="rounded-3xl border border-neutral-200 bg-white p-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neutral-500">
-                  Productos actuales
-                </p>
-                <p className="mt-1 text-sm text-neutral-500">
-                  Administra el catálogo completo: crea, edita o elimina productos.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={handleCreateNew}
-                className="self-start rounded-full border border-neutral-300 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-neutral-700 transition hover:border-neutral-900 hover:text-neutral-900"
-              >
-                Nuevo producto
-              </button>
+      <div className="mt-10 space-y-10">
+        <section className="rounded-3xl border border-neutral-200 bg-white p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neutral-500">
+                Productos actuales
+              </p>
+              <p className="mt-1 text-sm text-neutral-500">
+                Administra el catálogo completo: crea, edita o elimina productos.
+              </p>
             </div>
-            <div className="mt-6">
+            <button
+              type="button"
+              onClick={handleCreateNew}
+              className="self-start rounded-full border border-neutral-300 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-neutral-700 transition hover:border-neutral-900 hover:text-neutral-900"
+            >
+              Nuevo producto
+            </button>
+          </div>
+          <div className="mt-6">
             <ProductList
               products={products}
               onEdit={handleEdit}
               onDelete={handleDelete}
               onPriceUpdate={handleInlinePriceUpdate}
+              onToggleAvailability={handleToggleAvailability}
             />
-            </div>
-          </section>
+          </div>
+        </section>
 
-          <CatalogOrderManager
-            products={products}
-            onPrioritiesUpdated={handlePrioritiesUpdated}
-          />
+        <CatalogOrderManager
+          products={products}
+          onPrioritiesUpdated={handlePrioritiesUpdated}
+        />
 
-          <section className="rounded-3xl border border-neutral-200 bg-white p-6">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.3em] text-neutral-500">
-              Gestor de precios
-            </h2>
-            <div className="mt-6">
-              <PricingManager products={pricingRows} />
-            </div>
-          </section>
-        </div>
-        <div className="space-y-10 order-1 xl:order-2 xl:sticky xl:top-6">
-          <SiteSettingsPanel initialSettings={siteSettings} onChange={setSiteSettings} />
-          <ProductPerformancePanel
-            products={products}
-            onInspect={productId => {
-              const target = products.find(product => product.id === productId)
-              if (target) {
-                handleEdit(target)
-              }
-            }}
-          />
-        </div>
+        <section className="rounded-3xl border border-neutral-200 bg-white p-6">
+          <h2 className="text-sm font-semibold uppercase tracking-[0.3em] text-neutral-500">
+            Gestor de precios
+          </h2>
+          <div className="mt-6">
+            <PricingManager products={pricingRows} />
+          </div>
+        </section>
       </div>
 
       {panelOpen && (

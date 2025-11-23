@@ -25,9 +25,19 @@ export async function createBanner(formData: FormData) {
     const cta_link = formData.get('cta_link') as string
     const priority = Number(formData.get('priority') || 0)
     const image_url = formData.get('image_url') as string
+    const mobile_crop_str = formData.get('mobile_crop') as string
 
     if (!image_url) {
         throw new Error('Image URL is required')
+    }
+
+    let mobile_crop = { x: 50, y: 50, size: 56 }
+    if (mobile_crop_str) {
+        try {
+            mobile_crop = JSON.parse(mobile_crop_str)
+        } catch (e) {
+            console.error('Failed to parse mobile_crop', e)
+        }
     }
 
     const { error } = await client.from('hero_slides').insert({
@@ -37,7 +47,8 @@ export async function createBanner(formData: FormData) {
         cta_link,
         priority,
         image_url,
-        active: true
+        active: true,
+        mobile_crop
     })
 
     if (error) throw new Error(error.message)
@@ -54,17 +65,28 @@ export async function updateBanner(id: string, formData: FormData) {
     const cta_link = formData.get('cta_link') as string
     const priority = Number(formData.get('priority') || 0)
     const active = formData.get('active') === 'true'
+    const mobile_crop_str = formData.get('mobile_crop') as string
+
+    const updateData: any = {
+        title,
+        subtitle,
+        cta_text,
+        cta_link,
+        priority,
+        active
+    }
+
+    if (mobile_crop_str) {
+        try {
+            updateData.mobile_crop = JSON.parse(mobile_crop_str)
+        } catch (e) {
+            console.error('Failed to parse mobile_crop', e)
+        }
+    }
 
     const { error } = await client
         .from('hero_slides')
-        .update({
-            title,
-            subtitle,
-            cta_text,
-            cta_link,
-            priority,
-            active
-        })
+        .update(updateData)
         .eq('id', id)
 
     if (error) throw new Error(error.message)

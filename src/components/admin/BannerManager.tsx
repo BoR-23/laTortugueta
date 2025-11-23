@@ -4,26 +4,32 @@ import { useState } from 'react'
 import { HeroSlide } from '@/lib/banners'
 import { createBanner, updateBanner, deleteBanner } from '@/app/admin/banners/actions'
 import Image from 'next/image'
+import { MobileCropSelector } from './MobileCropSelector'
 
 export function BannerManager({ initialBanners }: { initialBanners: HeroSlide[] }) {
     const [banners, setBanners] = useState(initialBanners)
     const [isEditing, setIsEditing] = useState<string | null>(null)
     const [isCreating, setIsCreating] = useState(false)
+    const [currentCrop, setCurrentCrop] = useState<{ x: number; y: number; size: number }>({ x: 50, y: 50, size: 56 })
+    const [newBannerImageUrl, setNewBannerImageUrl] = useState('')
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         const formData = new FormData(e.currentTarget)
 
+        // Add crop data
+        formData.append('mobile_crop', JSON.stringify(currentCrop))
+
         try {
             if (isCreating) {
                 await createBanner(formData)
                 setIsCreating(false)
+                setCurrentCrop({ x: 50, y: 50, size: 56 }) // Reset
+                setNewBannerImageUrl('') // Reset
             } else if (isEditing) {
                 await updateBanner(isEditing, formData)
                 setIsEditing(null)
             }
-            // Refresh local state would be better with a router refresh or optimistic update
-            // For now, we rely on the server action revalidating and a full page reload or router.refresh()
             window.location.reload()
         } catch (error) {
             alert('Error saving banner')
@@ -59,8 +65,31 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroSlide[] 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
                             <label className="block text-xs uppercase font-bold text-neutral-500 mb-1">URL Imagen (R2)</label>
-                            <input name="image_url" required className="w-full border p-2 rounded" placeholder="https://..." />
+                            <input
+                                name="image_url"
+                                required
+                                className="w-full border p-2 rounded"
+                                placeholder="https://..."
+                                value={newBannerImageUrl} // Controlled component
+                                onChange={(e) => {
+                                    const imageUrl = e.target.value
+                                    setNewBannerImageUrl(imageUrl) // Update the state
+                                    if (imageUrl) {
+                                        setCurrentCrop({ x: 50, y: 50, size: 56 }) // Reset crop when image changes
+                                    }
+                                }}
+                            />
                         </div>
+
+                        {/* Show crop selector if image URL is present */}
+                        {newBannerImageUrl ? (
+                            <MobileCropSelector
+                                imageUrl={newBannerImageUrl}
+                                initialCrop={currentCrop}
+                                onChange={setCurrentCrop}
+                            />
+                        ) : null}
+
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-xs uppercase font-bold text-neutral-500 mb-1">Título</label>
@@ -85,6 +114,10 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroSlide[] 
                             <label className="block text-xs uppercase font-bold text-neutral-500 mb-1">Prioridad</label>
                             <input name="priority" type="number" defaultValue={0} className="w-full border p-2 rounded" />
                         </div>
+
+                        {/* Mobile Crop Selector - only show if image_url is provided */}
+                        <div id="crop-container"></div>
+
                         <div className="flex gap-2 justify-end">
                             <button type="button" onClick={() => setIsCreating(false)} className="px-4 py-2 text-sm">Cancelar</button>
                             <button type="submit" className="bg-neutral-900 text-white px-4 py-2 rounded text-sm">Guardar</button>
@@ -97,7 +130,7 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroSlide[] 
                 {banners.map(banner => (
                     <div key={banner.id} className="flex gap-6 bg-white p-4 rounded-xl border border-neutral-200 shadow-sm">
                         <div className="relative w-48 h-32 bg-neutral-100 rounded-lg overflow-hidden flex-shrink-0">
-                            <Image src={banner.image_url} alt={banner.title || 'Banner'} fill className="object-cover" />
+                            <Image src={banner.image_url} alt={banner.title || 'Banner'} fill sizes="200px" className="object-cover" />
                         </div>
 
                         {isEditing === banner.id ? (
@@ -134,6 +167,14 @@ export function BannerManager({ initialBanners }: { initialBanners: HeroSlide[] 
                                         </label>
                                     </div>
                                 </div>
+
+                                {/* Mobile Crop Selector for editing */}
+                                <MobileCropSelector
+                                    imageUrl={banner.image_url}
+                                    initialCrop={banner.mobile_crop || { x: 50, y: 50, size: 56 }}
+                                    onChange={setCurrentCrop}
+                                />
+
                                 <div className="flex gap-2 justify-end">
                                     <button type="button" onClick={() => setIsEditing(null)} className="px-4 py-2 text-sm">Cancelar</button>
                                     <button type="submit" className="bg-neutral-900 text-white px-4 py-2 rounded text-sm">Actualizar</button>

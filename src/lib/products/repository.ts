@@ -56,12 +56,31 @@ const fetchProductByIdFromSupabase = async (id: string) => {
 
 const fetchProductsByTagFromSupabase = async (tag: string) => {
   const client = createSupabaseServerClient()
+
+  // 1. Find products that have images with this tag
+  const { data: mediaMatches } = await client
+    .from('media_assets')
+    .select('product_id')
+    .contains('tags', [tag])
+
+  const mediaProductIds = Array.from(new Set(mediaMatches?.map((m: any) => m.product_id) || []))
+
+  let query = client.from('products').select('*, media_assets(*)')
+
+  if (mediaProductIds.length > 0) {
+    // OR condition: product has tag OR id is in mediaProductIds
+    // We construct the filter string for Supabase .or()
+    // Format: tags.cs.{tag},id.in.(id1,id2)
+    const safeTag = tag.replace(/"/g, '\\"')
+    const idsStr = mediaProductIds.join(',')
+    query = query.or(`tags.cs.{"${safeTag}"},id.in.(${idsStr})`)
+  } else {
+    query = query.contains('tags', [tag])
+  }
+
   const [lookup, result] = await Promise.all([
     buildCategoryLookup(),
-    client
-      .from('products')
-      .select('*, media_assets(*)')
-      .contains('tags', [tag])
+    query
       .order('priority', { ascending: true, nullsFirst: false })
       .order('name', { ascending: true })
   ])

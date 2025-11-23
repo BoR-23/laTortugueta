@@ -24,46 +24,58 @@ export const compareByPriority = (a: Product, b: Product) => {
 }
 
 export const sanitiseProductInput = (input: ProductMutationInput) => {
-  const priceValue = Number(input.price ?? 0)
-  const typeValue =
-    typeof input.type === 'string' && input.type.trim().length > 0
+  const output: ProductMutationInput = { ...input }
+
+  if (input.id) output.id = input.id.trim()
+  if (input.name) output.name = input.name.trim()
+  if (input.description !== undefined) output.description = input.description
+
+  if (input.price !== undefined) {
+    const priceValue = Number(input.price)
+    output.price = Number.isFinite(priceValue) ? Number(priceValue.toFixed(2)) : 0
+  }
+
+  if (input.tags !== undefined) output.tags = toStringArray(input.tags)
+  if (input.sizes !== undefined) output.sizes = toStringArray(input.sizes)
+  if (input.available !== undefined) output.available = Boolean(input.available)
+  if (input.priority !== undefined) output.priority = normalisePriority(input.priority)
+
+  if (input.type !== undefined) {
+    output.type = typeof input.type === 'string' && input.type.trim().length > 0
       ? input.type.trim()
       : inferProductTypeFromCategory(input.category)
-  const metadataValue = sanitizeTypeMetadata(typeValue, input.metadata ?? {}) as ProductMetadata
-  return {
-    ...input,
-    id: input.id.trim(),
-    name: input.name.trim(),
-    description: input.description ?? '',
-    price: Number.isFinite(priceValue) ? Number(priceValue.toFixed(2)) : 0,
-    tags: toStringArray(input.tags),
-    sizes: toStringArray(input.sizes),
-    available: Boolean(input.available),
-    priority: normalisePriority(input.priority),
-    type: typeValue,
-    metadata: metadataValue,
-    category: typeof input.category === 'string' ? input.category.trim() : undefined
   }
+
+  if (input.category !== undefined) {
+    output.category = typeof input.category === 'string' ? input.category.trim() : undefined
+  }
+
+  if (input.metadata !== undefined) {
+    const typeValue = output.type || DEFAULT_PRODUCT_TYPE
+    output.metadata = sanitizeTypeMetadata(typeValue, input.metadata) as ProductMetadata
+  }
+
+  return output
 }
 
 export const supabasePayloadFromInput = (input: ProductMutationInput, withTimestamps = true) => {
   const now = new Date().toISOString()
-  const payload = {
-    id: input.id,
-    name: input.name,
-    description: input.description,
-    price: input.price ?? 0,
-    color: input.color ?? '',
-    tags: input.tags ?? [],
-    sizes: input.sizes ?? [],
-    available: input.available ?? false,
-    type: input.type ?? '',
-    material: input.material ?? '',
-    care: input.care ?? '',
-    origin: input.origin ?? '',
-    metadata: input.metadata ?? {},
-    priority: input.priority ?? DEFAULT_PRODUCT_PRIORITY
-  } as Record<string, unknown>
+  const payload: Record<string, unknown> = {}
+
+  if (input.id !== undefined) payload.id = input.id
+  if (input.name !== undefined) payload.name = input.name
+  if (input.description !== undefined) payload.description = input.description
+  if (input.price !== undefined) payload.price = input.price
+  if (input.color !== undefined) payload.color = input.color
+  if (input.tags !== undefined) payload.tags = input.tags
+  if (input.sizes !== undefined) payload.sizes = input.sizes
+  if (input.available !== undefined) payload.available = input.available
+  if (input.type !== undefined) payload.type = input.type
+  if (input.material !== undefined) payload.material = input.material
+  if (input.care !== undefined) payload.care = input.care
+  if (input.origin !== undefined) payload.origin = input.origin
+  if (input.metadata !== undefined) payload.metadata = input.metadata
+  if (input.priority !== undefined) payload.priority = input.priority
 
   if (withTimestamps) {
     payload.updated_at = now
@@ -95,8 +107,8 @@ export const buildProductFromSupabase = (
   // Las dejamos así porque getProductImageVariant las convertirá a R2 cuando sea necesario
   const gallery = Array.isArray(record.media_assets)
     ? (record.media_assets as MediaAssetRecord[])
-        .sort((a, b) => Number(a.position ?? 0) - Number(b.position ?? 0))
-        .map(asset => asset.url)
+      .sort((a, b) => Number(a.position ?? 0) - Number(b.position ?? 0))
+      .map(asset => asset.url)
     : []
 
   const categoryFromTags = deriveCategoryName(record.tags, categoryLookup)
@@ -137,6 +149,7 @@ export const buildProductFromSupabase = (
     metadata: sanitizeTypeMetadata(baseType || DEFAULT_PRODUCT_TYPE, metadata) as ProductMetadata,
     priority: normalisePriority(record.priority),
     viewCount: typeof record.view_count === 'number' ? Number(record.view_count) : 0,
-    updatedAt: typeof record.updated_at === 'string' ? record.updated_at : undefined
+    updatedAt: typeof record.updated_at === 'string' ? record.updated_at : undefined,
+    mediaAssets: Array.isArray(record.media_assets) ? (record.media_assets as MediaAssetRecord[]) : []
   }
 }

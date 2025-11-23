@@ -7,17 +7,23 @@ type Status = 'idle' | 'saving' | 'success' | 'error'
 
 interface ProductAdminPanelProps {
   product: Product
+  activeImage: string
   onPriceDisplayChange: (formattedValue: string) => void
+  onImageTagsChange: (url: string, newTags: string[]) => void
 }
 
 const COLOR_REGEX = /^color\s+\d{3}$/i
 
 const formatPrice = (value: number) => value.toFixed(2)
 
-export default function ProductAdminPanel({ product, onPriceDisplayChange }: ProductAdminPanelProps) {
+export default function ProductAdminPanel({ product, activeImage, onPriceDisplayChange, onImageTagsChange }: ProductAdminPanelProps) {
   const [priceInput, setPriceInput] = useState(formatPrice(product.price))
   const [priceStatus, setPriceStatus] = useState<Status>('idle')
-  const [tagList, setTagList] = useState<string[]>(product.tags || [])
+
+  // Find tags for the active image
+  const activeAsset = product.mediaAssets?.find(a => a.url === activeImage)
+  const [tagList, setTagList] = useState<string[]>(activeAsset?.tags || [])
+
   const [tagInput, setTagInput] = useState('')
   const [tagSaving, setTagSaving] = useState(false)
   const [tagError, setTagError] = useState<string | null>(null)
@@ -30,25 +36,43 @@ export default function ProductAdminPanel({ product, onPriceDisplayChange }: Pro
     setPriceInput(formatPrice(product.price))
   }, [product.price])
 
+  // Update tag list when active image changes
   useEffect(() => {
-    setTagList(product.tags || [])
-  }, [product.tags])
+    const asset = product.mediaAssets?.find(a => a.url === activeImage)
+    setTagList(asset?.tags || [])
+  }, [activeImage, product.mediaAssets])
 
   useEffect(() => {
     let cancelled = false
     const loadOptions = async () => {
       try {
-        const response = await fetch('/api/tags')
-        if (!response.ok) return
-        const payload = (await response.json()) as { tags?: string[] }
-        if (cancelled || !payload?.tags) return
-        const tags = payload.tags
-        const colors = tags
-          .filter(tag => COLOR_REGEX.test(tag))
-          .sort((a, b) => a.localeCompare(b, 'es'))
-        const general = tags.filter(tag => !COLOR_REGEX.test(tag)).sort((a, b) => a.localeCompare(b, 'es'))
+        const response = await fetch('/api/categories/list') // Use categories for official tags
+        if (!response.ok) {
+          // Fallback to old tags API if categories fails or for backward compat
+          const res2 = await fetch('/api/tags')
+          if (res2.ok) {
+            const payload = await res2.json()
+            if (cancelled || !payload?.tags) return
+            const tags = payload.tags
+            const colors = tags.filter((t: string) => t.toLowerCase().startsWith('color')).sort()
+            const general = tags.filter((t: string) => !t.toLowerCase().startsWith('color')).sort()
+            setColorOptions(colors)
+            setTagOptions(general)
+          }
+          return
+        }
+
+        const payload = await response.json()
+        if (cancelled || !payload) return
+
+        // Assuming payload is list of categories with tag_key
+        const tags = payload.map((c: any) => c.tag_key).filter(Boolean)
+        const colors = tags.filter((t: string) => t.toLowerCase().startsWith('color')).sort()
+        const general = tags.filter((t: string) => !t.toLowerCase().startsWith('color')).sort()
+
         setColorOptions(colors)
         setTagOptions(general)
+
       } catch {
         // ignore
       }
@@ -97,16 +121,16 @@ export default function ProductAdminPanel({ product, onPriceDisplayChange }: Pro
     setTagSaving(true)
     setTagError(null)
     try {
-      const response = await fetch(`/api/products/${product.id}/tags`, {
-        method: 'PUT',
+      const response = await fetch('/api/media/tags', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tags: nextTags })
+        body: JSON.stringify({ url: activeImage, tags: nextTags })
       })
       if (!response.ok) {
-        const payload = await response.json().catch(() => null)
-        throw new Error(payload?.error ?? 'No se pudieron guardar las etiquetas.')
+        throw new Error('No se pudieron guardar las etiquetas.')
       }
       setTagList(nextTags)
+      onImageTagsChange(activeImage, nextTags)
     } catch (error) {
       console.error(error)
       setTagError('No se pudieron guardar las etiquetas.')
@@ -116,11 +140,38 @@ export default function ProductAdminPanel({ product, onPriceDisplayChange }: Pro
   }
 
   const handleAddTag = async (value: string) => {
-    if (!value) return
-    if (tagList.some(tag => tag.toLowerCase() === value.toLowerCase())) {
+    let val = value.trim()
+    if (!val) return
+
+    // Auto-prepend Color if needed (logic from modal)
+    const isColor = val.toLowerCase().startsWith('color') || /^\d{3}$/.test(val)
+    if (isColor && !val.toLowerCase().startsWith('color')) {
+      val = `Color ${val}`
+    }
+
+    if (tagList.some(tag => tag.toLowerCase() === val.toLowerCase())) {
       return
     }
-    await persistTags([...tagList, value])
+
+    // Check if new color category is needed
+    if (isColor) {
+      const exists = colorOptions.some(t => t.toLowerCase() === val.toLowerCase())
+      if (!exists) {
+        try {
+          await fetch('/api/categories/create-color', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tagName: val })
+          })
+          // Optimistically add to options
+          setColorOptions(prev => [...prev, val].sort())
+        } catch (e) {
+          console.error('Failed to create color category', e)
+        }
+      }
+    }
+
+    await persistTags([...tagList, val])
   }
 
   const handleColorSelect = async (value: string) => {
@@ -188,10 +239,9 @@ export default function ProductAdminPanel({ product, onPriceDisplayChange }: Pro
 
       <div className="space-y-3">
         <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">Etiquetas del calcetín</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">Etiquetas de la foto</p>
           <p className="mt-1 text-xs text-neutral-500">
-            Añade palabras clave sencillas para agrupar calcetines (ej. colores, colecciones, usos). Haz clic en una
-            etiqueta para eliminarla.
+            Gestiona las etiquetas específicas para la imagen que estás viendo ahora mismo.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -201,14 +251,17 @@ export default function ProductAdminPanel({ product, onPriceDisplayChange }: Pro
                 key={tag}
                 type="button"
                 onClick={() => handleRemoveTag(tag)}
-                className="rounded-full border border-neutral-400 bg-neutral-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-neutral-800 hover:border-neutral-900 hover:bg-white"
+                className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em] hover:bg-white ${tag.toLowerCase().startsWith('color')
+                    ? 'border-blue-200 bg-blue-50 text-blue-800 hover:border-blue-400'
+                    : 'border-neutral-400 bg-neutral-100 text-neutral-800 hover:border-neutral-900'
+                  }`}
                 disabled={tagSaving}
               >
                 {tag} ×
               </button>
             ))
           ) : (
-            <span className="text-xs text-neutral-500">Todavía no hay etiquetas.</span>
+            <span className="text-xs text-neutral-500">Sin etiquetas en esta foto.</span>
           )}
         </div>
         <div className="grid gap-3 sm:grid-cols-2">

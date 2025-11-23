@@ -53,7 +53,16 @@ export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
 
 export const updateSiteSettings = async (partial: Partial<SiteSettings>) => {
   const client = createSupabaseServerClient()
-  const merged = mergeSettings(partial)
+
+  // Get current settings first
+  const current = await getSiteSettings()
+
+  // Merge current settings with the partial update
+  const merged = {
+    ...current,
+    ...partial
+  }
+
   const { error } = await client.from('site_settings').upsert(
     {
       key: SETTINGS_KEY,

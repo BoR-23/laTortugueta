@@ -50,13 +50,15 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' },
-      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' }
+      { url: `${process.env.NEXT_PUBLIC_R2_PUBLIC_URL}/favicons/favicon-16x16.png`, sizes: '16x16', type: 'image/png' },
+      { url: `${process.env.NEXT_PUBLIC_R2_PUBLIC_URL}/favicons/favicon-32x32.png`, sizes: '32x32', type: 'image/png' },
+      { url: `${process.env.NEXT_PUBLIC_R2_PUBLIC_URL}/favicons/favicon.ico`, sizes: 'any' }
     ],
-    shortcut: '/favicon.svg',
-    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }]
+    apple: [
+      { url: `${process.env.NEXT_PUBLIC_R2_PUBLIC_URL}/favicons/apple-touch-icon.png`, sizes: '180x180', type: 'image/png' }
+    ]
   },
-  manifest: '/manifest.webmanifest'
+  manifest: '/manifest.json'
 }
 
 export default function RootLayout({
@@ -68,7 +70,7 @@ export default function RootLayout({
   const structuredData = JSON.stringify([buildOrganizationJsonLd(), buildWebsiteJsonLd()])
 
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta httpEquiv="Content-Language" content="es" />

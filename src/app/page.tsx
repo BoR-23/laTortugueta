@@ -56,6 +56,8 @@ export const metadata: Metadata = {
   }
 }
 
+export const dynamic = 'force-dynamic'
+
 export default async function Home() {
   const products = await getAllProducts()
   const catalogProducts = prepareCatalogProducts(products)

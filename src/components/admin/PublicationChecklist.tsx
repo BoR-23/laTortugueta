@@ -44,6 +44,12 @@ export const defaultChecklistState = () =>
     return acc
   }, {})
 
+export const completeChecklistState = () =>
+  defaultItems.reduce<Record<string, boolean>>((acc, item) => {
+    acc[item.id] = true
+    return acc
+  }, {})
+
 export function PublicationChecklist({
   value,
   onChange,
@@ -67,11 +73,10 @@ export function PublicationChecklist({
           Checklist antes de publicar
         </p>
         <span
-          className={`rounded-full px-3 py-1 text-[11px] uppercase tracking-[0.2em] ${
-            complete
+          className={`rounded-full px-3 py-1 text-[11px] uppercase tracking-[0.2em] ${complete
               ? 'bg-emerald-50 text-emerald-700'
               : 'bg-neutral-100 text-neutral-500'
-          }`}
+            }`}
         >
           {complete ? 'Listo' : 'Pendiente'}
         </span>

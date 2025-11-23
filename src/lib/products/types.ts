@@ -32,11 +32,13 @@ export interface Product {
   metadata?: ProductMetadata
   viewCount?: number
   updatedAt?: string
+  mediaAssets?: MediaAssetRecord[]
 }
 
 export type MediaAssetRecord = {
   url: string
   position?: number | null
+  tags?: string[]
 }
 
 export type ProductMutationInput = {

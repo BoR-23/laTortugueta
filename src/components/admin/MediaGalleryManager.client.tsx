@@ -5,6 +5,7 @@ import Image from 'next/image'
 
 import { buildProductPlaceholderMap, getProductImageVariant } from '@/lib/images'
 import { uploadProductImage } from '@/lib/client/uploadProductImage'
+import { ImageTaggingModal } from './ImageTaggingModal'
 
 type PlaceholderMap = Record<string, string>
 
@@ -41,6 +42,74 @@ export function MediaGalleryManager(props: MediaGalleryManagerProps) {
   const [isDragging, setIsDragging] = useState(false)
   const addInputRef = useRef<HTMLInputElement | null>(null)
   const replaceInputRef = useRef<HTMLInputElement | null>(null)
+
+  // Move functionality state
+  const [movingUrl, setMovingUrl] = useState<string | null>(null)
+  const [taggingUrl, setTaggingUrl] = useState<string | null>(null)
+  const [targetProductId, setTargetProductId] = useState<string>('')
+  const [availableProducts, setAvailableProducts] = useState<{ id: string, name: string }[]>([])
+  const [loadingProducts, setLoadingProducts] = useState(false)
+
+  const fetchProducts = async () => {
+    setLoadingProducts(true)
+    try {
+      const res = await fetch('/api/products')
+      if (res.ok) {
+        const data = await res.json()
+        setAvailableProducts(data.map((p: any) => ({ id: p.id, name: p.name })))
+      }
+    } catch (e) {
+      console.error('Failed to load products', e)
+    } finally {
+      setLoadingProducts(false)
+    }
+  }
+
+  const openMoveModal = (url: string) => {
+    setMovingUrl(url)
+    setTargetProductId('')
+    if (availableProducts.length === 0) {
+      void fetchProducts()
+    }
+  }
+
+  const handleMoveSubmit = async () => {
+    if (!movingUrl || !targetProductId) return
+
+    setBusy(true)
+    setError(null)
+    try {
+      const response = await fetch('/api/media/move', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assetUrl: movingUrl,
+          targetProductId
+        })
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Error al mover la imagen')
+      }
+
+      // Remove from current gallery
+      const nextGallery = gallery.filter(item => item !== movingUrl)
+      const nextReview = { ...reviewMap }
+      delete nextReview[movingUrl]
+
+      setGallery(nextGallery)
+      setReviewMap(nextReview)
+      onGalleryChange(nextGallery)
+      onReviewChange?.(nextReview)
+
+      setMovingUrl(null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo mover la imagen.')
+    } finally {
+      setBusy(false)
+    }
+  }
 
   useEffect(() => {
     setGallery(initialGallery)
@@ -126,21 +195,21 @@ export function MediaGalleryManager(props: MediaGalleryManagerProps) {
 
     setReplacingIndex(targetIndex)
     setError(null)
-    ;(async () => {
-      try {
-        const result = await uploadProductImage(productId, file)
-        const nextGallery = [...gallery]
-        nextGallery[targetIndex] = result.path
-        const nextReview: Record<string, boolean> = { ...reviewMap }
-        // al reemplazar, marcar como no revisado hasta revisar de nuevo
-        nextReview[result.path] = false
-        await syncGallery(nextGallery, { [result.path]: result.placeholder }, nextReview)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'No se pudo reemplazar la imagen.')
-      } finally {
-        setReplacingIndex(null)
-      }
-    })()
+      ; (async () => {
+        try {
+          const result = await uploadProductImage(productId, file)
+          const nextGallery = [...gallery]
+          nextGallery[targetIndex] = result.path
+          const nextReview: Record<string, boolean> = { ...reviewMap }
+          // al reemplazar, marcar como no revisado hasta revisar de nuevo
+          nextReview[result.path] = false
+          await syncGallery(nextGallery, { [result.path]: result.placeholder }, nextReview)
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'No se pudo reemplazar la imagen.')
+        } finally {
+          setReplacingIndex(null)
+        }
+      })()
   }
 
   const handleRemove = async (url: string) => {
@@ -206,11 +275,14 @@ export function MediaGalleryManager(props: MediaGalleryManagerProps) {
 
   const isDisabled = disabled || !productId
 
+
+
+  const [hoveredUrl, setHoveredUrl] = useState<string | null>(null)
+
   return (
     <div
-      className={`rounded-3xl border border-neutral-200 bg-white p-6 transition ${
-        isDragging ? 'border-neutral-900 bg-neutral-50' : ''
-      }`}
+      className={`rounded-3xl border border-neutral-200 bg-white p-6 transition ${isDragging ? 'border-neutral-900 bg-neutral-50' : ''
+        }`}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
       onDragLeave={handleDragLeave}
@@ -264,6 +336,8 @@ export function MediaGalleryManager(props: MediaGalleryManagerProps) {
             <div
               key={`${url}-${index}`}
               className="flex items-center gap-4 rounded-2xl border border-neutral-100 bg-neutral-50 p-3"
+              onMouseEnter={() => setHoveredUrl(displayUrl)}
+              onMouseLeave={() => setHoveredUrl(null)}
             >
               <div className="relative h-20 w-16 overflow-hidden rounded-xl bg-white">
                 {url ? (
@@ -300,6 +374,20 @@ export function MediaGalleryManager(props: MediaGalleryManagerProps) {
                   >
                     Destacar
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => setTaggingUrl(url)}
+                    className="rounded-full border border-neutral-300 px-3 py-1 hover:border-neutral-900 hover:text-neutral-900"
+                  >
+                    Etiquetar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => openMoveModal(url)}
+                    className="rounded-full border border-neutral-300 px-3 py-1 hover:border-neutral-900 hover:text-neutral-900"
+                  >
+                    Mover a...
+                  </button>
                   <a
                     href={displayUrl}
                     target="_blank"
@@ -312,11 +400,10 @@ export function MediaGalleryManager(props: MediaGalleryManagerProps) {
                   <button
                     type="button"
                     onClick={() => handleToggleReview(url)}
-                    className={`rounded-full border px-3 py-1 ${
-                      reviewMap[url]
-                        ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                        : 'border-neutral-300 text-neutral-600 hover:border-neutral-900 hover:text-neutral-900'
-                    }`}
+                    className={`rounded-full border px-3 py-1 ${reviewMap[url]
+                      ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                      : 'border-neutral-300 text-neutral-600 hover:border-neutral-900 hover:text-neutral-900'
+                      }`}
                   >
                     {reviewMap[url] ? 'Revisado' : 'Marcar revisado'}
                   </button>
@@ -333,6 +420,91 @@ export function MediaGalleryManager(props: MediaGalleryManagerProps) {
           )
         })}
       </div>
+
+      {/* Hover Preview */}
+      {hoveredUrl && (
+        <div className="pointer-events-none fixed right-[620px] top-1/2 z-50 -translate-y-1/2 overflow-hidden rounded-3xl border-4 border-white bg-white shadow-2xl">
+          <div className="relative h-[500px] w-[400px]">
+            <Image
+              src={hoveredUrl}
+              alt="Vista previa"
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Preload Images for Hover Zoom */}
+      <div className="hidden">
+        {gallery.map((url) => (
+          <Image
+            key={`preload-${url}`}
+            src={getProductImageVariant(url, 'original') || url}
+            alt="preload"
+            width={400}
+            height={500}
+            priority
+          />
+        ))}
+      </div>
+
+      {/* Move Modal */}
+      {movingUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-neutral-900">Mover imagen</h3>
+            <p className="mt-2 text-sm text-neutral-600">
+              Selecciona el producto al que quieres mover esta imagen.
+            </p>
+
+            <div className="mt-4">
+              {loadingProducts ? (
+                <p className="text-sm text-neutral-500">Cargando productos...</p>
+              ) : (
+                <select
+                  className="w-full rounded-xl border border-neutral-200 px-4 py-3 text-sm"
+                  value={targetProductId}
+                  onChange={e => setTargetProductId(e.target.value)}
+                >
+                  <option value="">Selecciona un producto...</option>
+                  {availableProducts
+                    .filter(p => p.id !== productId) // Exclude current product
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map(p => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}
+                      </option>
+                    ))}
+                </select>
+              )}
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setMovingUrl(null)}
+                className="rounded-full px-4 py-2 text-sm font-medium text-neutral-500 hover:text-neutral-900"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleMoveSubmit}
+                disabled={!targetProductId || busy}
+                className="rounded-full bg-neutral-900 px-6 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
+              >
+                {busy ? 'Moviendo...' : 'Mover imagen'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {taggingUrl && (
+        <ImageTaggingModal
+          url={taggingUrl}
+          onClose={() => setTaggingUrl(null)}
+        />
+      )}
     </div>
   )
 }

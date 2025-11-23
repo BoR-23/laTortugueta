@@ -8,7 +8,7 @@ import { DEFAULT_PRODUCT_TYPE } from '@/lib/productTypes'
 import { LoginForm } from '@/components/admin/LoginForm'
 import { AdminProductWorkspace } from '@/components/admin/AdminProductWorkspace'
 import type { AdminProductFormValues } from '@/types/admin'
-import { getSiteSettings } from '@/lib/settings'
+
 
 export const dynamic = 'force-dynamic'
 
@@ -50,7 +50,7 @@ export default async function AdminPricingPage() {
       return diff !== 0 ? diff : a.name.localeCompare(b.name, 'es')
     })
 
-  const siteSettings = await getSiteSettings()
+
 
   return (
     <div className="mx-auto max-w-7xl 2xl:max-w-8xl px-4 py-12 sm:px-6 lg:px-10">
@@ -64,18 +64,36 @@ export default async function AdminPricingPage() {
             href="/admin/categories"
             className="rounded-full border border-neutral-900 px-4 py-2 text-neutral-900 transition hover:bg-neutral-900 hover:text-white"
           >
-            Gestión de categorías
+            Categorías
           </Link>
           <Link
             href="/admin/banners"
             className="rounded-full border border-neutral-900 px-4 py-2 text-neutral-900 transition hover:bg-neutral-900 hover:text-white"
           >
-            Gestión de Banners
+            Banners
+          </Link>
+          <Link
+            href="/admin/favicons"
+            className="rounded-full border border-neutral-900 px-4 py-2 text-neutral-900 transition hover:bg-neutral-900 hover:text-white"
+          >
+            Favicons
+          </Link>
+          <Link
+            href="/admin/settings"
+            className="rounded-full border border-neutral-900 px-4 py-2 text-neutral-900 transition hover:bg-neutral-900 hover:text-white"
+          >
+            Ajustes
+          </Link>
+          <Link
+            href="/admin/stats"
+            className="rounded-full border border-neutral-900 px-4 py-2 text-neutral-900 transition hover:bg-neutral-900 hover:text-white"
+          >
+            Estadísticas
           </Link>
         </div>
       </div>
 
-      <AdminProductWorkspace initialProducts={products} initialSettings={siteSettings} />
+      <AdminProductWorkspace initialProducts={products} />
     </div>
   )
 }

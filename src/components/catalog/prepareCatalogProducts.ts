@@ -15,6 +15,7 @@ export type CatalogProductSummary = {
   priority: number
   viewCount?: number
   imagePlaceholder?: string
+  imageTags?: string[]
 }
 
 export const prepareCatalogProducts = (products: Product[]): CatalogProductSummary[] => {
@@ -27,9 +28,10 @@ export const prepareCatalogProducts = (products: Product[]): CatalogProductSumma
     category: product.category,
     description: product.description,
     sizes: product.sizes || [],
-    available: product.photos > 0,
+    available: product.available,
     priority: product.priority ?? DEFAULT_PRODUCT_PRIORITY,
     viewCount: product.viewCount,
-    imagePlaceholder: extractProductPlaceholderMap(product.metadata)[product.image]
+    imagePlaceholder: extractProductPlaceholderMap(product.metadata)[product.image],
+    imageTags: product.mediaAssets?.flatMap(asset => asset.tags || []) || []
   }))
 }

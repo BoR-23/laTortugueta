@@ -1,16 +1,20 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, Fragment } from 'react'
 import type { KeyboardEvent } from 'react'
+import Image from 'next/image'
 import Fuse from 'fuse.js'
 import type { AdminProductFormValues } from '@/types/admin'
 import { expandSearchQuery } from '@/lib/search'
+import { getProductImageVariant } from '@/lib/images'
+import { ProductTaggingGalleryModal } from './ProductTaggingGalleryModal'
 
 interface ProductListProps {
   products: AdminProductFormValues[]
   onEdit: (product: AdminProductFormValues) => void
   onDelete: (id: string) => Promise<void>
   onPriceUpdate: (id: string, price: number) => Promise<void>
+  onToggleAvailability: (id: string, current: boolean) => Promise<void>
 }
 
 const formatOrder = (value?: number) => (value ?? 0).toString().padStart(3, '0')
@@ -37,14 +41,26 @@ const buildPriceState = (products: AdminProductFormValues[]): Record<string, Pri
   return entries
 }
 
-export function ProductList({ products, onEdit, onDelete, onPriceUpdate }: ProductListProps) {
+export function ProductList({ products, onEdit, onDelete, onPriceUpdate, onToggleAvailability }: ProductListProps) {
   const [search, setSearch] = useState('')
   const [pendingDelete, setPendingDelete] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [duplicating, setDuplicating] = useState<string | null>(null)
+  const [expandedProduct, setExpandedProduct] = useState<string | null>(null)
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [priceDrafts, setPriceDrafts] = useState<Record<string, PriceDraftState>>(() =>
     buildPriceState(products)
   )
+
+  // ...
+
+  // Duplicate modal state
+  const [duplicateTarget, setDuplicateTarget] = useState<AdminProductFormValues | null>(null)
+
+  // Tagging modal state
+  const [taggingProduct, setTaggingProduct] = useState<AdminProductFormValues | null>(null)
+
   const fuse = useMemo(
     () =>
       new Fuse<AdminProductFormValues>(products, {
@@ -106,16 +122,16 @@ export function ProductList({ products, onEdit, onDelete, onPriceUpdate }: Produ
         const formatted = product.price.toFixed(2)
         next[product.id] = existing
           ? {
-              ...existing,
-              value: existing.dirty ? existing.value : formatted
-            }
+            ...existing,
+            value: existing.dirty ? existing.value : formatted
+          }
           : {
-              value: formatted,
-              dirty: false,
-              saving: false,
-              error: null,
-              success: false
-            }
+            value: formatted,
+            dirty: false,
+            saving: false,
+            error: null,
+            success: false
+          }
       })
       return next
     })
@@ -201,6 +217,36 @@ export function ProductList({ products, onEdit, onDelete, onPriceUpdate }: Produ
     }
   }
 
+  const handleDuplicate = async (variant: 'exact' | 'bordado' | 'con-letra' | 'con-dos-letras') => {
+    if (!duplicateTarget) return
+
+    setDuplicating(duplicateTarget.id)
+    setError(null)
+    try {
+      const response = await fetch(`/api/products/${duplicateTarget.id}/duplicate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ variant })
+      })
+
+      if (!response.ok) {
+        throw new Error('Error al duplicar el producto')
+      }
+
+      // Refresh page to show new product (or better, parent should handle update)
+      window.location.reload()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo duplicar.')
+    } finally {
+      setDuplicating(null)
+      setDuplicateTarget(null)
+    }
+  }
+
+  const toggleExpand = (id: string) => {
+    setExpandedProduct(expandedProduct === id ? null : id)
+  }
+
   return (
     <div className="space-y-5">
       <input
@@ -217,7 +263,7 @@ export function ProductList({ products, onEdit, onDelete, onPriceUpdate }: Produ
         </div>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-neutral-200">
+      <div className="overflow-x-auto rounded-2xl border border-neutral-200">
         <table className="min-w-full divide-y divide-neutral-200 text-left text-sm text-neutral-700">
           <thead className="bg-neutral-50 text-xs uppercase tracking-[0.25em] text-neutral-500">
             <tr>
@@ -232,74 +278,182 @@ export function ProductList({ products, onEdit, onDelete, onPriceUpdate }: Produ
           </thead>
           <tbody className="divide-y divide-neutral-200 bg-white">
             {filtered.map(product => (
-              <tr key={product.id}>
-                <td className="px-4 py-4 align-top text-sm font-semibold text-neutral-500">
-                  #{formatOrder(product.priority)}
-                </td>
-                <td className="px-4 py-4 align-top">
-                  <div>
-                    <p className="text-sm font-medium text-neutral-900">{product.name}</p>
-                    <p className="text-xs uppercase tracking-[0.25em] text-neutral-400">{product.id}</p>
-                  </div>
-                </td>
-                <td className="px-4 py-4 align-top">
-                  <span className="rounded-full border border-neutral-200 px-3 py-1 text-xs uppercase tracking-[0.25em] text-neutral-500">
-                    {product.category || 'N/A'}
-                  </span>
-                </td>
-                <td className="px-4 py-4 align-top">
-                  <span className="rounded-full border border-neutral-200 px-3 py-1 text-xs uppercase tracking-[0.25em] text-neutral-500">
-                    {product.type || '—'}
-                  </span>
-                </td>
-                <td className="px-4 py-4 align-top text-sm text-neutral-700">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      inputMode="decimal"
-                      step="0.01"
-                      className="w-28 rounded-full border border-neutral-200 px-3 py-2 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none focus:ring-0 disabled:opacity-60"
-                      value={priceDrafts[product.id]?.value ?? product.price.toFixed(2)}
-                      onChange={event => handlePriceChange(product.id, event.target.value)}
-                      onKeyDown={event => handlePriceKeyDown(event, product.id)}
-                      disabled={priceDrafts[product.id]?.saving}
-                    />
-                    <span className="text-xs uppercase tracking-[0.3em] text-neutral-400">EUR</span>
-                  </div>
-                  {priceDrafts[product.id]?.error && (
-                    <p className="mt-2 text-xs text-red-500">{priceDrafts[product.id]?.error}</p>
-                  )}
-                  {priceDrafts[product.id]?.success && !priceDrafts[product.id]?.dirty && (
-                    <p className="mt-2 text-xs text-neutral-500">Precio actualizado.</p>
-                  )}
-                </td>
-                <td className="px-4 py-4 align-top text-sm">
-                  {product.available ? (
-                    <span className="text-green-600">Disponible</span>
-                  ) : (
-                    <span className="text-neutral-400">Borrador</span>
-                  )}
-                </td>
-                <td className="px-4 py-4 align-top text-right">
-                  <div className="flex justify-end gap-2">
-                    <button
-                      type="button"
-                      className="btn-secondary px-4 py-2"
-                      onClick={() => onEdit(product)}
-                    >
-                      Editar
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-primary px-4 py-2 disabled:opacity-50"
-                      onClick={() => handleDelete(product.id)}
-                      disabled={pendingDelete === product.id && deleting}
-                    >
-                      {pendingDelete === product.id && deleting ? 'Eliminando...' : 'Eliminar'}
-                    </button>
-                  </div>
-                </td>
-              </tr>
+              <Fragment key={product.id}>
+                <tr className={`${expandedProduct === product.id ? 'bg-neutral-50' : ''} ${!product.available ? 'bg-neutral-50/50' : ''}`}>
+                  <td className="px-4 py-4 align-top text-sm font-semibold text-neutral-500">
+                    #{formatOrder(product.priority)}
+                  </td>
+                  <td className="px-4 py-4 align-top">
+                    <div className="flex items-start gap-3">
+                      <button
+                        onClick={() => toggleExpand(product.id)}
+                        className="mt-1 text-neutral-400 hover:text-neutral-900"
+                      >
+                        {expandedProduct === product.id ? '▼' : '▶'}
+                      </button>
+                      <div>
+                        <p className="text-sm font-medium text-neutral-900">{product.name}</p>
+                        <p className="text-xs uppercase tracking-[0.25em] text-neutral-400">{product.id}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-4 align-top">
+                    <span className="rounded-full border border-neutral-200 px-3 py-1 text-xs uppercase tracking-[0.25em] text-neutral-500">
+                      {product.category || 'N/A'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-4 align-top">
+                    <span className="rounded-full border border-neutral-200 px-3 py-1 text-xs uppercase tracking-[0.25em] text-neutral-500">
+                      {product.type || '—'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-4 align-top text-sm text-neutral-700">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        inputMode="decimal"
+                        step="0.01"
+                        className="w-28 rounded-full border border-neutral-200 px-3 py-2 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none focus:ring-0 disabled:opacity-60"
+                        value={priceDrafts[product.id]?.value ?? product.price.toFixed(2)}
+                        onChange={event => handlePriceChange(product.id, event.target.value)}
+                        onKeyDown={event => handlePriceKeyDown(event, product.id)}
+                        disabled={priceDrafts[product.id]?.saving}
+                      />
+                      <span className="text-xs uppercase tracking-[0.3em] text-neutral-400">EUR</span>
+                    </div>
+                    {priceDrafts[product.id]?.error && (
+                      <p className="mt-2 text-xs text-red-500">{priceDrafts[product.id]?.error}</p>
+                    )}
+                    {priceDrafts[product.id]?.success && !priceDrafts[product.id]?.dirty && (
+                      <p className="mt-2 text-xs text-neutral-500">Precio actualizado.</p>
+                    )}
+                  </td>
+                  <td className="px-4 py-4 align-top text-sm">
+                    {product.available ? (
+                      <span className="text-green-600">Disponible</span>
+                    ) : (
+                      <span className="text-neutral-400">Borrador</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-4 align-top text-right">
+                    <div className="flex justify-end gap-2">
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setOpenMenuId(openMenuId === product.id ? null : product.id)}
+                          className="rounded-full border border-neutral-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.1em] text-neutral-600 hover:border-neutral-900 hover:text-neutral-900"
+                        >
+                          Acciones ▼
+                        </button>
+
+                        {openMenuId === product.id && (
+                          <div className="absolute right-0 top-full z-10 mt-2 w-48 flex-col overflow-hidden rounded-xl border border-neutral-100 bg-white shadow-xl">
+                            <button
+                              type="button"
+                              className="w-full px-4 py-3 text-left text-xs font-medium text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
+                              onClick={() => {
+                                setOpenMenuId(null)
+                                setTaggingProduct(product)
+                              }}
+                            >
+                              Etiquetar
+                            </button>
+                            <button
+                              type="button"
+                              className="w-full px-4 py-3 text-left text-xs font-medium text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
+                              onClick={() => {
+                                setOpenMenuId(null)
+                                onEdit(product)
+                              }}
+                            >
+                              Editar
+                            </button>
+                            <button
+                              type="button"
+                              className="w-full px-4 py-3 text-left text-xs font-medium text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
+                              onClick={() => {
+                                setOpenMenuId(null)
+                                setDuplicateTarget(product)
+                              }}
+                            >
+                              Duplicar
+                            </button>
+                            <button
+                              type="button"
+                              className={`w-full px-4 py-3 text-left text-xs font-medium hover:bg-neutral-50 ${product.available ? 'text-neutral-600 hover:text-neutral-900' : 'text-green-600 hover:bg-green-50 hover:text-green-700'}`}
+                              onClick={() => {
+                                setOpenMenuId(null)
+                                onToggleAvailability(product.id, product.available)
+                              }}
+                            >
+                              {product.available ? 'Archivar' : 'Publicar'}
+                            </button>
+                            <button
+                              type="button"
+                              className="w-full border-t border-neutral-100 px-4 py-3 text-left text-xs font-medium text-red-600 hover:bg-red-50"
+                              onClick={() => {
+                                setOpenMenuId(null)
+                                handleDelete(product.id)
+                              }}
+                              disabled={pendingDelete === product.id && deleting}
+                            >
+                              {pendingDelete === product.id && deleting ? 'Eliminando...' : 'Eliminar'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      {/* Backdrop to close menu */}
+                      {openMenuId === product.id && (
+                        <div
+                          className="fixed inset-0 z-0"
+                          onClick={() => setOpenMenuId(null)}
+                        />
+                      )}
+                    </div>
+                  </td>
+                </tr>
+                {expandedProduct === product.id && (
+                  <tr className="bg-neutral-50">
+                    <td colSpan={7} className="px-4 pb-6 pt-2">
+                      <div className="ml-8 space-y-4">
+                        <div>
+                          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">Tags</p>
+                          <div className="flex flex-wrap gap-2">
+                            {product.tags && product.tags.length > 0 ? (
+                              product.tags.map(tag => (
+                                <span key={tag} className="rounded bg-white px-2 py-1 text-xs text-neutral-600 border border-neutral-200">
+                                  {tag}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-xs text-neutral-400 italic">Sin tags</span>
+                            )}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">Galería ({product.gallery?.length || 0})</p>
+                          <div className="flex flex-wrap gap-3">
+                            {product.gallery && product.gallery.length > 0 ? (
+                              product.gallery.map((url, idx) => (
+                                <div key={idx} className="relative h-20 w-20 overflow-hidden rounded-lg border border-neutral-200 bg-white">
+                                  <Image
+                                    src={getProductImageVariant(url, 'thumb') || url}
+                                    alt=""
+                                    fill
+                                    className="object-cover"
+                                  />
+                                </div>
+                              ))
+                            ) : (
+                              <span className="text-xs text-neutral-400 italic">Sin imágenes</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </Fragment>
             ))}
             {filtered.length === 0 && (
               <tr>
@@ -311,6 +465,74 @@ export function ProductList({ products, onEdit, onDelete, onPriceUpdate }: Produ
           </tbody>
         </table>
       </div>
+
+      {/* Duplicate Modal */}
+      {duplicateTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-neutral-900">Duplicar "{duplicateTarget.name}"</h3>
+            <p className="mt-2 text-sm text-neutral-600">
+              Elige el tipo de duplicado. Se copiará toda la información excepto las fotos.
+            </p>
+
+            <div className="mt-6 space-y-3">
+              <button
+                onClick={() => handleDuplicate('exact')}
+                disabled={!!duplicating}
+                className="flex w-full items-center justify-between rounded-xl border border-neutral-200 p-4 transition hover:border-neutral-900 hover:bg-neutral-50"
+              >
+                <span className="font-medium">Copia exacta</span>
+                <span className="text-xs text-neutral-500">Nombre (Copia)</span>
+              </button>
+
+              <button
+                onClick={() => handleDuplicate('bordado')}
+                disabled={!!duplicating}
+                className="flex w-full items-center justify-between rounded-xl border border-neutral-200 p-4 transition hover:border-neutral-900 hover:bg-neutral-50"
+              >
+                <span className="font-medium">Versión Bordado</span>
+                <span className="text-xs text-neutral-500">+ "Bordado" en nombre y tags</span>
+              </button>
+
+              <button
+                onClick={() => handleDuplicate('con-letra')}
+                disabled={!!duplicating}
+                className="flex w-full items-center justify-between rounded-xl border border-neutral-200 p-4 transition hover:border-neutral-900 hover:bg-neutral-50"
+              >
+                <span className="font-medium">Versión con Letra</span>
+                <span className="text-xs text-neutral-500">+ "Con Letra" en nombre y tags</span>
+              </button>
+
+              <button
+                onClick={() => handleDuplicate('con-dos-letras')}
+                disabled={!!duplicating}
+                className="flex w-full items-center justify-between rounded-xl border border-neutral-200 p-4 transition hover:border-neutral-900 hover:bg-neutral-50"
+              >
+                <span className="font-medium">Versión con dos Letras</span>
+                <span className="text-xs text-neutral-500">+ "Con dos Letras" en nombre y tags</span>
+              </button>
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setDuplicateTarget(null)}
+                disabled={!!duplicating}
+                className="rounded-full px-4 py-2 text-sm font-medium text-neutral-500 hover:text-neutral-900"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {taggingProduct && (
+        <ProductTaggingGalleryModal
+          productName={taggingProduct.name}
+          gallery={taggingProduct.gallery}
+          onClose={() => setTaggingProduct(null)}
+        />
+      )}
     </div>
   )
 }
+

@@ -119,7 +119,10 @@ export const summariseTags = (products: CatalogProduct[]): TagSummary[] => {
 
   products.forEach(product => {
     const productTags = product.tags || []
-    productTags.forEach(rawTag => {
+    const imageTags = product.imageTags || []
+    const allTags = new Set([...productTags, ...imageTags])
+
+    allTags.forEach(rawTag => {
       const label = typeof rawTag === 'string' ? rawTag.trim() : ''
       if (!label) return
       const normalised = NORMALISE(label)
@@ -143,7 +146,11 @@ export const summariseTags = (products: CatalogProduct[]): TagSummary[] => {
 export const summariseColorCodes = (products: CatalogProduct[]): ColorCodeSummary[] => {
   const map = new Map<string, number>()
   products.forEach(product => {
-    (product.tags || []).forEach(tag => {
+    const productTags = product.tags || []
+    const imageTags = product.imageTags || []
+    const allTags = new Set([...productTags, ...imageTags])
+
+    allTags.forEach(tag => {
       const match = typeof tag === 'string' ? tag.match(COLOR_CODE_REGEX) : null
       if (!match) return
       const code = match[1]
@@ -193,14 +200,19 @@ export const summariseSizes = (products: CatalogProduct[]): SizeSummary[] => {
     .sort((a, b) => a.value.localeCompare(b.value, 'es'))
 }
 
-const extractColorCodesFromProduct = (product: CatalogProduct) =>
-  (product.tags || [])
+const extractColorCodesFromProduct = (product: CatalogProduct) => {
+  const productTags = product.tags || []
+  const imageTags = product.imageTags || []
+  const allTags = [...productTags, ...imageTags]
+
+  return allTags
     .map(tag => {
       if (typeof tag !== 'string') return null
       const match = tag.match(COLOR_CODE_REGEX)
       return match ? match[1] : null
     })
     .filter((value): value is string => Boolean(value))
+}
 
 const extractColorCountsFromProduct = (product: CatalogProduct) =>
   (product.tags || [])
@@ -251,11 +263,14 @@ export const filterCatalogProducts = (
     }
 
     const productTags = (product.tags || []).map(tag => NORMALISE(String(tag)).toLowerCase())
+    const imageTags = (product.imageTags || []).map(tag => NORMALISE(String(tag)).toLowerCase())
+    const allTags = new Set([...productTags, ...imageTags])
+
     const productColorCodes = extractColorCodesFromProduct(product)
     const productColorCounts = extractColorCountsFromProduct(product)
 
     const matchesTags = filterState.tags.every(tag =>
-      productTags.includes(NORMALISE(tag).toLowerCase())
+      allTags.has(NORMALISE(tag).toLowerCase())
     )
     if (!matchesTags) return false
 
