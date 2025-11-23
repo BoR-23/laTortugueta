@@ -28,30 +28,33 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
 
     // Fetch available tags
     useEffect(() => {
-        const fetchTags = async () => {
+        const loadTags = async () => {
             setLoadingTags(true)
             try {
+                if (!supabaseBrowserClient) {
+                    setLoadingTags(false)
+                    return
+                }
+
                 const { data, error } = await supabaseBrowserClient
                     .from('categories')
                     .select('tag_key')
                     .not('tag_key', 'is', null)
 
-                if (!error && data) {
-                    const allTags = new Set<string>()
-                    data.forEach((c: any) => {
-                        if (c.tag_key) allTags.add(c.tag_key)
-                    })
-                    const sorted = Array.from(allTags).sort()
-                    setAvailableColorTags(sorted.filter(t => t.startsWith('Color')))
-                    setAvailableGeneralTags(sorted.filter(t => !t.startsWith('Color')))
-                }
-            } catch (error) {
-                console.error('Error fetching tags:', error)
+                if (error) throw error
+
+                const uniqueTags = Array.from(new Set(data?.map((cat: any) => cat.tag_key).filter(Boolean))) as string[]
+                // The original code separated general and color tags, so we'll maintain that structure
+                const sorted = uniqueTags.sort()
+                setAvailableColorTags(sorted.filter(t => t.startsWith('Color')))
+                setAvailableGeneralTags(sorted.filter(t => !t.startsWith('Color')))
+            } catch (err) {
+                console.error('Error loading tags:', err)
             } finally {
                 setLoadingTags(false)
             }
         }
-        fetchTags()
+        loadTags()
     }, [])
 
     // Fetch current image data (tags + exif)
@@ -59,6 +62,8 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
         if (!currentUrl) return
 
         const fetchData = async () => {
+            if (!supabaseBrowserClient) return
+
             setLoadingExif(true)
             setTags([]) // Reset tags while loading
             try {
@@ -73,15 +78,15 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
                     setTags(mediaData.tags)
                 }
 
-                // 2. Fetch EXIF
-                const res = await fetch('/api/media/exif', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: currentUrl })
-                })
-                if (res.ok) {
-                    const exifData = await res.json()
-                    setExif(exifData)
+                // 2. Fetch EXIF from the same table
+                const { data: exifDataFromDb } = await supabaseBrowserClient
+                    .from('media_assets')
+                    .select('exif')
+                    .eq('url', currentUrl)
+                    .single()
+
+                if (exifDataFromDb?.exif) {
+                    setExif(exifDataFromDb.exif)
                 } else {
                     setExif(null)
                 }
