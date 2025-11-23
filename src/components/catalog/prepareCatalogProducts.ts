@@ -28,7 +28,7 @@ export const prepareCatalogProducts = (products: Product[]): CatalogProductSumma
     category: product.category,
     description: product.description,
     sizes: product.sizes || [],
-    available: product.available,
+    available: product.available ?? false,
     priority: product.priority ?? DEFAULT_PRODUCT_PRIORITY,
     viewCount: product.viewCount,
     imagePlaceholder: extractProductPlaceholderMap(product.metadata)[product.image],
