@@ -67,3 +67,9 @@
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+@media (min-width: 1900px) {
+  html {
+    zoom: 0.8;
+  }
+}

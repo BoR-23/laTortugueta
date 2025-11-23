@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { ProductList } from './ProductList'
 import { ProductForm } from './ProductForm'
 import { PricingManager } from './PricingManager'
@@ -211,10 +212,21 @@ const mapDraftResponse = (payload: any): DraftInfo => ({
   actor: payload?.actor ?? null
 })
 
+
+
 export function AdminProductWorkspace({
   initialProducts
 }: AdminProductWorkspaceProps) {
+  const router = useRouter()
   const [products, setProducts] = useState<AdminProductFormValues[]>(sortByPriority(initialProducts))
+
+  useEffect(() => {
+    setProducts(sortByPriority(initialProducts))
+  }, [initialProducts])
+
+  const handleRefresh = () => {
+    router.refresh()
+  }
   const [selectedProduct, setSelectedProduct] = useState<AdminProductFormValues | null>(null)
   const [panelOpen, setPanelOpen] = useState(false)
   const [globalMessage, setGlobalMessage] = useState<string | null>(null)
@@ -612,6 +624,7 @@ export function AdminProductWorkspace({
               onDelete={handleDelete}
               onPriceUpdate={handleInlinePriceUpdate}
               onToggleAvailability={handleToggleAvailability}
+              onRefresh={handleRefresh}
             />
           </div>
         </section>

@@ -15,6 +15,7 @@ interface ProductListProps {
   onDelete: (id: string) => Promise<void>
   onPriceUpdate: (id: string, price: number) => Promise<void>
   onToggleAvailability: (id: string, current: boolean) => Promise<void>
+  onRefresh?: () => void
 }
 
 const formatOrder = (value?: number) => (value ?? 0).toString().padStart(3, '0')
@@ -41,7 +42,7 @@ const buildPriceState = (products: AdminProductFormValues[]): Record<string, Pri
   return entries
 }
 
-export function ProductList({ products, onEdit, onDelete, onPriceUpdate, onToggleAvailability }: ProductListProps) {
+export function ProductList({ products, onEdit, onDelete, onPriceUpdate, onToggleAvailability, onRefresh }: ProductListProps) {
   const [search, setSearch] = useState('')
   const [pendingDelete, setPendingDelete] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
@@ -293,7 +294,9 @@ export function ProductList({ products, onEdit, onDelete, onPriceUpdate, onToggl
                       </button>
                       <div>
                         <p className="text-sm font-medium text-neutral-900">{product.name}</p>
-                        <p className="text-xs uppercase tracking-[0.25em] text-neutral-400">{product.id}</p>
+                        {product.description && (
+                          <p className="line-clamp-1 text-xs text-neutral-500">{product.description}</p>
+                        )}
                       </div>
                     </div>
                   </td>
@@ -530,6 +533,7 @@ export function ProductList({ products, onEdit, onDelete, onPriceUpdate, onToggl
           productName={taggingProduct.name}
           gallery={taggingProduct.gallery}
           onClose={() => setTaggingProduct(null)}
+          onImagesUpdated={onRefresh}
         />
       )}
     </div>

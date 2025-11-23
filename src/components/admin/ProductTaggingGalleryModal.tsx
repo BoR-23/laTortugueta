@@ -10,9 +10,10 @@ interface ProductTaggingGalleryModalProps {
     gallery: string[]
     initialIndex?: number
     onClose: () => void
+    onImagesUpdated?: () => void
 }
 
-export function ProductTaggingGalleryModal({ productName, gallery, initialIndex = 0, onClose }: ProductTaggingGalleryModalProps) {
+export function ProductTaggingGalleryModal({ productName, gallery, initialIndex = 0, onClose, onImagesUpdated }: ProductTaggingGalleryModalProps) {
     const [currentIndex, setCurrentIndex] = useState(initialIndex)
     const [saving, setSaving] = useState(false)
     const [tags, setTags] = useState<string[]>([])
@@ -215,6 +216,12 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
 
             // Remove from current gallery and close modal if it was the last one
             const newGallery = gallery.filter(url => url !== currentUrl)
+
+            // Notify parent to refresh data
+            if (onImagesUpdated) {
+                onImagesUpdated()
+            }
+
             if (newGallery.length === 0) {
                 onClose()
             } else {
