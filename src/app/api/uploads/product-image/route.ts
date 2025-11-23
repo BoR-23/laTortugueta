@@ -37,24 +37,24 @@ export async function POST(request: Request) {
     const relativeName = `${productId}-${timestamp}-${baseName}.webp`
     const pipeline = sharp(buffer).rotate()
 
-    const baseBuffer = await pipeline
+    const baseBuffer: Buffer = await pipeline
       .clone()
       .resize({ width: MAX_BASE_WIDTH, withoutEnlargement: true })
       .webp({ quality: 82 })
       .toBuffer()
 
     const baseKey = `images/products/${relativeName}`
-    await uploadToR2(baseKey, baseBuffer, 'image/webp')
+    await uploadToR2(baseBuffer, baseKey, 'image/webp')
 
     await Promise.all(
       Object.entries(VARIANT_SPECS).map(async ([variant, width]) => {
-        const variantBuffer = await pipeline
+        const variantBuffer: Buffer = await pipeline
           .clone()
           .resize({ width, withoutEnlargement: true })
           .webp({ quality: 80 })
           .toBuffer()
         const variantKey = `images/products/_variants/${variant}/${relativeName}`
-        await uploadToR2(variantKey, variantBuffer, 'image/webp')
+        await uploadToR2(variantBuffer, variantKey, 'image/webp')
       })
     )
 
