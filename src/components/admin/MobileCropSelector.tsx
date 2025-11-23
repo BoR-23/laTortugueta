@@ -56,7 +56,7 @@ export function MobileCropSelector({ imageUrl, initialCrop, onChange }: MobileCr
                 window.removeEventListener('mouseup', handleMouseUp)
             }
         }
-    }, [isDragging, crop.size])
+    }, [isDragging, handleMouseMove, handleMouseUp])
 
     // Mobile is 9:16 aspect ratio
     const mobileAspectRatio = 9 / 16

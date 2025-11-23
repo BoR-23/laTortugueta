@@ -470,7 +470,7 @@ export function ProductList({ products, onEdit, onDelete, onPriceUpdate, onToggl
       {duplicateTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl">
-            <h3 className="text-lg font-semibold text-neutral-900">Duplicar "{duplicateTarget.name}"</h3>
+            <h3 className="text-lg font-semibold text-neutral-900">Duplicar &quot;{duplicateTarget.name}&quot;</h3>
             <p className="mt-2 text-sm text-neutral-600">
               Elige el tipo de duplicado. Se copiará toda la información excepto las fotos.
             </p>
@@ -491,7 +491,7 @@ export function ProductList({ products, onEdit, onDelete, onPriceUpdate, onToggl
                 className="flex w-full items-center justify-between rounded-xl border border-neutral-200 p-4 transition hover:border-neutral-900 hover:bg-neutral-50"
               >
                 <span className="font-medium">Versión Bordado</span>
-                <span className="text-xs text-neutral-500">+ "Bordado" en nombre y tags</span>
+                <span className="text-xs text-neutral-500">+ &quot;Bordado&quot; en nombre y tags</span>
               </button>
 
               <button
@@ -500,7 +500,7 @@ export function ProductList({ products, onEdit, onDelete, onPriceUpdate, onToggl
                 className="flex w-full items-center justify-between rounded-xl border border-neutral-200 p-4 transition hover:border-neutral-900 hover:bg-neutral-50"
               >
                 <span className="font-medium">Versión con Letra</span>
-                <span className="text-xs text-neutral-500">+ "Con Letra" en nombre y tags</span>
+                <span className="text-xs text-neutral-500">+ &quot;Con Letra&quot; en nombre y tags</span>
               </button>
 
               <button
@@ -509,7 +509,7 @@ export function ProductList({ products, onEdit, onDelete, onPriceUpdate, onToggl
                 className="flex w-full items-center justify-between rounded-xl border border-neutral-200 p-4 transition hover:border-neutral-900 hover:bg-neutral-50"
               >
                 <span className="font-medium">Versión con dos Letras</span>
-                <span className="text-xs text-neutral-500">+ "Con dos Letras" en nombre y tags</span>
+                <span className="text-xs text-neutral-500">+ &quot;Con dos Letras&quot; en nombre y tags</span>
               </button>
             </div>
 
