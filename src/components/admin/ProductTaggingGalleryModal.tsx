@@ -7,13 +7,14 @@ import { getProductImageVariant } from '@/lib/images'
 
 interface ProductTaggingGalleryModalProps {
     productName: string
+    productId: string
     gallery: string[]
     initialIndex?: number
     onClose: () => void
     onImagesUpdated?: () => void
 }
 
-export function ProductTaggingGalleryModal({ productName, gallery, initialIndex = 0, onClose, onImagesUpdated }: ProductTaggingGalleryModalProps) {
+export function ProductTaggingGalleryModal({ productName, productId, gallery, initialIndex = 0, onClose, onImagesUpdated }: ProductTaggingGalleryModalProps) {
     const [localGallery, setLocalGallery] = useState(gallery)
     const [currentIndex, setCurrentIndex] = useState(initialIndex)
     const [saving, setSaving] = useState(false)
@@ -31,6 +32,8 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
     const scrollContainerRef = useRef<HTMLDivElement>(null)
     const [tagInputFocused, setTagInputFocused] = useState(false)
     const [colorInputFocused, setColorInputFocused] = useState(false)
+    const [showDuplicateMenu, setShowDuplicateMenu] = useState(false)
+    const [duplicating, setDuplicating] = useState(false)
 
 
     const currentUrl = localGallery[currentIndex]
@@ -39,6 +42,41 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
     useEffect(() => {
         setLocalGallery(gallery)
     }, [gallery])
+
+    // ... (rest of effects)
+
+    const handleDuplicate = async (variant: 'exact' | 'bordado' | 'con-letra' | 'con-dos-letras') => {
+        setDuplicating(true)
+        try {
+            const response = await fetch(`/api/products/${productId}/duplicate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ variant })
+            })
+
+            if (!response.ok) {
+                throw new Error('Error al duplicar el producto')
+            }
+
+            alert('Producto duplicado correctamente')
+            setShowDuplicateMenu(false)
+            // We don't close the modal as requested
+            if (onImagesUpdated) onImagesUpdated() // Refresh parent list in background
+        } catch (err) {
+            console.error('Error duplicating:', err)
+            alert('Error al duplicar el producto')
+        } finally {
+            setDuplicating(false)
+        }
+    }
+
+    // ... (rest of functions: handleAddTag, handleRemoveTag, handleSave, handleDeletePhoto, loadProducts, handleMovePhoto)
+
+    // ... (render)
+
+
+
+    {/* Move Modal */ }
 
     // Auto-scroll to current product in move modal
     useEffect(() => {
@@ -306,23 +344,23 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
         }
     }
 
-    const handleNext = () => {
+    const handleNext = useCallback(() => {
         if (currentIndex < localGallery.length - 1) {
             setCurrentIndex(currentIndex + 1)
         }
-    }
+    }, [currentIndex, localGallery.length])
 
-    const handlePrev = () => {
+    const handlePrev = useCallback(() => {
         if (currentIndex > 0) {
             setCurrentIndex(currentIndex - 1)
         }
-    }
+    }, [currentIndex])
 
     const handleKeyDown = useCallback((e: KeyboardEvent) => {
         if (e.key === 'ArrowRight') handleNext()
         if (e.key === 'ArrowLeft') handlePrev()
         if (e.key === 'Escape') onClose()
-    }, [currentIndex, localGallery.length, onClose])
+    }, [handleNext, handlePrev, onClose])
 
     useEffect(() => {
         window.addEventListener('keydown', handleKeyDown)
@@ -454,7 +492,7 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
                                             ))}
                                         {availableGeneralTags.filter(t => (tagInput ? t.toLowerCase().includes(tagInput.toLowerCase()) : true) && !tags.includes(t)).length === 0 && tagInput && (
                                             <div className="px-4 py-2 text-xs text-neutral-400">
-                                                Presiona Enter para añadir "{tagInput}"
+                                                Presiona Enter para añadir &quot;{tagInput}&quot;
                                             </div>
                                         )}
                                     </div>
@@ -503,7 +541,7 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
                                             ))}
                                         {availableColorTags.filter(t => (colorInput ? t.toLowerCase().includes(colorInput.toLowerCase()) : true) && !tags.includes(t)).length === 0 && colorInput && (
                                             <div className="px-4 py-2 text-xs text-neutral-400">
-                                                Presiona Enter para añadir "{colorInput}"
+                                                Presiona Enter para añadir &quot;{colorInput}&quot;
                                             </div>
                                         )}
                                     </div>
@@ -512,24 +550,64 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
                         </div>
 
                         {/* Selected Tags Display */}
-                        <div className="flex flex-wrap gap-2">
+                        {/* Selected Tags Display */}
+                        <div className="mt-6 border-t border-neutral-100 pt-6">
                             {loadingTags ? (
                                 <span className="text-xs text-neutral-400">Cargando tags...</span>
                             ) : tags.length > 0 ? (
-                                tags.map(tag => (
-                                    <span
-                                        key={tag}
-                                        className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs ${tag.startsWith('Color') ? 'bg-blue-50 text-blue-700' : 'bg-neutral-100 text-neutral-700'}`}
-                                    >
-                                        {tag}
-                                        <button
-                                            onClick={() => handleRemoveTag(tag)}
-                                            className="ml-1 opacity-50 hover:opacity-100"
-                                        >
-                                            ×
-                                        </button>
-                                    </span>
-                                ))
+                                <div className="space-y-4">
+                                    {/* General Tags */}
+                                    {tags.some(t => !t.startsWith('Color')) && (
+                                        <div className="flex flex-wrap gap-2">
+                                            {tags
+                                                .filter(t => !t.startsWith('Color'))
+                                                .sort((a, b) => a.localeCompare(b))
+                                                .map(tag => (
+                                                    <span
+                                                        key={tag}
+                                                        className="flex items-center gap-1 rounded-full bg-neutral-100 px-3 py-1 text-xs text-neutral-700"
+                                                    >
+                                                        {tag}
+                                                        <button
+                                                            onClick={() => handleRemoveTag(tag)}
+                                                            className="ml-1 opacity-50 hover:opacity-100"
+                                                        >
+                                                            ×
+                                                        </button>
+                                                    </span>
+                                                ))}
+                                        </div>
+                                    )}
+
+                                    {/* Color Tags */}
+                                    {tags.some(t => t.startsWith('Color')) && (
+                                        <div className="flex flex-wrap gap-2">
+                                            {tags
+                                                .filter(t => t.startsWith('Color'))
+                                                .sort((a, b) => {
+                                                    // Sort colors numerically if possible (Color 10 vs Color 2)
+                                                    const numA = parseInt(a.replace(/\D/g, ''))
+                                                    const numB = parseInt(b.replace(/\D/g, ''))
+                                                    if (!isNaN(numA) && !isNaN(numB)) return numA - numB
+                                                    return a.localeCompare(b)
+                                                })
+                                                .map(tag => (
+                                                    <span
+                                                        key={tag}
+                                                        className="flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-xs text-blue-700"
+                                                    >
+                                                        {tag}
+                                                        <button
+                                                            onClick={() => handleRemoveTag(tag)}
+                                                            className="ml-1 opacity-50 hover:opacity-100"
+                                                        >
+                                                            ×
+                                                        </button>
+                                                    </span>
+                                                ))}
+                                        </div>
+                                    )}
+                                </div>
                             ) : (
                                 <span className="text-xs italic text-neutral-400">Sin etiquetas</span>
                             )}
@@ -587,34 +665,52 @@ export function ProductTaggingGalleryModal({ productName, gallery, initialIndex 
                     </div>
 
                     {/* Footer */}
-                    <div className="flex items-center justify-between border-t border-neutral-100 px-6 py-6">
-                        <button
-                            onClick={handleDeletePhoto}
-                            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-red-500 hover:bg-red-50 hover:text-red-600"
-                            title="Eliminar foto"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                            </svg>
-                            Eliminar
-                        </button>
+                    <div className="border-t border-neutral-100 px-6 py-6">
+                        <div className="grid grid-cols-2 gap-3">
+                            {/* Row 1 */}
+                            <button
+                                onClick={handleDeletePhoto}
+                                className="flex items-center justify-center gap-2 rounded-lg border border-red-100 bg-red-50 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-100"
+                                title="Eliminar foto"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                </svg>
+                                Eliminar
+                            </button>
 
-                        <div className="flex gap-3">
-                            {/* Save button */}
                             <button
                                 onClick={() => {
                                     loadProducts()
                                     setShowMoveModal(true)
                                 }}
-                                className="rounded-lg border border-neutral-900 bg-white px-4 py-2 text-sm font-medium text-neutral-900 hover:bg-neutral-50"
+                                className="flex items-center justify-center gap-2 rounded-lg border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-900 hover:bg-neutral-50"
                             >
                                 Enviar a...
                             </button>
 
+                            {/* Row 2 */}
+                            <div className="relative">
+                                <button
+                                    onClick={() => setShowDuplicateMenu(!showDuplicateMenu)}
+                                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-900 hover:bg-neutral-50"
+                                >
+                                    Duplicar...
+                                </button>
+                                {showDuplicateMenu && (
+                                    <div className="absolute bottom-full left-0 right-0 mb-2 overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-xl">
+                                        <button onClick={() => handleDuplicate('exact')} className="block w-full px-4 py-3 text-left text-xs hover:bg-neutral-50">Copia exacta</button>
+                                        <button onClick={() => handleDuplicate('bordado')} className="block w-full px-4 py-3 text-left text-xs hover:bg-neutral-50">Versión Bordado</button>
+                                        <button onClick={() => handleDuplicate('con-letra')} className="block w-full px-4 py-3 text-left text-xs hover:bg-neutral-50">Versión con Letra</button>
+                                        <button onClick={() => handleDuplicate('con-dos-letras')} className="block w-full px-4 py-3 text-left text-xs hover:bg-neutral-50">Versión con dos Letras</button>
+                                    </div>
+                                )}
+                            </div>
+
                             <button
                                 onClick={handleSave}
                                 disabled={saving}
-                                className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
+                                className="flex items-center justify-center gap-2 rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
                             >
                                 {saving ? 'Guardando...' : 'Guardar Tags'}
                             </button>

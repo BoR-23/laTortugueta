@@ -28,13 +28,14 @@ export async function DELETE(request: NextRequest) {
         }
 
         // 2. Delete from R2
-        if (!r2Client || !R2_BUCKET) {
+        const s3 = r2Client
+        if (!s3 || !R2_BUCKET) {
             throw new Error('R2 configuration missing')
         }
 
         const deleteFile = async (key: string) => {
             try {
-                await r2Client.send(new DeleteObjectCommand({
+                await s3.send(new DeleteObjectCommand({
                     Bucket: R2_BUCKET,
                     Key: key
                 }))

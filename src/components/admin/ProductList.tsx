@@ -531,6 +531,7 @@ export function ProductList({ products, onEdit, onDelete, onPriceUpdate, onToggl
       {taggingProduct && (
         <ProductTaggingGalleryModal
           productName={taggingProduct.name}
+          productId={taggingProduct.id}
           gallery={taggingProduct.gallery}
           onClose={() => setTaggingProduct(null)}
           onImagesUpdated={onRefresh}

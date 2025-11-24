@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { getAllProducts } from '@/lib/products'
 import { getAllPosts } from '@/lib/blog'
-import { absoluteUrl } from '@/lib/seo'
+import { absoluteUrl, getPrimaryProductImage } from '@/lib/seo'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [products, posts] = await Promise.all([getAllProducts(), getAllPosts()])
@@ -16,7 +16,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   entries.push(
     ...products.map(product => ({
       url: absoluteUrl(`/${product.id}`),
-      lastModified: product.updatedAt ? new Date(product.updatedAt) : now
+      lastModified: product.updatedAt ? new Date(product.updatedAt) : now,
+      images: [getPrimaryProductImage(product)]
     }))
   )
 

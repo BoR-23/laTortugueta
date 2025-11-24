@@ -94,9 +94,24 @@ const flattenNavNodes = (nodes: CategoryTreeNode[]): CategoryNavNode[] =>
   }))
 
 const mapTreeForSidebar = (nodes: CategoryTreeNode[]): CategorySidebarNode[] => {
-  const sorted = [...nodes].sort((a, b) =>
-    a.name.localeCompare(b.name, 'es', { sensitivity: 'base' })
-  )
+  const sorted = [...nodes].sort((a, b) => {
+    const nameA = a.name.toLowerCase()
+    const nameB = b.name.toLowerCase()
+
+    // Custom sort: ensure "letra" comes before "dos letras" (e.g. Alcoi con letra vs Alcoy con dos letras)
+    // Alphabetically "dos" (d) comes before "letra" (l), but user wants logical order
+    const isLetraA = nameA.includes('letra') && !nameA.includes('dos letras')
+    const isDosLetrasA = nameA.includes('dos letras')
+
+    const isLetraB = nameB.includes('letra') && !nameB.includes('dos letras')
+    const isDosLetrasB = nameB.includes('dos letras')
+
+    if (isLetraA && isDosLetrasB) return -1
+    if (isDosLetrasA && isLetraB) return 1
+
+    return a.name.localeCompare(b.name, 'es', { sensitivity: 'base' })
+  })
+
   return sorted.map(node => ({
     id: node.id,
     name: node.name,
@@ -442,32 +457,30 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
           </div>
           <div className="order-1 w-full sm:order-2 sm:w-auto">
             <div className="flex items-center justify-between gap-3 text-[10px] font-semibold uppercase tracking-[0.35em] text-neutral-900 md:hidden">
-            <button
-              type="button"
-              onClick={toggleMenu}
-              className={`rounded-full border-2 px-4 py-1.5 transition ${
-                menuOpen
-                  ? 'border-neutral-900 bg-neutral-900 text-white'
-                  : 'border-neutral-900 text-neutral-900 hover:bg-neutral-900 hover:text-white'
-              }`}
-            >
-              Menú
-            </button>
-            <button
-              type="button"
-              onClick={toggleFilters}
-              className={`rounded-full border-2 px-4 py-1.5 transition ${
-                filtersOpen
-                  ? 'border-neutral-900 bg-neutral-900 text-white'
-                  : 'border-neutral-900 text-neutral-900 hover:bg-neutral-900 hover:text-white'
-              }`}
-            >
-              {filtersOpen
-                ? 'Ocultar filtros'
-                : activeFilterCount > 0
-                  ? `Filtros (${activeFilterCount})`
-                  : 'Filtros'}
-            </button>
+              <button
+                type="button"
+                onClick={toggleMenu}
+                className={`rounded-full border-2 px-4 py-1.5 transition ${menuOpen
+                    ? 'border-neutral-900 bg-neutral-900 text-white'
+                    : 'border-neutral-900 text-neutral-900 hover:bg-neutral-900 hover:text-white'
+                  }`}
+              >
+                Menú
+              </button>
+              <button
+                type="button"
+                onClick={toggleFilters}
+                className={`rounded-full border-2 px-4 py-1.5 transition ${filtersOpen
+                    ? 'border-neutral-900 bg-neutral-900 text-white'
+                    : 'border-neutral-900 text-neutral-900 hover:bg-neutral-900 hover:text-white'
+                  }`}
+              >
+                {filtersOpen
+                  ? 'Ocultar filtros'
+                  : activeFilterCount > 0
+                    ? `Filtros (${activeFilterCount})`
+                    : 'Filtros'}
+              </button>
             </div>
             <div className="mt-3 flex flex-col gap-1 text-[10px] font-semibold uppercase tracking-[0.35em] text-neutral-900 md:hidden">
               <span className="text-neutral-500">Ordenar</span>
@@ -499,27 +512,27 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
               <div className="flex items-center gap-2">
                 <span className="text-neutral-500">Ordenar</span>
                 <div className="flex items-center gap-2">
-                <select
-                  value={sortKey}
-                  onChange={event => setSortKey(event.target.value as SortKey)}
-                  className="rounded-full border border-neutral-200 bg-white px-4 py-1.5 text-[10px] tracking-[0.25em] text-neutral-900 focus:border-neutral-900 focus:outline-none focus:ring-0"
-                  style={{ WebkitAppearance: 'none' }}
-                  aria-label="Ordenar catálogo"
-                >
-                  {SORT_KEYS.map(option => (
-                    <option key={option} value={option}>
-                      {SORT_OPTION_LABELS[option]}
-                    </option>
-                  ))}
-                </select>
-                <button
-                  type="button"
-                  onClick={toggleSortDirection}
-                  className="rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-[12px] text-neutral-900 transition hover:border-neutral-900 hover:text-neutral-900"
-                  aria-label={sortDirection === 'asc' ? 'Orden ascendente' : 'Orden descendente'}
-                >
-                  {sortDirection === 'asc' ? '↑' : '↓'}
-                </button>
+                  <select
+                    value={sortKey}
+                    onChange={event => setSortKey(event.target.value as SortKey)}
+                    className="rounded-full border border-neutral-200 bg-white px-4 py-1.5 text-[10px] tracking-[0.25em] text-neutral-900 focus:border-neutral-900 focus:outline-none focus:ring-0"
+                    style={{ WebkitAppearance: 'none' }}
+                    aria-label="Ordenar catálogo"
+                  >
+                    {SORT_KEYS.map(option => (
+                      <option key={option} value={option}>
+                        {SORT_OPTION_LABELS[option]}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={toggleSortDirection}
+                    className="rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-[12px] text-neutral-900 transition hover:border-neutral-900 hover:text-neutral-900"
+                    aria-label={sortDirection === 'asc' ? 'Orden ascendente' : 'Orden descendente'}
+                  >
+                    {sortDirection === 'asc' ? '↑' : '↓'}
+                  </button>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -531,11 +544,10 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
                       key={option}
                       type="button"
                       onClick={() => setGridColumns(option)}
-                      className={`rounded-full border px-3 py-1.5 text-[10px] font-semibold transition ${
-                        isActive
+                      className={`rounded-full border px-3 py-1.5 text-[10px] font-semibold transition ${isActive
                           ? 'border-neutral-900 bg-neutral-900 text-white'
                           : 'border-neutral-200 text-neutral-500 hover:border-neutral-900 hover:text-neutral-900'
-                      }`}
+                        }`}
                       aria-pressed={isActive}
                     >
                       {option}x
@@ -546,11 +558,10 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
               <button
                 type="button"
                 onClick={toggleFilters}
-                className={`rounded-full border-2 px-4 py-1.5 text-[10px] font-semibold transition ${
-                  filtersOpen
+                className={`rounded-full border-2 px-4 py-1.5 text-[10px] font-semibold transition ${filtersOpen
                     ? 'border-neutral-900 bg-neutral-900 text-white'
                     : 'border-neutral-900 text-neutral-900 hover:bg-neutral-900 hover:text-white'
-                }`}
+                  }`}
               >
                 {filtersOpen
                   ? 'Ocultar filtros'
@@ -585,59 +596,59 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
           />
           <div
             className="pointer-events-auto flex h-full w-full max-w-[420px] flex-col border-l border-neutral-200 bg-white shadow-2xl"
-          onTouchStart={(event: TouchEvent<HTMLDivElement>) => {
-            const touch = event.touches[0]
-            swipeStateRef.current = { startX: touch.clientX, startY: touch.clientY, active: true }
-          }}
-          onTouchMove={(event: TouchEvent<HTMLDivElement>) => {
-            if (!swipeStateRef.current.active) return
-            const touch = event.touches[0]
-            const deltaX = touch.clientX - swipeStateRef.current.startX
-            const deltaY = Math.abs(touch.clientY - swipeStateRef.current.startY)
-            if (deltaY > 80) {
+            onTouchStart={(event: TouchEvent<HTMLDivElement>) => {
+              const touch = event.touches[0]
+              swipeStateRef.current = { startX: touch.clientX, startY: touch.clientY, active: true }
+            }}
+            onTouchMove={(event: TouchEvent<HTMLDivElement>) => {
+              if (!swipeStateRef.current.active) return
+              const touch = event.touches[0]
+              const deltaX = touch.clientX - swipeStateRef.current.startX
+              const deltaY = Math.abs(touch.clientY - swipeStateRef.current.startY)
+              if (deltaY > 80) {
+                swipeStateRef.current.active = false
+                return
+              }
+              if (deltaX > 80) {
+                swipeStateRef.current.active = false
+                closeFilters()
+              }
+            }}
+            onTouchEnd={() => {
               swipeStateRef.current.active = false
-              return
-            }
-            if (deltaX > 80) {
-              swipeStateRef.current.active = false
-              closeFilters()
-            }
-          }}
-          onTouchEnd={() => {
-            swipeStateRef.current.active = false
-          }}
-        >
-          <div className="no-scrollbar flex-1 overflow-y-auto px-5 py-4">
-            <LazyFilterSidebar
-              collectionTags={collectionTags}
-              descriptorTags={descriptorTags}
-              colorCodeSummaries={colorCodeSummaries}
-              colorCountSummaries={colorCountSummaries}
-              sizeSummaries={sizeSummaries}
-              filterState={filterState}
-              sortKey={sortKey}
-              sortDirection={sortDirection}
-              priceStats={priceStats}
-              filtersAreActive={filtersAreActive}
-              onToggleTag={toggleTag}
-              onToggleColorCode={toggleColorCode}
-              onToggleColorCount={toggleColorCount}
-              onToggleSize={toggleSize}
-              onToggleAvailability={toggleAvailability}
-              onToggleFavorites={toggleFavorites}
-              onPriceChange={updatePriceRange}
-              onSearchChange={handleSearchChange}
-              onSortChange={value => setSortKey(value)}
-              onSortDirectionChange={value => setSortDirection(value)}
-              onClearFilters={clearFilters}
-              onShareFilters={canShare ? handleShareFilters : undefined}
-              shareStatus={shareStatus}
-              searchInputRef={searchInputRef}
-              managedCategories={managedFilterTree}
-              favoritesEnabled={filterState.onlyFavorites}
-              onClose={closeFilters}
-            />
-          </div>
+            }}
+          >
+            <div className="no-scrollbar flex-1 overflow-y-auto px-5 py-4">
+              <LazyFilterSidebar
+                collectionTags={collectionTags}
+                descriptorTags={descriptorTags}
+                colorCodeSummaries={colorCodeSummaries}
+                colorCountSummaries={colorCountSummaries}
+                sizeSummaries={sizeSummaries}
+                filterState={filterState}
+                sortKey={sortKey}
+                sortDirection={sortDirection}
+                priceStats={priceStats}
+                filtersAreActive={filtersAreActive}
+                onToggleTag={toggleTag}
+                onToggleColorCode={toggleColorCode}
+                onToggleColorCount={toggleColorCount}
+                onToggleSize={toggleSize}
+                onToggleAvailability={toggleAvailability}
+                onToggleFavorites={toggleFavorites}
+                onPriceChange={updatePriceRange}
+                onSearchChange={handleSearchChange}
+                onSortChange={value => setSortKey(value)}
+                onSortDirectionChange={value => setSortDirection(value)}
+                onClearFilters={clearFilters}
+                onShareFilters={canShare ? handleShareFilters : undefined}
+                shareStatus={shareStatus}
+                searchInputRef={searchInputRef}
+                managedCategories={managedFilterTree}
+                favoritesEnabled={filterState.onlyFavorites}
+                onClose={closeFilters}
+              />
+            </div>
           </div>
         </div>
       )}
@@ -645,36 +656,36 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
       {menuOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
           <div
-          className="absolute inset-0 bg-black/40"
-          onClick={closeMenu}
-        />
-        <aside
-          className="absolute inset-y-0 left-0 flex h-full w-full max-w-[320px] flex-col border-r border-neutral-200 bg-white shadow-2xl"
-          role="dialog"
-          aria-label="Menú principal"
-        >
-          <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-4 text-[11px] uppercase tracking-[0.3em] text-neutral-500">
-            <span>Menú</span>
-            <button type="button" className="text-neutral-900" onClick={closeMenu}>
-              Cerrar
-            </button>
-          </div>
-          <nav className="no-scrollbar flex-1 overflow-y-auto px-5 py-6">
-            <ul className="space-y-3 text-sm font-semibold text-neutral-800">
-              {mobileMenuLinks.map(link => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="block rounded-2xl border border-neutral-200 px-4 py-3 uppercase tracking-[0.25em] text-neutral-600 hover:border-neutral-900 hover:text-neutral-900"
-                    onClick={closeMenu}
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        </aside>
+            className="absolute inset-0 bg-black/40"
+            onClick={closeMenu}
+          />
+          <aside
+            className="absolute inset-y-0 left-0 flex h-full w-full max-w-[320px] flex-col border-r border-neutral-200 bg-white shadow-2xl"
+            role="dialog"
+            aria-label="Menú principal"
+          >
+            <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-4 text-[11px] uppercase tracking-[0.3em] text-neutral-500">
+              <span>Menú</span>
+              <button type="button" className="text-neutral-900" onClick={closeMenu}>
+                Cerrar
+              </button>
+            </div>
+            <nav className="no-scrollbar flex-1 overflow-y-auto px-5 py-6">
+              <ul className="space-y-3 text-sm font-semibold text-neutral-800">
+                {mobileMenuLinks.map(link => (
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="block rounded-2xl border border-neutral-200 px-4 py-3 uppercase tracking-[0.25em] text-neutral-600 hover:border-neutral-900 hover:text-neutral-900"
+                      onClick={closeMenu}
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </aside>
         </div>
       )}
     </section>

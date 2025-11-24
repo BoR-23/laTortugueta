@@ -327,6 +327,20 @@ export const sortCatalogProducts = (
       }
     }
 
+    // Custom sort for name: ensure "letra" comes before "dos letras"
+    // This applies when sorting by name (default fallback)
+    const nameA = a.name.toLowerCase()
+    const nameB = b.name.toLowerCase()
+
+    const isLetraA = nameA.includes('letra') && !nameA.includes('dos letras')
+    const isDosLetrasA = nameA.includes('dos letras')
+
+    const isLetraB = nameB.includes('letra') && !nameB.includes('dos letras')
+    const isDosLetrasB = nameB.includes('dos letras')
+
+    if (isLetraA && isDosLetrasB) return -1 * directionFactor
+    if (isDosLetrasA && isLetraB) return 1 * directionFactor
+
     return a.name.localeCompare(b.name, 'es') * directionFactor
   })
 }
