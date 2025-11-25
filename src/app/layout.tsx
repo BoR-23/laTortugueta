@@ -61,6 +61,13 @@ export const metadata: Metadata = {
   manifest: '/manifest.json'
 }
 
+export const viewport = {
+  themeColor: "#f8f5ef",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export default function RootLayout({
   children
 }: {
@@ -74,7 +81,7 @@ export default function RootLayout({
       <head>
         <meta charSet="utf-8" />
         <meta httpEquiv="Content-Language" content="es" />
-        <meta name="theme-color" content="#f8f5ef" />
+        <meta httpEquiv="Content-Language" content="es" />
         <script
           type="application/ld+json"
           suppressHydrationWarning
