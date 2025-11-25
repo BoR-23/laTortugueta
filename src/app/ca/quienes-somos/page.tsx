@@ -4,6 +4,8 @@ import { absoluteUrl, siteMetadata } from '@/lib/seo'
 import { AboutContent } from '@/components/about/AboutContent'
 import { dictionaries } from '@/i18n/dictionaries'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
     title: dictionaries.ca.about.metaTitle,
     description: dictionaries.ca.about.metaDescription,

@@ -50,22 +50,19 @@ export const HeroCarousel = ({ slides }: HeroCarouselProps) => {
             <div className="relative flex-[0_0_100%] min-w-0" key={slide.id}>
               <div className="relative h-[500px] w-full sm:h-[600px] lg:h-[700px]">
                 {/* Desktop - full image */}
-                <div
-                  className="hidden sm:block absolute inset-0 bg-cover bg-center"
-                  style={{ backgroundImage: `url(${slide.image_url})` }}
-                />
-
-                {/* Mobile - full height, adjustable horizontal center */}
-                <div
-                  className="block sm:hidden absolute inset-0"
+                <Image
+                  src={slide.image_url}
+                  alt={slide.title || 'Hero image'}
+                  fill
+                  className="object-cover"
                   style={{
-                    backgroundImage: `url(${slide.image_url})`,
-                    backgroundSize: 'auto 100%',
-                    backgroundPosition: slide.mobile_crop
+                    objectPosition: slide.mobile_crop
                       ? `${slide.mobile_crop.x}% center`
-                      : 'center',
-                    backgroundRepeat: 'no-repeat'
+                      : 'center'
                   }}
+                  priority={index === 0}
+                  sizes="(max-width: 640px) 100vw, 100vw"
+                  quality={80}
                 />
 
                 {(slide.title || slide.subtitle) && <div className="absolute inset-0 bg-black/30" />}

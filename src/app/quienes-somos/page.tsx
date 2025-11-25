@@ -3,6 +3,8 @@ import { getAllProducts } from '@/lib/products'
 import { absoluteUrl, siteMetadata } from '@/lib/seo'
 import { AboutContent } from '@/components/about/AboutContent'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Quiénes somos',
   description:

@@ -132,7 +132,7 @@ export const buildProductBreadcrumbJsonLd = (product: Product) => ({
       '@type': 'ListItem',
       position: 2,
       name: product.category ?? 'Catálogo',
-      item: absoluteUrl('/')
+      item: absoluteUrl(`/?category=${encodeURIComponent(product.category ?? 'catalogo')}`)
     },
     {
       '@type': 'ListItem',

@@ -21,7 +21,7 @@ export function HeaderNav() {
 
     return (
         <nav
-            className="hidden flex-wrap items-center gap-4 text-[10px] font-semibold uppercase tracking-[0.25em] text-neutral-400 lg:flex"
+            className="hidden flex-wrap items-center gap-4 text-[10px] font-semibold uppercase tracking-[0.25em] text-neutral-600 lg:flex"
             aria-label="Navegación secundaria"
         >
             {primaryNavLinks.map(link => {

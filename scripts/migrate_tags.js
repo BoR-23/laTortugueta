@@ -1,103 +1,75 @@
+const fs = require('fs');
+const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
-require('dotenv').config({ path: '.env.local' });
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// Load env vars from .env.local
+const envPath = path.resolve(__dirname, '../.env.local');
+const envContent = fs.readFileSync(envPath, 'utf8');
+const envVars = {};
+envContent.split('\n').forEach(line => {
+    const [key, value] = line.split('=');
+    if (key && value) {
+        envVars[key.trim()] = value.trim().replace(/^["']|["']$/g, '');
+    }
+});
+
+const supabaseUrl = envVars.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = envVars.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-    console.error('Missing Supabase env vars');
+    console.error('Missing Supabase credentials');
     process.exit(1);
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-const MAPPINGS = [
-    { old: 'Calces De Ratlles', new: 'Rayas' },
-    { old: 'Calces Llisses', new: 'Lisas' },
-    { old: 'De Home', new: 'de Hombre' },
-    { old: 'Bordats', new: 'Bordados' },
-    { old: 'Bordats Grans', new: 'Bordados Grandes' },
-    { old: 'Bordats Petits', new: 'Bordados Pequeños' },
-    { old: 'Bordats a Ma', new: 'Bordados a Mano' },
-    { old: 'Dibuix Vertical', new: 'Dibujo Vertical' },
-    { old: 'de Quatre Colors', new: 'de Cuatro Colores' },
-    { old: 'de Dos Colors', new: 'de Dos Colores' },
-    { old: 'de Cigrons', new: 'de Garbanzos' },
-    { old: 'de Tres Colors', new: 'de Tres Colores' },
-    { old: 'sense Calats', new: 'sin Calados' }
-];
-
 async function migrateTags() {
     console.log('Starting tag migration...');
 
-    for (const mapping of MAPPINGS) {
-        console.log(`Processing: "${mapping.old}" -> "${mapping.new}"`);
+    // 1. Fetch all products with their tags and media assets
+    const { data: products, error } = await supabase
+        .from('products')
+        .select('id, name, tags, media_assets(*)');
 
-        // 1. Find products with the old tag
-        const { data: products, error: fetchError } = await supabase
-            .from('products')
-            .select('id, tags')
-            .contains('tags', [mapping.old]);
+    if (error) {
+        console.error('Error fetching products:', error);
+        return;
+    }
 
-        if (fetchError) {
-            console.error(`Error fetching products for ${mapping.old}:`, fetchError);
-            continue;
-        }
+    console.log(`Found ${products.length} products.`);
 
-        if (!products || products.length === 0) {
-            console.log(`  No products found with tag "${mapping.old}"`);
-        } else {
-            console.log(`  Found ${products.length} products to update.`);
+    let updatedCount = 0;
 
-            for (const product of products) {
-                const newTags = product.tags
-                    .filter(t => t !== mapping.old) // Remove old
-                    .concat(mapping.new) // Add new
-                    // Unique
-                    .filter((t, i, self) => self.indexOf(t) === i);
+    for (const product of products) {
+        const productTags = product.tags || [];
+        if (productTags.length === 0) continue;
 
+        const assets = product.media_assets || [];
+        if (assets.length === 0) continue;
+
+        for (const asset of assets) {
+            const currentAssetTags = asset.tags || [];
+            // Merge tags, avoiding duplicates
+            const newTags = [...new Set([...currentAssetTags, ...productTags])];
+
+            // Only update if there are new tags added
+            if (newTags.length > currentAssetTags.length) {
                 const { error: updateError } = await supabase
-                    .from('products')
+                    .from('media_assets')
                     .update({ tags: newTags })
-                    .eq('id', product.id);
+                    .eq('id', asset.id);
 
                 if (updateError) {
-                    console.error(`  Failed to update product ${product.id}:`, updateError);
+                    console.error(`Failed to update asset ${asset.id} for product ${product.name}:`, updateError);
                 } else {
-                    // console.log(`  Updated product ${product.id}`);
+                    updatedCount++;
+                    console.log(`Updated asset ${asset.id} for product "${product.name}" with tags: ${newTags.join(', ')}`);
                 }
             }
-            console.log(`  Updated ${products.length} products.`);
-        }
-
-        // 2. Delete the old category if it exists
-        // We search by tag_key or name
-        const { data: categories, error: catError } = await supabase
-            .from('categories')
-            .select('id')
-            .or(`tag_key.eq.${mapping.old},name.eq.${mapping.old}`);
-
-        if (catError) {
-            console.error(`Error fetching category ${mapping.old}:`, catError);
-        } else if (categories && categories.length > 0) {
-            console.log(`  Found ${categories.length} categories to delete for "${mapping.old}"`);
-            const ids = categories.map(c => c.id);
-            const { error: delError } = await supabase
-                .from('categories')
-                .delete()
-                .in('id', ids);
-
-            if (delError) {
-                console.error(`  Failed to delete categories:`, delError);
-            } else {
-                console.log(`  Deleted categories.`);
-            }
-        } else {
-            console.log(`  No categories found for "${mapping.old}"`);
         }
     }
 
-    console.log('Migration complete.');
+    console.log(`Migration complete. Updated ${updatedCount} media assets.`);
 }
 
 migrateTags();

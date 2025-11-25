@@ -205,11 +205,10 @@ export const ProductGrid = ({
                     <button
                       type="button"
                       aria-label={isFavorite(product.id) ? 'Eliminar de favoritos' : 'Guardar en favoritos'}
-                      className={`absolute right-2 top-2 rounded-full border px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] transition ${
-                        isFavorite(product.id)
-                          ? 'border-neutral-900 bg-neutral-900 text-white'
-                          : 'border-white/80 bg-white/80 text-neutral-600 hover:border-neutral-900 hover:text-neutral-900'
-                      }`}
+                      className={`absolute right-2 top-2 rounded-full border px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] transition ${isFavorite(product.id)
+                        ? 'border-neutral-900 bg-neutral-900 text-white'
+                        : 'border-white/80 bg-white/80 text-neutral-600 hover:border-neutral-900 hover:text-neutral-900'
+                        }`}
                       onClick={event => {
                         event.preventDefault()
                         event.stopPropagation()
@@ -232,12 +231,19 @@ export const ProductGrid = ({
                       alt={product.name}
                       fill
                       className="object-contain transition-transform duration-700 group-hover:scale-[1.03]"
-                      sizes="(min-width: 1280px) 22vw, (min-width: 1024px) 30vw, (min-width: 640px) 40vw, 90vw"
+                      sizes={
+                        gridColumns === 4
+                          ? '(min-width: 1024px) 25vw, (min-width: 768px) 33vw, (min-width: 640px) 50vw, 100vw'
+                          : gridColumns === 3
+                            ? '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw'
+                            : '(min-width: 640px) 50vw, 100vw'
+                      }
                       placeholder={product.imagePlaceholder ? 'blur' : 'empty'}
                       blurDataURL={product.imagePlaceholder}
-                      priority={false}
-                      loading="lazy"
-                      fetchPriority="auto"
+                      priority={isPriorityCard}
+                      loading={isPriorityCard ? 'eager' : 'lazy'}
+                      fetchPriority={isPriorityCard ? 'high' : 'auto'}
+                      quality={80}
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center text-xs uppercase tracking-[0.3em] text-neutral-400">

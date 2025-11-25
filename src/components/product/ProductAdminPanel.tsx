@@ -46,7 +46,7 @@ export default function ProductAdminPanel({ product, activeImage, onPriceDisplay
     let cancelled = false
     const loadOptions = async () => {
       try {
-        const response = await fetch('/api/categories/list') // Use categories for official tags
+        const response = await fetch('/api/categories') // Use categories for official tags
         if (!response.ok) {
           // Fallback to old tags API if categories fails or for backward compat
           const res2 = await fetch('/api/tags')
@@ -176,16 +176,12 @@ export default function ProductAdminPanel({ product, activeImage, onPriceDisplay
 
   const handleColorSelect = async (value: string) => {
     if (!value) return
-    setSelectedColorOption(value)
     await handleAddTag(value)
-    setSelectedColorOption('')
   }
 
   const handleTagSelect = async (value: string) => {
     if (!value) return
-    setSelectedTagOption(value)
     await handleAddTag(value)
-    setSelectedTagOption('')
   }
 
   const handleTagSubmit = async () => {
@@ -252,8 +248,8 @@ export default function ProductAdminPanel({ product, activeImage, onPriceDisplay
                 type="button"
                 onClick={() => handleRemoveTag(tag)}
                 className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em] hover:bg-white ${tag.toLowerCase().startsWith('color')
-                    ? 'border-blue-200 bg-blue-50 text-blue-800 hover:border-blue-400'
-                    : 'border-neutral-400 bg-neutral-100 text-neutral-800 hover:border-neutral-900'
+                  ? 'border-blue-200 bg-blue-50 text-blue-800 hover:border-blue-400'
+                  : 'border-neutral-400 bg-neutral-100 text-neutral-800 hover:border-neutral-900'
                   }`}
                 disabled={tagSaving}
               >
