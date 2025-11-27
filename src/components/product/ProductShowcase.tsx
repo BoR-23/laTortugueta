@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
+import Image from 'next/image'
 import { ProductImage } from '@/components/common/ProductImage'
 import type { Product } from '@/lib/products'
 import { getLocalCoViewGraph, registerProductView, trackEvent } from '@/lib/analytics'
@@ -14,6 +15,9 @@ import {
 } from '@/lib/images'
 import { WHATSAPP_LINK } from '@/lib/contact'
 import { uploadProductImage } from '@/lib/client/uploadProductImage'
+import { ColorSelectionModal, SelectedColors } from '@/components/product/ColorSelectionModal'
+import { Palette } from 'lucide-react'
+import { YARN_COLORS } from '@/lib/colors/constants'
 
 interface SuggestedProduct {
   id: string
@@ -119,6 +123,14 @@ export function ProductShowcase({
     active: false
   })
 
+  const [colorModalOpen, setColorModalOpen] = useState(false)
+  const [selectedColors, setSelectedColors] = useState<SelectedColors>({
+    base: null,
+    drawing: null,
+    detail: null,
+    variation: null
+  })
+
   useEffect(() => {
     setGallery(initialGallery)
     setActiveIndex(0)
@@ -144,7 +156,7 @@ export function ProductShowcase({
     gallery.forEach((imagePath, index) => {
       if (index === activeIndex) return // Skip active image (already loaded)
 
-      const img = new Image()
+      const img = new window.Image()
       const fullUrl = getProductImageVariant(imagePath, 'full') || imagePath
       img.src = fullUrl
     })
@@ -154,16 +166,24 @@ export function ProductShowcase({
   const adminModeEnabled = isAdmin && !adminPreviewMode
 
   const whatsappHref = useMemo(() => {
+    const colorDetails = [
+      selectedColors.base ? `Base: #${selectedColors.base.id}` : null,
+      selectedColors.drawing ? `Dibujo: #${selectedColors.drawing.id}` : null,
+      selectedColors.detail ? `Detalle: #${selectedColors.detail.id}` : null,
+      selectedColors.variation ? `Var. Detalle: #${selectedColors.variation.id}` : null
+    ].filter(Boolean).join(', ')
+
     const details = [
       `Hola, me interesa el diseño ${product.name}`,
       product.category ? `Colección: ${product.category}` : null,
-      selectedSize ? `Talla: ${selectedSize}` : null
+      selectedSize ? `Talla: ${selectedSize}` : null,
+      colorDetails ? `Colores: ${colorDetails}` : null
     ]
       .filter(Boolean)
       .join(' · ')
 
     return `${WHATSAPP_LINK}?text=${encodeURIComponent(details)}`
-  }, [product.category, product.name, selectedSize])
+  }, [product.category, product.name, selectedSize, selectedColors])
 
   useEffect(() => {
     registerProductView(product.id)
@@ -465,6 +485,44 @@ export function ProductShowcase({
                     blurDataURL={heroPlaceholder}
                   />
                 )}
+
+                {/* Color Swatches Overlay */}
+                {(() => {
+                  const currentAsset = product.mediaAssets?.find(a => a.url === activeImage)
+                  if (!currentAsset?.tags) return null
+
+                  const colorTags = currentAsset.tags
+                    .filter(t => t.toLowerCase().startsWith('color '))
+                    .map(t => {
+                      const id = parseInt(t.split(' ')[1])
+                      return YARN_COLORS.find(c => c.id === id)
+                    })
+                    .filter(Boolean)
+
+                  if (colorTags.length === 0) return null
+
+                  return (
+                    <div className="absolute bottom-4 left-4 flex gap-2 pointer-events-none">
+                      {colorTags.map(color => color && (
+                        <div
+                          key={color.id}
+                          className="w-8 h-8 rounded-full border-2 border-white shadow-lg relative group pointer-events-auto overflow-visible bg-gray-100 transition-transform duration-300 hover:scale-[3] hover:z-50 origin-bottom"
+                        >
+                          <Image
+                            src={`${process.env.NEXT_PUBLIC_R2_PUBLIC_URL || 'https://pub-6d7cc19d77b44520a5ac19e77cb47c4e.r2.dev'}/images/colors/color-${color.id}.png`}
+                            alt={`Color ${color.id}`}
+                            fill
+                            className="object-cover rounded-full"
+                            sizes="120px"
+                          />
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-1.5 py-0.5 bg-black/90 text-white text-[5px] font-bold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-[60] pointer-events-none shadow-sm">
+                            #{color.id}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )
+                })()}
                 {gallery.length > 1 && (
                   <div className="pointer-events-none absolute inset-y-0 left-0 right-0 flex items-center justify-between px-2">
                     <button
@@ -683,6 +741,70 @@ export function ProductShowcase({
                     ))}
                   </select>
                 </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs uppercase tracking-[0.3em] text-neutral-500">
+                      Colores Personalizados
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setColorModalOpen(true)}
+                      className="flex items-center gap-2 text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
+                    >
+                      <Palette size={14} />
+                      Elegir Colores
+                    </button>
+                  </div>
+
+                  {(selectedColors.base || selectedColors.drawing || selectedColors.detail) ? (
+                    <div className="flex gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                      {[
+                        { label: 'Base', color: selectedColors.base },
+                        { label: 'Dibujo', color: selectedColors.drawing },
+                        { label: 'Detalle', color: selectedColors.detail },
+                        { label: 'Var.', color: selectedColors.variation }
+                      ].map((item) => item.color && (
+                        <div key={item.label} className="flex flex-col items-center gap-2">
+                          <div className="relative w-12 h-12 rounded-full border border-gray-200 shadow-sm overflow-hidden bg-gray-100">
+                            <Image
+                              src={`${process.env.NEXT_PUBLIC_R2_PUBLIC_URL}/images/colors/color-${item.color.id}.png`}
+                              alt={`Color ${item.color.id}`}
+                              fill
+                              className="object-cover"
+                              sizes="48px"
+                            />
+                          </div>
+                          <div className="flex flex-col items-center">
+                            <span className="text-[10px] uppercase tracking-wider text-gray-500 font-medium">
+                              {item.label}
+                            </span>
+                            <span className="text-xs font-bold text-gray-900">
+                              #{item.color.id}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setColorModalOpen(true)}
+                      className="w-full py-4 bg-neutral-900 text-white rounded-xl text-sm font-medium hover:bg-neutral-800 transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2 group"
+                    >
+                      <Palette size={18} className="text-white/80 group-hover:text-white transition-colors" />
+                      Personalizar Colores
+                    </button>
+                  )}
+                </div>
+
+                <ColorSelectionModal
+                  isOpen={colorModalOpen}
+                  onClose={() => setColorModalOpen(false)}
+                  onSelect={setSelectedColors}
+                  allow4Colors={!!product.metadata?.allow4Colors}
+                  initialColors={selectedColors}
+                />
                 <div className="flex flex-col gap-3">
                   <a
                     href={whatsappHref}

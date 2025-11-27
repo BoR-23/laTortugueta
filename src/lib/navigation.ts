@@ -8,6 +8,7 @@ export type NavigationLink = {
 
 export const primaryNavLinks: NavigationLink[] = [
   { label: 'Catálogo', href: '/#colecciones' },
+  { label: 'Colores', href: '/colores' },
   { label: 'Blog', href: '/blog' },
   { label: 'Quiénes somos', href: '/quienes-somos' },
   { label: 'Contacto', href: '/contacto' },

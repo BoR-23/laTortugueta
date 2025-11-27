@@ -23,7 +23,8 @@ export function LanguageSwitcher() {
     const isSupportedRoute =
         cleanPath === '/blog' ||
         cleanPath.startsWith('/blog/') ||
-        cleanPath === '/quienes-somos'
+        cleanPath === '/quienes-somos' ||
+        cleanPath === '/colores'
 
     // Don't render on server or unsupported routes to prevent hydration mismatch
     if (!mounted || !isSupportedRoute) {

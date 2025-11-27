@@ -266,6 +266,16 @@ export function ProductForm({
         Disponible para catálogo
       </label>
 
+      <label className="inline-flex items-center gap-3 text-xs uppercase tracking-[0.3em] text-neutral-500 ml-6">
+        <input
+          type="checkbox"
+          checked={!!metadata.allow4Colors}
+          onChange={event => handleMetadataChange('allow4Colors', event.target.checked)}
+          className="h-4 w-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900"
+        />
+        Permitir 4 colores (Detalle Variación)
+      </label>
+
       <div className="space-y-4 rounded-2xl border border-neutral-200 bg-white/70 p-4">
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neutral-500">
           Historia del calcetín (opcional)
