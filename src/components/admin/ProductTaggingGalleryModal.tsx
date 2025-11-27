@@ -484,6 +484,10 @@ export function ProductTaggingGalleryModal({ productName, productId, gallery, in
                                                         e.preventDefault()
                                                         handleAddTag(tag, false)
                                                         setTagInput('')
+                                                        setTagInputFocused(false)
+                                                        if (document.activeElement instanceof HTMLElement) {
+                                                            document.activeElement.blur()
+                                                        }
                                                     }}
                                                     className="block w-full px-4 py-2 text-left text-sm hover:bg-neutral-50"
                                                 >
@@ -533,6 +537,10 @@ export function ProductTaggingGalleryModal({ productName, productId, gallery, in
                                                         e.preventDefault()
                                                         handleAddTag(tag, true)
                                                         setColorInput('')
+                                                        setColorInputFocused(false)
+                                                        if (document.activeElement instanceof HTMLElement) {
+                                                            document.activeElement.blur()
+                                                        }
                                                     }}
                                                     className="block w-full px-4 py-2 text-left text-sm hover:bg-blue-50 text-blue-700"
                                                 >

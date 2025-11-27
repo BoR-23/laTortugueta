@@ -62,6 +62,7 @@ export type ProductMutationInput = {
 export type MediaAssetInput = {
   url: string
   position?: number
+  tags?: string[]
 }
 
 export type ProductPriorityUpdate = {

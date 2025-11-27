@@ -32,7 +32,7 @@ interface ProductShowcaseProps {
   showLocalSuggestions?: boolean
 }
 
-const DEFAULT_SIZES = [...Array.from({ length: 49 }, (_, index) => index.toString().padStart(2, '0')), 'A medida']
+const DEFAULT_SIZES = ['36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46']
 
 const ProductAdminPanel = dynamic(() => import('./ProductAdminPanel'), {
   ssr: false,

@@ -61,10 +61,9 @@ export const revalidate = 60
 export default async function Home() {
   const products = await getAllProducts()
   const catalogProducts = prepareCatalogProducts(products)
-  const [headerCategories, filterCategories] = await Promise.all([
-    getCategories("header"),
-    getCategories("filter")
-  ])
+  const allCategories = await getCategories()
+  const headerCategories = allCategories.filter(c => c.scope === 'header')
+  const filterCategories = allCategories.filter(c => c.scope === 'filter')
   const siteSettings = await getSiteSettings()
   const slides = await getHeroSlides()
 

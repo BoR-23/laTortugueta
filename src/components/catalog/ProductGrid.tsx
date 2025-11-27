@@ -104,8 +104,6 @@ export const ProductGrid = ({
 
   const rowCount = Math.max(1, Math.ceil(products.length / columnCount))
   const virtualizationEnabled =
-    !isCompactViewport &&
-    !isTouchDevice &&
     containerWidth > 0 &&
     rowMetrics.rowHeight > 0 &&
     rowCount > minRowsWithoutVirtualization

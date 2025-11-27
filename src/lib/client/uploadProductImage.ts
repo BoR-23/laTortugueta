@@ -5,11 +5,15 @@ export type UploadedProductImage = {
 
 export const uploadProductImage = async (
   productId: string,
-  file: File
+  file: File,
+  targetFilename?: string
 ): Promise<UploadedProductImage> => {
   const formData = new FormData()
   formData.append('productId', productId)
   formData.append('file', file)
+  if (targetFilename) {
+    formData.append('targetFilename', targetFilename)
+  }
 
   const response = await fetch('/api/uploads/product-image', {
     method: 'POST',

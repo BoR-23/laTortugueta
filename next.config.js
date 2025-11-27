@@ -37,6 +37,9 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 31536000
   },
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'date-fns', 'lodash', 'framer-motion']
+  },
   async headers() {
     return [
       {

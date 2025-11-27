@@ -197,7 +197,11 @@ export function MediaGalleryManager(props: MediaGalleryManagerProps) {
     setError(null)
       ; (async () => {
         try {
-          const result = await uploadProductImage(productId, file)
+          const currentUrl = gallery[targetIndex]
+          const filenameMatch = currentUrl.split('/').pop()
+          const targetFilename = filenameMatch ? decodeURIComponent(filenameMatch) : undefined
+
+          const result = await uploadProductImage(productId, file, targetFilename)
           const nextGallery = [...gallery]
           nextGallery[targetIndex] = result.path
           const nextReview: Record<string, boolean> = { ...reviewMap }

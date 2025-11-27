@@ -104,16 +104,33 @@ export const replaceProductMediaAssets = async (
   reviewed?: Record<string, boolean>
 ) => {
   const client = createSupabaseServerClient()
+  const { data: existingAssets } = await client
+    .from('media_assets')
+    .select('url, tags')
+    .eq('product_id', productId)
+
+  const existingTagsMap = new Map<string, string[]>()
+  existingAssets?.forEach((asset: any) => {
+    if (asset.tags && asset.tags.length > 0) {
+      existingTagsMap.set(asset.url, asset.tags)
+    }
+  })
+
   await client.from('media_assets').delete().eq('product_id', productId)
 
   const validAssets = assets
     .map((asset, index) => {
       const rawPosition =
         typeof asset.position === 'number' ? asset.position : Number(asset.position ?? '')
+
+      // Use explicitly provided tags, or fall back to existing tags for this URL
+      const tags = asset.tags ?? existingTagsMap.get(asset.url) ?? []
+
       return {
         product_id: productId,
         url: asset.url,
-        position: Number.isFinite(rawPosition) ? rawPosition : index
+        position: Number.isFinite(rawPosition) ? rawPosition : index,
+        tags
       }
     })
     .filter(asset => Boolean(asset.url))

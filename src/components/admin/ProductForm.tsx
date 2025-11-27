@@ -24,6 +24,7 @@ const parseList = (value: string) =>
 
 const buildInitialState = (input: ProductFormValues): ProductFormValues => ({
   ...input,
+  sizes: input.sizes && input.sizes.length > 0 ? input.sizes : ['36'],
   metadata: mergeTypeMetadata(input.type, input.metadata ?? {}) as ProductFormValues['metadata']
 })
 
@@ -55,10 +56,33 @@ export function ProductForm({
   }, [initialValues])
 
   const handleChange = (field: keyof ProductFormValues, value: unknown) => {
-    setValues(prev => ({
-      ...prev,
-      [field]: value
-    }))
+    setValues(prev => {
+      const next = { ...prev, [field]: value }
+
+      // Auto-set sizes based on tags for socks
+      if (field === 'tags' && Array.isArray(value)) {
+        const tags = value as string[]
+        const isMan = tags.map(t => t.toLowerCase()).includes('de hombre')
+        const currentSizes = prev.sizes
+
+        // Only auto-update if sizes are empty or match the "other" default
+        const isDefault36 = currentSizes.length === 1 && currentSizes[0] === '36'
+        const isDefault40 = currentSizes.length === 1 && currentSizes[0] === '40'
+        const isEmpty = currentSizes.length === 0
+
+        if (isMan) {
+          if (isEmpty || isDefault36) {
+            next.sizes = ['40']
+          }
+        } else {
+          if (isEmpty || isDefault40) {
+            next.sizes = ['36']
+          }
+        }
+      }
+
+      return next
+    })
   }
 
   const handleTypeChange = (nextType: string) => {

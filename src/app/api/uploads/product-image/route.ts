@@ -32,10 +32,20 @@ export async function POST(request: Request) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer())
+    const targetFilename = formData.get('targetFilename')
     const timestamp = Date.now()
     const baseName = sanitizeFileName(file.name) || 'imagen'
-    const relativeName = `${productId}-${timestamp}-${baseName}.webp`
-    const pipeline = sharp(buffer).rotate()
+
+    let relativeName = `${productId}-${timestamp}-${baseName}.webp`
+    if (targetFilename && typeof targetFilename === 'string') {
+      // If targetFilename is provided, try to preserve it (ensure it ends in .webp)
+      const cleanTarget = targetFilename.split('/').pop() || ''
+      if (cleanTarget) {
+        relativeName = cleanTarget.endsWith('.webp') ? cleanTarget : `${cleanTarget}.webp`
+      }
+    }
+
+    const pipeline = sharp(buffer).rotate().withMetadata()
 
     const baseBuffer: Buffer = await pipeline
       .clone()
