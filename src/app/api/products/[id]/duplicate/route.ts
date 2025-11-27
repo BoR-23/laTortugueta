@@ -4,6 +4,19 @@ import { authOptions } from '@/lib/auth'
 import { createProductRecord, getProductData } from '@/lib/products'
 import { sanitizeTypeMetadata } from '@/lib/productTypes'
 
+const slugify = (text: string) => {
+    return text
+        .toString()
+        .toLowerCase()
+        .normalize('NFD') // Split accented characters
+        .replace(/[\u0300-\u036f]/g, '') // Remove accents
+        .replace(/\s+/g, '-') // Replace spaces with -
+        .replace(/[^\w\-]+/g, '') // Remove all non-word chars
+        .replace(/\-\-+/g, '-') // Replace multiple - with single -
+        .replace(/^-+/, '') // Trim - from start
+        .replace(/-+$/, '') // Trim - from end
+}
+
 export async function POST(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
@@ -41,10 +54,15 @@ export async function POST(
 
         newName = `${newName}${suffix}`
 
+        // Generate SEO-friendly slug
+        const baseSlug = slugify(newName)
+        const randomSuffix = Math.random().toString(36).substring(2, 6)
+        const newId = `${baseSlug}-${randomSuffix}`
+
         // Create new product payload
         // We explicitly DO NOT copy the gallery/photos as requested
         const newProductPayload = {
-            id: crypto.randomUUID(),
+            id: newId,
             name: newName,
             description: sourceProduct.description,
             category: sourceProduct.category,
