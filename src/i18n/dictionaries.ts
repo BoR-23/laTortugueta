@@ -52,7 +52,7 @@ export const dictionaries = {
                 },
                 products: {
                     title: 'Nuestros productos',
-                    p1: 'Nuestro día a día se reparte entre varias familias de piezas, la mayoría tejidas en algodón 100% del número 12 y todas con la costura lateral cosida a mano.',
+                    p1: 'Nuestro día a día se reparte entre varias familias de piezas, todas tejidas en algodón 100% del número 12 o del 8, y con la costura lateral cosida a mano.',
                     p2: 'Los más conocidos son los calcetines rayados: medias por bajo de la rodilla (conforme son las antiguas) con franjas geométricas y combinaciones cromáticas históricas. También creamos calcetines bordados, piezas lisas a las que se añade bordado artesanal con motivos florales, o incluso de animales, usando máquinas antiguas de bordar.',
                     p3: 'Ofrecemos medias lisas con un dibujo en el mismo color realizado en la propia tejedora manual, idénticas a las de la indumentaria valenciana clásica. Recuperamos piezas como las polainas y peúcos, que usaban los labradores, y confeccionamos bajo pedido cofias, barrets y lligacames. Estas últimas son cintas de otomán reproducidas de modelos antiguos, y las tenemos también bordadas con frases antiguas (en valenciano o castellano) sacadas de archivos históricos.',
                     p4: 'Además, realizamos encargos para grupos de "danses" de otras comunidades que nos mandan sus modelos antiguos, habiendo trabajado para Zamora, Zaragoza, Burgos, Galicia, Cataluña y Mallorca.'
@@ -125,7 +125,7 @@ export const dictionaries = {
                 },
                 products: {
                     title: 'Els nostres productes',
-                    p1: 'El nostre dia a dia es reparteix entre diverses famílies de peces, la majoria teixides en cotó 100% del número 12 i totes amb la costura lateral cosida a mà.',
+                    p1: 'El nostre dia a dia es reparteix entre diverses famílies de peces, totes teixides en cotó 100% del número 12 o del 8, i amb la costura lateral cosida a mà.',
                     p2: 'Els més coneguts són els calcetins ratllats: mitges per sota del genoll (com són les antigues) amb franges geomètriques i combinacions cromàtiques històriques. També creem calcetins brodats, peces llises a les quals s\'afegeix brodat artesanal amb motius florals, o fins i tot d\'animals, utilitzant màquines antigues de brodar.',
                     p3: 'Oferim mitges llises amb un dibuix en el mateix color realitzat en la pròpia teixidora manual, idèntiques a les de la indumentària valenciana clàssica. Recuperem peces com les polaines i peücs, que usaven els llauradors, i confeccionem sota comanda còfies, barrets i lligacames. Aquestes últimes són cintes d\'otomà reproduïdes de models antics, i les tenim també brodades amb frases antigues (en valencià o castellà) tretes d\'arxius històrics.',
                     p4: 'A més, realitzem encàrrecs per a grups de "danses" d\'altres comunitats que ens envien els seus models antics, havent treballat per a Zamora, Saragossa, Burgos, Galícia, Catalunya i Mallorca.'
@@ -198,7 +198,7 @@ export const dictionaries = {
                 },
                 products: {
                     title: 'Our Products',
-                    p1: 'Our day-to-day is divided between several families of pieces, most knitted in 100% cotton number 12 and all with the side seam sewn by hand.',
+                    p1: 'Our day-to-day is divided between several families of pieces, all knitted in 100% cotton number 12 or 8, and with the side seam sewn by hand.',
                     p2: 'The best known are the striped socks: stockings below the knee (as the old ones are) with geometric stripes and historical color combinations. We also create embroidered socks, plain pieces to which handmade embroidery with floral motifs, or even animals, is added using old embroidery machines.',
                     p3: 'We offer plain stockings with a drawing in the same color made on the manual knitting machine itself, identical to those of classic Valencian clothing. We recover pieces like leggings and booties, used by farmers, and make caps, hats, and garters on demand. The latter are ottoman ribbons reproduced from old models, and we also have them embroidered with old phrases (in Valencian or Spanish) taken from historical archives.',
                     p4: 'In addition, we carry out orders for "danses" groups from other communities that send us their old models, having worked for Zamora, Zaragoza, Burgos, Galicia, Catalonia, and Mallorca.'
