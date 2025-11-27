@@ -56,8 +56,14 @@ export async function POST(
 
         // Generate SEO-friendly slug
         const baseSlug = slugify(newName)
-        const randomSuffix = Math.random().toString(36).substring(2, 6)
-        const newId = `${baseSlug}-${randomSuffix}`
+        let newId = baseSlug
+
+        // Check if slug exists
+        const existingProduct = await getProductData(newId).catch(() => null)
+        if (existingProduct) {
+            const randomSuffix = Math.random().toString(36).substring(2, 6)
+            newId = `${baseSlug}-${randomSuffix}`
+        }
 
         // Create new product payload
         // We explicitly DO NOT copy the gallery/photos as requested
