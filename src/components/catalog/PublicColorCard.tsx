@@ -1,9 +1,9 @@
-'use client'
-
 import React, { useState } from 'react';
 import { ColorDef } from '@/lib/colors/types';
 import { Copy, Check } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 interface PublicColorCardProps {
     color: ColorDef;
@@ -13,6 +13,7 @@ interface PublicColorCardProps {
 export const PublicColorCard: React.FC<PublicColorCardProps> = ({ color, priority = false }) => {
     const [copied, setCopied] = useState(false);
     const [imageError, setImageError] = useState(false);
+    const pathname = usePathname();
 
     const handleCopy = () => {
         navigator.clipboard.writeText(`#${color.id}`);
@@ -25,8 +26,15 @@ export const PublicColorCard: React.FC<PublicColorCardProps> = ({ color, priorit
     const r2Url = process.env.NEXT_PUBLIC_R2_PUBLIC_URL || 'https://pub-6d7cc19d77b44520a5ac19e77cb47c4e.r2.dev';
     const imageUrl = `${r2Url}/images/colors/color-${color.id}.png`;
 
+    // Determine locale from pathname
+    const locale = pathname.startsWith('/en') ? '/en' : pathname.startsWith('/ca') ? '/ca' : '';
+    const href = `${locale}/?codes=${color.id}`;
+
     return (
-        <div className="group relative aspect-square overflow-hidden rounded-2xl bg-gray-100 shadow-sm transition-transform duration-300 hover:scale-[2] hover:shadow-xl hover:z-50 origin-center">
+        <Link
+            href={href}
+            className="group relative aspect-square overflow-hidden rounded-2xl bg-gray-100 shadow-sm transition-transform duration-300 hover:scale-[2] hover:shadow-xl hover:z-50 origin-center block"
+        >
             <div className="relative aspect-square bg-gray-50">
                 {!imageError ? (
                     <Image
@@ -47,11 +55,11 @@ export const PublicColorCard: React.FC<PublicColorCardProps> = ({ color, priorit
                     </div>
                 )}
 
-                {/* Hover Overlay with Copy Button - Moved to bottom to not obstruct view */}
                 {/* Hover Overlay with Copy Button - Top Right Corner */}
                 <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
                     <button
                         onClick={(e) => {
+                            e.preventDefault(); // Prevent navigation
                             e.stopPropagation();
                             handleCopy();
                         }}
@@ -86,6 +94,6 @@ export const PublicColorCard: React.FC<PublicColorCardProps> = ({ color, priorit
                     </p>
                 )}
             </div>
-        </div>
+        </Link>
     );
 };

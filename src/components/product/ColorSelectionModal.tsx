@@ -1,10 +1,24 @@
 'use client'
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useLayoutEffect, useRef, useEffect } from 'react';
 import { YARN_COLORS } from '@/lib/colors/constants';
 import { ColorDef } from '@/lib/colors/types';
 import { X, Check, Search } from 'lucide-react';
 import Image from 'next/image';
+import { FixedSizeGrid, GridChildComponentProps } from 'react-window';
+import AutoSizer from 'react-virtualized-auto-sizer';
+
+// Hook to lock body scroll
+function useLockBodyScroll(isLocked: boolean) {
+    useLayoutEffect(() => {
+        if (!isLocked) return;
+        const originalStyle = window.getComputedStyle(document.body).overflow;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = originalStyle;
+        };
+    }, [isLocked]);
+}
 
 interface ColorSelectionModalProps {
     isOpen: boolean;
@@ -30,6 +44,9 @@ export const ColorSelectionModal: React.FC<ColorSelectionModalProps> = ({
     allow4Colors = false,
     initialColors
 }) => {
+    // Lock body scroll when modal is open
+    useLockBodyScroll(isOpen);
+
     const [selectedColors, setSelectedColors] = useState<SelectedColors>(initialColors || {
         base: null,
         drawing: null,
@@ -74,12 +91,53 @@ export const ColorSelectionModal: React.FC<ColorSelectionModalProps> = ({
         ...(allow4Colors ? [{ id: 'variation', label: 'Var. Detalle' } as const] : [])
     ];
 
+    // Cell renderer for react-window
+    const Cell = ({ columnIndex, rowIndex, style, data }: GridChildComponentProps) => {
+        const { colors, columnCount, activeTabId, selectedColorId, onSelectColor, r2Url } = data;
+        const index = rowIndex * columnCount + columnIndex;
+
+        if (index >= colors.length) return null;
+
+        const color = colors[index];
+        const isSelected = selectedColorId === color.id;
+
+        return (
+            <div style={style} className="p-2">
+                <button
+                    onClick={() => onSelectColor(color)}
+                    className={`w-full h-full group relative rounded-xl overflow-hidden border transition-all ${isSelected
+                        ? 'border-indigo-600 ring-2 ring-indigo-600 ring-offset-2'
+                        : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                >
+                    <div className="absolute inset-0 bg-gray-100">
+                        <Image
+                            src={`${r2Url}/images/colors/color-${color.id}.png`}
+                            alt={`Color ${color.id}`}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 16vw"
+                        />
+                    </div>
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-2 pt-6">
+                        <span className="text-white font-bold text-sm shadow-sm">#{color.id}</span>
+                    </div>
+                    {isSelected && (
+                        <div className="absolute top-2 right-2 bg-indigo-600 text-white p-1 rounded-full shadow-lg">
+                            <Check size={12} />
+                        </div>
+                    )}
+                </button>
+            </div>
+        );
+    };
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl h-[90vh] flex flex-col overflow-hidden">
 
                 {/* Header */}
-                <div className="p-4 border-b border-gray-100 flex justify-between items-center">
+                <div className="p-4 border-b border-gray-100 flex justify-between items-center flex-shrink-0">
                     <h2 className="text-xl font-bold text-gray-900">Elige tus colores</h2>
                     <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                         <X size={20} />
@@ -87,7 +145,7 @@ export const ColorSelectionModal: React.FC<ColorSelectionModalProps> = ({
                 </div>
 
                 {/* Tabs & Preview */}
-                <div className="bg-gray-50 p-4 border-b border-gray-100">
+                <div className="bg-gray-50 p-4 border-b border-gray-100 flex-shrink-0">
                     <div className="flex gap-2 overflow-x-auto pb-2">
                         {tabs.map(tab => {
                             const color = selectedColors[tab.id];
@@ -96,8 +154,8 @@ export const ColorSelectionModal: React.FC<ColorSelectionModalProps> = ({
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
                                     className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all min-w-[140px] ${activeTab === tab.id
-                                            ? 'bg-white border-indigo-600 shadow-sm ring-1 ring-indigo-600'
-                                            : 'bg-white border-gray-200 hover:border-gray-300'
+                                        ? 'bg-white border-indigo-600 shadow-sm ring-1 ring-indigo-600'
+                                        : 'bg-white border-gray-200 hover:border-gray-300'
                                         }`}
                                 >
                                     <div
@@ -112,7 +170,6 @@ export const ColorSelectionModal: React.FC<ColorSelectionModalProps> = ({
                                                 height={32}
                                                 className="w-full h-full object-cover rounded-full"
                                                 onError={(e) => (e.currentTarget.style.display = 'none')}
-                                                unoptimized
                                             />
                                         )}
                                     </div>
@@ -129,7 +186,7 @@ export const ColorSelectionModal: React.FC<ColorSelectionModalProps> = ({
                 </div>
 
                 {/* Search */}
-                <div className="p-4 border-b border-gray-100">
+                <div className="p-4 border-b border-gray-100 flex-shrink-0">
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                         <input
@@ -142,45 +199,46 @@ export const ColorSelectionModal: React.FC<ColorSelectionModalProps> = ({
                     </div>
                 </div>
 
-                {/* Grid */}
-                <div className="flex-1 overflow-y-auto p-4">
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
-                        {filteredColors.map(color => {
-                            const isSelected = selectedColors[activeTab]?.id === color.id;
+                {/* Grid with Virtualization */}
+                <div className="flex-1 p-4 min-h-0">
+                    <AutoSizer>
+                        {({ height, width }: { height: number; width: number }) => {
+                            // Responsive column count
+                            let columnCount = 3;
+                            if (width >= 640) columnCount = 4;
+                            if (width >= 768) columnCount = 5;
+                            if (width >= 1024) columnCount = 6;
+
+                            const columnWidth = width / columnCount;
+                            const rowCount = Math.ceil(filteredColors.length / columnCount);
+                            const rowHeight = columnWidth; // Square cells
+
                             return (
-                                <button
-                                    key={color.id}
-                                    onClick={() => handleColorSelect(color)}
-                                    className={`group relative aspect-square rounded-xl overflow-hidden border transition-all ${isSelected
-                                            ? 'border-indigo-600 ring-2 ring-indigo-600 ring-offset-2'
-                                            : 'border-gray-200 hover:border-gray-300'
-                                        }`}
+                                <FixedSizeGrid
+                                    columnCount={columnCount}
+                                    columnWidth={columnWidth}
+                                    height={height}
+                                    rowCount={rowCount}
+                                    rowHeight={rowHeight}
+                                    width={width}
+                                    itemData={{
+                                        colors: filteredColors,
+                                        columnCount,
+                                        activeTabId: activeTab,
+                                        selectedColorId: selectedColors[activeTab]?.id,
+                                        onSelectColor: handleColorSelect,
+                                        r2Url
+                                    }}
                                 >
-                                    <div className="absolute inset-0 bg-gray-100">
-                                        <Image
-                                            src={`${r2Url}/images/colors/color-${color.id}.png`}
-                                            alt={`Color ${color.id}`}
-                                            fill
-                                            className="object-cover"
-                                            unoptimized
-                                        />
-                                    </div>
-                                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-2 pt-6">
-                                        <span className="text-white font-bold text-sm shadow-sm">#{color.id}</span>
-                                    </div>
-                                    {isSelected && (
-                                        <div className="absolute top-2 right-2 bg-indigo-600 text-white p-1 rounded-full shadow-lg">
-                                            <Check size={12} />
-                                        </div>
-                                    )}
-                                </button>
+                                    {Cell}
+                                </FixedSizeGrid>
                             );
-                        })}
-                    </div>
+                        }}
+                    </AutoSizer>
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+                <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 flex-shrink-0">
                     <button
                         onClick={onClose}
                         className="px-6 py-2 rounded-lg text-gray-600 font-medium hover:bg-gray-200 transition-colors"
