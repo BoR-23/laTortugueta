@@ -3,9 +3,9 @@ import { createSupabaseServerClient } from '@/lib/supabaseClient'
 
 export async function PUT(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    const { id } = params
+    const { id } = await params
     const {
         order_id,
         date,
@@ -44,9 +44,9 @@ export async function PUT(
 
 export async function DELETE(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    const { id } = params
+    const { id } = await params
     const client = createSupabaseServerClient()
 
     const { error } = await client
