@@ -41,7 +41,7 @@ export const updateProductPriorities = async (updates: ProductPriorityUpdate[]) 
 }
 
 export const createProductRecord = async (input: ProductMutationInput) => {
-  const payload = sanitiseProductInput(input)
+  const payload = sanitiseProductInput(input) as ProductMutationInput
 
   if (!payload.id) {
     throw new Error('El identificador es obligatorio.')
@@ -68,7 +68,7 @@ export const createProductRecord = async (input: ProductMutationInput) => {
   return buildProductFromSupabase(data)
 }
 
-export const updateProductRecord = async (id: string, input: ProductMutationInput) => {
+export const updateProductRecord = async (id: string, input: Partial<ProductMutationInput>) => {
   const payload = sanitiseProductInput({ ...input, id })
 
   const client = createSupabaseServerClient()

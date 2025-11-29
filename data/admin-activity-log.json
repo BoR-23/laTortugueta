@@ -346,5 +346,34 @@
       "name": "Abdet"
     },
     "timestamp": "2025-11-23T09:19:14.819Z"
+  },
+  {
+    "action": "product.update",
+    "entity": "product",
+    "productId": "abdet",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "metadata": {
+      "changedFields": [
+        "name",
+        "description",
+        "category",
+        "priority",
+        "color",
+        "price",
+        "tags",
+        "sizes",
+        "available",
+        "type",
+        "material",
+        "care",
+        "origin",
+        "metadata"
+      ],
+      "name": ""
+    },
+    "timestamp": "2025-11-28T17:19:16.913Z"
   }
 ]

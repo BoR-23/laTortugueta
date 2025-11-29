@@ -34,3 +34,27 @@ export const parseProductPayload = (
   origin: typeof payload.origin === 'string' ? payload.origin : '',
   metadata: toMetadata(payload.metadata)
 })
+
+export const parsePartialProductPayload = (
+  payload: Record<string, unknown>
+): Partial<ProductMutationInput> => {
+  const output: Partial<ProductMutationInput> = {}
+
+  if (payload.id !== undefined) output.id = String(payload.id ?? '').trim()
+  if (payload.name !== undefined) output.name = String(payload.name ?? '').trim()
+  if (payload.description !== undefined) output.description = String(payload.description ?? '')
+  if (payload.category !== undefined) output.category = typeof payload.category === 'string' ? payload.category : ''
+  if (payload.priority !== undefined) output.priority = toPriorityValue(payload.priority)
+  if (payload.color !== undefined) output.color = typeof payload.color === 'string' ? payload.color : ''
+  if (payload.price !== undefined) output.price = Number(payload.price ?? 0)
+  if (payload.tags !== undefined) output.tags = toStringArray(payload.tags)
+  if (payload.sizes !== undefined) output.sizes = toStringArray(payload.sizes)
+  if (payload.available !== undefined) output.available = Boolean(payload.available)
+  if (payload.type !== undefined) output.type = typeof payload.type === 'string' ? payload.type : ''
+  if (payload.material !== undefined) output.material = typeof payload.material === 'string' ? payload.material : ''
+  if (payload.care !== undefined) output.care = typeof payload.care === 'string' ? payload.care : ''
+  if (payload.origin !== undefined) output.origin = typeof payload.origin === 'string' ? payload.origin : ''
+  if (payload.metadata !== undefined) output.metadata = toMetadata(payload.metadata)
+
+  return output
+}

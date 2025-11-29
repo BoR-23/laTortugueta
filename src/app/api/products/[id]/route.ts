@@ -6,7 +6,7 @@ import {
   getProductData,
   updateProductRecord
 } from '@/lib/products'
-import { parseProductPayload } from '@/lib/admin/productPayload'
+import { parseProductPayload, parsePartialProductPayload } from '@/lib/admin/productPayload'
 import { recordAdminActivity } from '@/lib/admin/activityLog'
 import { revalidateProduct } from '@/lib/revalidation'
 
@@ -43,7 +43,7 @@ export async function PUT(
 
   try {
     const { id } = await params
-    const payload = parseProductPayload(await request.json())
+    const payload = parsePartialProductPayload(await request.json())
     const product = await updateProductRecord(id, payload)
     revalidateProduct(id)
     await recordAdminActivity({

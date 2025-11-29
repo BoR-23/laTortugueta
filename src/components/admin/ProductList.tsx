@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState, Fragment } from 'react'
+import { useEffect, useMemo, useState, useRef, Fragment } from 'react'
 import type { KeyboardEvent } from 'react'
 import Image from 'next/image'
 import Fuse from 'fuse.js'
@@ -15,6 +15,7 @@ interface ProductListProps {
   onDelete: (id: string) => Promise<void>
   onPriceUpdate: (id: string, price: number) => Promise<void>
   onToggleAvailability: (id: string, current: boolean) => Promise<void>
+  onArchiveStatusChange: (id: string, archived: boolean, available: boolean) => Promise<void>
   onRefresh?: () => void
 }
 
@@ -42,7 +43,8 @@ const buildPriceState = (products: AdminProductFormValues[]): Record<string, Pri
   return entries
 }
 
-export function ProductList({ products, onEdit, onDelete, onPriceUpdate, onToggleAvailability, onRefresh }: ProductListProps) {
+export function ProductList({ products, onEdit, onDelete, onPriceUpdate, onToggleAvailability, onArchiveStatusChange, onRefresh }: ProductListProps) {
+  const [activeTab, setActiveTab] = useState<'active' | 'archived'>('active')
   const [search, setSearch] = useState('')
   const [pendingDelete, setPendingDelete] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
@@ -53,8 +55,6 @@ export function ProductList({ products, onEdit, onDelete, onPriceUpdate, onToggl
   const [priceDrafts, setPriceDrafts] = useState<Record<string, PriceDraftState>>(() =>
     buildPriceState(products)
   )
-
-  // ...
 
   // Duplicate modal state
   const [duplicateTarget, setDuplicateTarget] = useState<AdminProductFormValues | null>(null)
@@ -82,13 +82,30 @@ export function ProductList({ products, onEdit, onDelete, onPriceUpdate, onToggl
   const hasSearch = searchTerms.length > 0
 
   const filtered = useMemo(() => {
+    let result = products
+
+    // Filter by tab
+    if (activeTab === 'active') {
+      // Active tab shows everything NOT archived (includes published and drafts)
+      result = result.filter(p => !p.metadata?.archived)
+    } else {
+      // Archived tab shows ONLY archived items
+      result = result.filter(p => p.metadata?.archived === true)
+    }
+
     if (!hasSearch) {
-      return products
+      return result
     }
 
     const scores = new Map<string, number>()
     searchTerms.forEach(term => {
       fuse.search(term).forEach(result => {
+        const isArchived = result.item.metadata?.archived === true
+
+        // Check if item is in the current tab result set
+        if (activeTab === 'active' && isArchived) return
+        if (activeTab === 'archived' && !isArchived) return
+
         const score = typeof result.score === 'number' ? result.score : 0
         const current = scores.get(result.item.id)
         if (current === undefined || score < current) {
@@ -104,16 +121,23 @@ export function ProductList({ products, onEdit, onDelete, onPriceUpdate, onToggl
     const orderLookup = new Map<string, number>()
     products.forEach((product, index) => orderLookup.set(product.id, index))
 
-    return products
+    return result
       .filter(product => scores.has(product.id))
       .sort((a, b) => {
+        // First sort by availability (Drafts first in 'active' tab)
+        if (activeTab === 'active') {
+          if (a.available !== b.available) {
+            return a.available ? 1 : -1 // false (draft) comes before true (available)
+          }
+        }
+
         const diff = (scores.get(a.id) ?? 1) - (scores.get(b.id) ?? 1)
         if (diff !== 0) {
           return diff
         }
         return (orderLookup.get(a.id) ?? 0) - (orderLookup.get(b.id) ?? 0)
       })
-  }, [fuse, hasSearch, products, searchTerms])
+  }, [fuse, hasSearch, products, searchTerms, activeTab])
 
   useEffect(() => {
     setPriceDrafts(prev => {
@@ -248,8 +272,172 @@ export function ProductList({ products, onEdit, onDelete, onPriceUpdate, onToggl
     setExpandedProduct(expandedProduct === id ? null : id)
   }
 
+  // Rename state
+  const [renamingUrl, setRenamingUrl] = useState<string | null>(null)
+  const [newFilename, setNewFilename] = useState('')
+  const [renamingProductId, setRenamingProductId] = useState<string | null>(null)
+  const [renamingBusy, setRenamingBusy] = useState(false)
+  const [optimizingUrl, setOptimizingUrl] = useState<string | null>(null)
+
+  const openRenameModal = (productId: string, url: string) => {
+    const currentFilename = url.split('/').pop() || ''
+    setRenamingProductId(productId)
+    setRenamingUrl(url)
+    setNewFilename(decodeURIComponent(currentFilename))
+  }
+
+  const handleRenameSubmit = async () => {
+    if (!renamingUrl || !newFilename.trim() || !renamingProductId) return
+
+    setRenamingBusy(true)
+    setError(null)
+    try {
+      const response = await fetch('/api/admin/media/rename', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productId: renamingProductId,
+          oldUrl: renamingUrl,
+          newFilename: newFilename.trim()
+        })
+      })
+
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al renombrar la imagen')
+      }
+
+      // Refresh list
+      onRefresh?.()
+
+      setRenamingUrl(null)
+      setNewFilename('')
+      setRenamingProductId(null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo renombrar la imagen.')
+    } finally {
+      setRenamingBusy(false)
+    }
+  }
+
+  const handleOptimize = async (productId: string, url: string) => {
+    setOptimizingUrl(url)
+    setError(null)
+    try {
+      const response = await fetch('/api/admin/media/optimize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productId,
+          url
+        })
+      })
+
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al optimizar la imagen')
+      }
+
+      // Refresh list
+      onRefresh?.()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo optimizar la imagen.')
+    } finally {
+      setOptimizingUrl(null)
+    }
+  }
+
+  // Restore EXIF state
+  const [restoringUrl, setRestoringUrl] = useState<string | null>(null)
+  const [restoringProductId, setRestoringProductId] = useState<string | null>(null)
+  const restoreExifInputRef = useRef<HTMLInputElement | null>(null)
+
+  const handleRestoreExifClick = (productId: string, url: string) => {
+    setRestoringProductId(productId)
+    setRestoringUrl(url)
+    restoreExifInputRef.current?.click()
+  }
+
+  const handleRestoreExifChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+
+    if (!file || !restoringUrl || !restoringProductId) {
+      setRestoringUrl(null)
+      setRestoringProductId(null)
+      return
+    }
+
+    // Use renamingBusy for loading state to avoid adding another state
+    setRenamingBusy(true)
+    setError(null)
+    try {
+      const formData = new FormData()
+      formData.append('productId', restoringProductId)
+      formData.append('targetUrl', restoringUrl)
+      formData.append('file', file)
+
+      const response = await fetch('/api/admin/media/restore-exif', {
+        method: 'POST',
+        body: formData
+      })
+
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al restaurar EXIF')
+      }
+
+      const meta = data.metadata
+      const metaString = meta ?
+        `EXIF Recuperado:\nDimensiones: ${meta.width}x${meta.height}\nFormato: ${meta.format}\nEXIF: ${meta.exif}` :
+        'EXIF Recuperado correctamente'
+
+      alert(metaString)
+
+      // Refresh list
+      onRefresh?.()
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo restaurar EXIF.')
+    } finally {
+      setRenamingBusy(false)
+      setRestoringUrl(null)
+      setRestoringProductId(null)
+    }
+  }
+
+  // ... existing effects ...
+
   return (
     <div className="space-y-5">
+      <div className="flex items-center gap-4 border-b border-neutral-200">
+        <button
+          onClick={() => setActiveTab('active')}
+          className={`px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] transition-colors ${activeTab === 'active'
+            ? 'border-b-2 border-neutral-900 text-neutral-900'
+            : 'text-neutral-400 hover:text-neutral-600'
+            }`}
+        >
+          Activos
+        </button>
+        <button
+          onClick={() => setActiveTab('archived')}
+          className={`px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] transition-colors ${activeTab === 'archived'
+            ? 'border-b-2 border-neutral-900 text-neutral-900'
+            : 'text-neutral-400 hover:text-neutral-600'
+            }`}
+        >
+          Archivados
+        </button>
+      </div>
+
+      <input
+        ref={restoreExifInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleRestoreExifChange}
+      />
       <input
         type="search"
         value={search}
@@ -386,11 +574,38 @@ export function ProductList({ products, onEdit, onDelete, onPriceUpdate, onToggl
                               className={`w-full px-4 py-3 text-left text-xs font-medium hover:bg-neutral-50 ${product.available ? 'text-neutral-600 hover:text-neutral-900' : 'text-green-600 hover:bg-green-50 hover:text-green-700'}`}
                               onClick={() => {
                                 setOpenMenuId(null)
-                                onToggleAvailability(product.id, product.available)
+                                if (product.metadata?.archived === true) {
+                                  // If archived, we can Restore to Draft or Publish
+                                  // This button will be "Publicar"
+                                  onArchiveStatusChange(product.id, false, true)
+                                } else {
+                                  // If not archived
+                                  if (product.available) {
+                                    // If published -> Archive
+                                    onArchiveStatusChange(product.id, true, false)
+                                  } else {
+                                    // If draft -> Publish
+                                    onToggleAvailability(product.id, product.available)
+                                  }
+                                }
                               }}
                             >
-                              {product.available ? 'Archivar' : 'Publicar'}
+                              {product.metadata?.archived === true ? 'Publicar' : (product.available ? 'Archivar' : 'Publicar')}
                             </button>
+                            {/* Add Desarchivar option only for archived products */}
+                            {product.metadata?.archived === true && (
+                              <button
+                                type="button"
+                                className="w-full px-4 py-3 text-left text-xs font-medium text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
+                                onClick={() => {
+                                  setOpenMenuId(null)
+                                  // Restore to draft: archived=false, available=false
+                                  onArchiveStatusChange(product.id, false, false)
+                                }}
+                              >
+                                Mover a Borradores
+                              </button>
+                            )}
                             <button
                               type="button"
                               className="w-full border-t border-neutral-100 px-4 py-3 text-left text-xs font-medium text-red-600 hover:bg-red-50"
@@ -437,16 +652,50 @@ export function ProductList({ products, onEdit, onDelete, onPriceUpdate, onToggl
                           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">Galería ({product.gallery?.length || 0})</p>
                           <div className="flex flex-wrap gap-3">
                             {product.gallery && product.gallery.length > 0 ? (
-                              product.gallery.map((url, idx) => (
-                                <div key={idx} className="relative h-20 w-20 overflow-hidden rounded-lg border border-neutral-200 bg-white">
-                                  <Image
-                                    src={getProductImageVariant(url, 'thumb') || url}
-                                    alt=""
-                                    fill
-                                    className="object-cover"
-                                  />
-                                </div>
-                              ))
+                              product.gallery.map((url, idx) => {
+                                const filename = url.split('/').pop() || 'imagen'
+                                return (
+                                  <div key={idx} className="flex flex-col gap-1 w-32 relative group/item z-0 hover:z-50">
+                                    <div className="relative h-32 w-full overflow-hidden rounded-lg border border-neutral-200 bg-white group transition-all duration-200 hover:scale-[3] hover:shadow-2xl hover:cursor-zoom-in origin-top-left">
+                                      <Image
+                                        src={getProductImageVariant(url, 'thumb') || url}
+                                        alt=""
+                                        fill
+                                        className="object-cover group-hover:object-contain group-hover:bg-white"
+                                      />
+                                      <button
+                                        onClick={() => openRenameModal(product.id, url)}
+                                        className="absolute right-1 top-1 hidden rounded-full bg-white/90 px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-neutral-600 shadow hover:text-neutral-900 group-hover:block"
+                                        title="Renombrar"
+                                      >
+                                        ✎
+                                      </button>
+                                      <div className="absolute left-1 top-1 flex flex-col gap-1">
+                                        {!url.toLowerCase().endsWith('.webp') && (
+                                          <button
+                                            onClick={() => handleOptimize(product.id, url)}
+                                            disabled={optimizingUrl === url}
+                                            className="hidden rounded-full bg-amber-100/90 px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-amber-700 shadow hover:text-amber-900 group-hover:block disabled:opacity-70 disabled:cursor-wait"
+                                            title="Optimizar a WebP"
+                                          >
+                                            {optimizingUrl === url ? '⏳' : '⚡'}
+                                          </button>
+                                        )}
+                                        <button
+                                          onClick={() => handleRestoreExifClick(product.id, url)}
+                                          className="hidden rounded-full bg-blue-100/90 px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-blue-700 shadow hover:text-blue-900 group-hover:block"
+                                          title="Restaurar EXIF"
+                                        >
+                                          📷
+                                        </button>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center justify-between px-1">
+                                      <span className="truncate text-[10px] text-neutral-500" title={filename}>{filename}</span>
+                                    </div>
+                                  </div>
+                                )
+                              })
                             ) : (
                               <span className="text-xs text-neutral-400 italic">Sin imágenes</span>
                             )}
@@ -528,6 +777,49 @@ export function ProductList({ products, onEdit, onDelete, onPriceUpdate, onToggl
           </div>
         </div>
       )}
+
+      {/* Rename Modal */}
+      {renamingUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-neutral-900">Renombrar imagen</h3>
+            <p className="mt-2 text-sm text-neutral-600">
+              Introduce el nuevo nombre para el archivo. Se mantendrán los tags y metadatos.
+            </p>
+
+            <div className="mt-4">
+              <input
+                type="text"
+                value={newFilename}
+                onChange={(e) => setNewFilename(e.target.value)}
+                className="w-full rounded-xl border border-neutral-200 px-4 py-3 text-sm focus:border-neutral-900 focus:outline-none"
+                placeholder="nombre-archivo.jpg"
+                autoFocus
+              />
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setRenamingUrl(null)
+                  setRenamingProductId(null)
+                }}
+                className="rounded-full px-4 py-2 text-sm font-medium text-neutral-500 hover:text-neutral-900"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleRenameSubmit}
+                disabled={!newFilename.trim() || renamingBusy}
+                className="rounded-full bg-neutral-900 px-6 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
+              >
+                {renamingBusy ? 'Renombrando...' : 'Renombrar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {taggingProduct && (
         <ProductTaggingGalleryModal
           productName={taggingProduct.name}

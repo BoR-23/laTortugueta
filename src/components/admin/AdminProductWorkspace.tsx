@@ -490,7 +490,46 @@ export function AdminProductWorkspace({
     const data = await response.json()
     const mapped = mapApiProductToFormValues(data)
     upsertProductInState(mapped)
-    setGlobalMessage(next ? 'Producto publicado.' : 'Producto archivado.')
+    setGlobalMessage(next ? 'Producto publicado.' : 'Producto despublicado.')
+  }
+
+  const handleArchiveStatusChange = async (productId: string, archived: boolean, available: boolean) => {
+    setGlobalError(null)
+
+    // Find current product to get existing metadata
+    const currentProduct = products.find(p => p.id === productId)
+    if (!currentProduct) return
+
+    const updatedMetadata = {
+      ...(currentProduct.metadata ?? {}),
+      archived
+    }
+
+    const response = await fetch(`/api/products/${productId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        available,
+        metadata: updatedMetadata
+      })
+    })
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => null)
+      throw new Error(error?.error ?? 'No se pudo actualizar el estado de archivo.')
+    }
+
+    const data = await response.json()
+    const mapped = mapApiProductToFormValues(data)
+    upsertProductInState(mapped)
+
+    if (archived) {
+      setGlobalMessage('Producto archivado.')
+    } else if (available) {
+      setGlobalMessage('Producto publicado.')
+    } else {
+      setGlobalMessage('Producto movido a borradores.')
+    }
   }
 
   const handleSaveDraft = async (values: AdminProductFormValues) => {
@@ -624,6 +663,7 @@ export function AdminProductWorkspace({
               onDelete={handleDelete}
               onPriceUpdate={handleInlinePriceUpdate}
               onToggleAvailability={handleToggleAvailability}
+              onArchiveStatusChange={handleArchiveStatusChange}
               onRefresh={handleRefresh}
             />
           </div>

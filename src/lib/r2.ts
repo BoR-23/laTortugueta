@@ -1,5 +1,5 @@
-export { CopyObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
-import { S3Client, PutObjectCommand, CopyObjectCommand, DeleteObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3'
+export { CopyObjectCommand, DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3'
+import { S3Client, PutObjectCommand, CopyObjectCommand, DeleteObjectCommand, ListObjectsV2Command, GetObjectCommand } from '@aws-sdk/client-s3'
 
 const accessKeyId = process.env.R2_ACCESS_KEY_ID ?? process.env.NEXT_PUBLIC_R2_ACCESS_KEY_ID
 const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY ?? process.env.NEXT_PUBLIC_R2_SECRET_ACCESS_KEY
@@ -73,4 +73,36 @@ export const deleteFromR2 = async (key: string) => {
       Key: key
     })
   )
+}
+
+export const copyR2Object = async (sourceKey: string, destinationKey: string) => {
+  if (!r2Client || !R2_BUCKET) {
+    throw new Error('R2 no está configurado correctamente.')
+  }
+
+  await r2Client.send(
+    new CopyObjectCommand({
+      Bucket: R2_BUCKET,
+      CopySource: `${R2_BUCKET}/${sourceKey}`,
+      Key: destinationKey
+    })
+  )
+}
+export const downloadFromR2 = async (key: string): Promise<Buffer> => {
+  if (!r2Client || !R2_BUCKET) {
+    throw new Error('R2 no está configurado correctamente.')
+  }
+
+  const response = await r2Client.send(
+    new GetObjectCommand({
+      Bucket: R2_BUCKET,
+      Key: key
+    })
+  )
+
+  if (!response.Body) {
+    throw new Error('No se pudo descargar el archivo.')
+  }
+
+  return Buffer.from(await response.Body.transformToByteArray())
 }

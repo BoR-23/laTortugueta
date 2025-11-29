@@ -23,8 +23,8 @@ export const compareByPriority = (a: Product, b: Product) => {
   return a.name.localeCompare(b.name, 'es')
 }
 
-export const sanitiseProductInput = (input: ProductMutationInput) => {
-  const output: ProductMutationInput = { ...input }
+export const sanitiseProductInput = (input: Partial<ProductMutationInput>) => {
+  const output: Partial<ProductMutationInput> = { ...input }
 
   if (input.id) output.id = input.id.trim()
   if (input.name) output.name = input.name.trim()
@@ -58,7 +58,7 @@ export const sanitiseProductInput = (input: ProductMutationInput) => {
   return output
 }
 
-export const supabasePayloadFromInput = (input: ProductMutationInput, withTimestamps = true) => {
+export const supabasePayloadFromInput = (input: Partial<ProductMutationInput>, withTimestamps = true) => {
   const now = new Date().toISOString()
   const payload: Record<string, unknown> = {}
 

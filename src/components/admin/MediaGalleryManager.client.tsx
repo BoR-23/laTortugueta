@@ -283,6 +283,208 @@ export function MediaGalleryManager(props: MediaGalleryManagerProps) {
 
   const [hoveredUrl, setHoveredUrl] = useState<string | null>(null)
 
+  const [renamingUrl, setRenamingUrl] = useState<string | null>(null)
+  const [newFilename, setNewFilename] = useState('')
+
+  const openRenameModal = (url: string) => {
+    const currentFilename = url.split('/').pop() || ''
+    setRenamingUrl(url)
+    setNewFilename(decodeURIComponent(currentFilename))
+  }
+
+  const handleRenameSubmit = async () => {
+    if (!renamingUrl || !newFilename.trim()) return
+
+    setBusy(true)
+    setError(null)
+    try {
+      const response = await fetch('/api/admin/media/rename', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productId,
+          oldUrl: renamingUrl,
+          newFilename: newFilename.trim()
+        })
+      })
+
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al renombrar la imagen')
+      }
+
+      // Update local state
+      const nextGallery = gallery.map(url => (url === renamingUrl ? data.newUrl : url))
+      const nextReview = { ...reviewMap }
+      if (nextReview[renamingUrl] !== undefined) {
+        nextReview[data.newUrl] = nextReview[renamingUrl]
+        delete nextReview[renamingUrl]
+      }
+      const nextPlaceholders = { ...placeholders }
+      if (nextPlaceholders[renamingUrl]) {
+        nextPlaceholders[data.newUrl] = nextPlaceholders[renamingUrl]
+        delete nextPlaceholders[renamingUrl]
+      }
+
+      setGallery(nextGallery)
+      setReviewMap(nextReview)
+      setPlaceholders(nextPlaceholders)
+      onGalleryChange(nextGallery)
+      onReviewChange?.(nextReview)
+      onPlaceholdersChange?.(nextPlaceholders)
+
+      setRenamingUrl(null)
+      setNewFilename('')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo renombrar la imagen.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const handleOptimize = async (url: string) => {
+    setBusy(true)
+    setError(null)
+    try {
+      const response = await fetch('/api/admin/media/optimize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productId,
+          url
+        })
+      })
+
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al optimizar la imagen')
+      }
+
+      // Update local state
+      const nextGallery = gallery.map(u => (u === url ? data.newUrl : u))
+      const nextReview = { ...reviewMap }
+      if (nextReview[url] !== undefined) {
+        nextReview[data.newUrl] = nextReview[url]
+        delete nextReview[url]
+      }
+      const nextPlaceholders = { ...placeholders }
+      if (data.placeholder) {
+        nextPlaceholders[data.newUrl] = data.placeholder
+      } else if (nextPlaceholders[url]) {
+        nextPlaceholders[data.newUrl] = nextPlaceholders[url]
+      }
+      delete nextPlaceholders[url]
+
+      setGallery(nextGallery)
+      setReviewMap(nextReview)
+      setPlaceholders(nextPlaceholders)
+      onGalleryChange(nextGallery)
+      onReviewChange?.(nextReview)
+      onPlaceholdersChange?.(nextPlaceholders)
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo optimizar la imagen.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const [restoringUrl, setRestoringUrl] = useState<string | null>(null)
+  const restoreExifInputRef = useRef<HTMLInputElement | null>(null)
+
+  const handleRestoreExifClick = (url: string) => {
+    setRestoringUrl(url)
+    restoreExifInputRef.current?.click()
+  }
+
+  const [dragOverUrl, setDragOverUrl] = useState<string | null>(null)
+
+  const processRestoreExif = async (file: File, targetUrl: string) => {
+    if (!productId) return
+
+    setBusy(true)
+    setError(null)
+    try {
+      const formData = new FormData()
+      formData.append('productId', productId)
+      formData.append('targetUrl', targetUrl)
+      formData.append('file', file)
+
+      const response = await fetch('/api/admin/media/restore-exif', {
+        method: 'POST',
+        body: formData
+      })
+
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al restaurar EXIF')
+      }
+
+      // Show success message with metadata
+      const meta = data.metadata
+      const metaString = meta ?
+        `EXIF Recuperado:\nDimensiones: ${meta.width}x${meta.height}\nFormato: ${meta.format}\nEXIF: ${meta.exif}` :
+        'EXIF Recuperado correctamente'
+
+      alert(metaString)
+
+      // Force refresh of the image by updating the gallery state with a timestamp query param?
+      // Or just rely on browser cache invalidation if the ETag changes?
+      // R2 might cache.
+      // Let's try to force a re-render of the image component by updating a "version" state if needed.
+      // For now, simple alert is what was requested.
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo restaurar EXIF.')
+    } finally {
+      setBusy(false)
+      setRestoringUrl(null)
+      setDragOverUrl(null)
+    }
+  }
+
+  const handleRestoreExifChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+
+    if (!file || !restoringUrl) {
+      setRestoringUrl(null)
+      return
+    }
+    await processRestoreExif(file, restoringUrl)
+  }
+
+  // Simplified drag handlers - only for image thumbnails
+  const handleImageDragOver = (e: React.DragEvent, url: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (isDisabled || busy) {
+      e.dataTransfer.dropEffect = 'none'
+      return
+    }
+    e.dataTransfer.dropEffect = 'copy'
+    setDragOverUrl(url)
+  }
+
+  const handleImageDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragOverUrl(null)
+  }
+
+  const handleImageDrop = (e: React.DragEvent, url: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragOverUrl(null)
+
+    if (isDisabled || busy) return
+
+    const file = e.dataTransfer.files?.[0]
+    if (file && file.type.startsWith('image/')) {
+      void processRestoreExif(file, url)
+    }
+  }
+
   return (
     <div
       className={`rounded-3xl border border-neutral-200 bg-white p-6 transition ${isDragging ? 'border-neutral-900 bg-neutral-50' : ''
@@ -305,6 +507,14 @@ export function MediaGalleryManager(props: MediaGalleryManagerProps) {
         accept="image/*"
         className="hidden"
         onChange={handleReplaceChange}
+        disabled={busy}
+      />
+      <input
+        ref={restoreExifInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleRestoreExifChange}
         disabled={busy}
       />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -336,85 +546,147 @@ export function MediaGalleryManager(props: MediaGalleryManagerProps) {
         {gallery.map((url, index) => {
           const displayUrl = getProductImageVariant(url, 'original') || url
           const previewPlaceholder = placeholders[url]
+          const filename = url.split('/').pop() || 'imagen'
+
           return (
             <div
               key={`${url}-${index}`}
-              className="flex items-center gap-4 rounded-2xl border border-neutral-100 bg-neutral-50 p-3"
+              className="relative flex items-center gap-4 rounded-2xl border border-neutral-100 bg-neutral-50 p-3 transition-colors"
               onMouseEnter={() => setHoveredUrl(displayUrl)}
               onMouseLeave={() => setHoveredUrl(null)}
             >
-              <div className="relative h-20 w-16 overflow-hidden rounded-xl bg-white">
-                {url ? (
-                  <Image
-                    src={displayUrl}
-                    alt={productId}
-                    fill
-                    className="object-cover"
-                    sizes="64px"
-                    placeholder={previewPlaceholder ? 'blur' : 'empty'}
-                    blurDataURL={previewPlaceholder}
-                  />
-                ) : (
-                  <div className="flex h-full items-center justify-center text-xs text-neutral-400">Sin imagen</div>
-                )}
+              {/* Image thumbnail with drop zone indicator */}
+              <div className="flex flex-col items-center gap-1">
+                {/* Camera icon - indicates this is a drop zone */}
                 {!isDisabled && (
-                  <button
-                    type="button"
-                    onClick={() => openReplacePicker(index)}
-                    disabled={busy || replacingIndex === index}
-                    className="absolute right-1 top-1 rounded-full bg-white/90 px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-neutral-600 shadow hover:text-neutral-900 disabled:opacity-50"
-                  >
-                    {replacingIndex === index ? '…' : '✎'}
-                  </button>
+                  <div className="flex items-center gap-1 bg-blue-500 text-white px-2 py-0.5 rounded-full text-[9px] font-bold">
+                    📷 EXIF
+                  </div>
                 )}
+
+                {/* DROP ZONE for EXIF restoration */}
+                <div
+                  className={`relative h-20 w-16 overflow-hidden rounded-xl transition-all ${dragOverUrl === url
+                      ? 'ring-4 ring-blue-500 ring-offset-2 scale-105'
+                      : 'bg-white'
+                    }`}
+                  onDragOver={(e) => handleImageDragOver(e, url)}
+                  onDragLeave={handleImageDragLeave}
+                  onDrop={(e) => handleImageDrop(e, url)}
+                  title="Arrastra aquí la foto original para restaurar EXIF"
+                >
+                  {dragOverUrl === url && (
+                    <div className="pointer-events-none absolute inset-0 z-50 flex items-center justify-center bg-blue-500/90">
+                      <p className="text-[8px] font-bold text-white text-center px-1">SOLTAR AQUÍ</p>
+                    </div>
+                  )}
+                  {url ? (
+                    <Image
+                      src={displayUrl}
+                      alt={productId}
+                      fill
+                      className="object-cover"
+                      sizes="64px"
+                      placeholder={previewPlaceholder ? 'blur' : 'empty'}
+                      blurDataURL={previewPlaceholder}
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-xs text-neutral-400">Sin imagen</div>
+                  )}
+
+                  {!isDisabled && (
+                    <button
+                      type="button"
+                      onClick={() => openReplacePicker(index)}
+                      disabled={busy || replacingIndex === index}
+                      className="absolute right-1 top-1 rounded-full bg-white/90 px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-neutral-600 shadow hover:text-neutral-900 disabled:opacity-50"
+                    >
+                      {replacingIndex === index ? '…' : '✎'}
+                    </button>
+                  )}
+                </div>
               </div>
-              <div className="flex-1 break-all text-xs text-neutral-600">{url}</div>
+              <div className="flex-1 min-w-0">
+                <div className="break-all text-xs text-neutral-600 font-medium">{filename}</div>
+                <div className="break-all text-[10px] text-neutral-400 mt-0.5">{url}</div>
+              </div>
               {!isDisabled && (
                 <div className="flex flex-col gap-2 text-[10px] uppercase tracking-[0.2em] text-neutral-500">
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleSetFeatured(index)}
+                      className="flex-1 rounded-full border border-neutral-300 px-3 py-1 hover:border-neutral-900 hover:text-neutral-900"
+                    >
+                      Destacar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => openRenameModal(url)}
+                      className="flex-1 rounded-full border border-neutral-300 px-3 py-1 hover:border-neutral-900 hover:text-neutral-900"
+                    >
+                      Renombrar
+                    </button>
+                  </div>
+                  {!url.toLowerCase().endsWith('.webp') && (
+                    <button
+                      type="button"
+                      onClick={() => handleOptimize(url)}
+                      disabled={busy}
+                      className="w-full rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-amber-700 hover:border-amber-500 hover:text-amber-900 disabled:opacity-50"
+                    >
+                      {busy ? 'Convirtiendo...' : '⚡ Optimizar a WebP'}
+                    </button>
+                  )}
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setTaggingUrl(url)}
+                      className="flex-1 rounded-full border border-neutral-300 px-3 py-1 hover:border-neutral-900 hover:text-neutral-900"
+                    >
+                      Etiquetar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => openMoveModal(url)}
+                      className="flex-1 rounded-full border border-neutral-300 px-3 py-1 hover:border-neutral-900 hover:text-neutral-900"
+                    >
+                      Mover
+                    </button>
+                  </div>
+                  <div className="flex gap-2">
+                    <a
+                      href={displayUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      download
+                      className="flex-1 rounded-full border border-neutral-300 px-3 py-1 text-center hover:border-neutral-900 hover:text-neutral-900"
+                    >
+                      Descargar
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => handleToggleReview(url)}
+                      className={`flex-1 rounded-full border px-3 py-1 ${reviewMap[url]
+                        ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                        : 'border-neutral-300 text-neutral-600 hover:border-neutral-900 hover:text-neutral-900'
+                        }`}
+                    >
+                      {reviewMap[url] ? 'Revisado' : 'Revisar'}
+                    </button>
+                  </div>
                   <button
                     type="button"
-                    onClick={() => handleSetFeatured(index)}
-                    className="rounded-full border border-neutral-300 px-3 py-1 hover:border-neutral-900 hover:text-neutral-900"
+                    onClick={() => handleRestoreExifClick(url)}
+                    className="w-full rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-blue-700 hover:border-blue-500 hover:text-blue-900"
+                    title="Subir original para restaurar EXIF"
                   >
-                    Destacar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setTaggingUrl(url)}
-                    className="rounded-full border border-neutral-300 px-3 py-1 hover:border-neutral-900 hover:text-neutral-900"
-                  >
-                    Etiquetar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => openMoveModal(url)}
-                    className="rounded-full border border-neutral-300 px-3 py-1 hover:border-neutral-900 hover:text-neutral-900"
-                  >
-                    Mover a...
-                  </button>
-                  <a
-                    href={displayUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    download
-                    className="rounded-full border border-neutral-300 px-3 py-1 text-center hover:border-neutral-900 hover:text-neutral-900"
-                  >
-                    Descargar
-                  </a>
-                  <button
-                    type="button"
-                    onClick={() => handleToggleReview(url)}
-                    className={`rounded-full border px-3 py-1 ${reviewMap[url]
-                      ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                      : 'border-neutral-300 text-neutral-600 hover:border-neutral-900 hover:text-neutral-900'
-                      }`}
-                  >
-                    {reviewMap[url] ? 'Revisado' : 'Marcar revisado'}
+                    📷 Restaurar EXIF
                   </button>
                   <button
                     type="button"
                     onClick={() => handleRemove(url)}
-                    className="rounded-full border border-red-200 px-3 py-1 text-red-500 hover:border-red-500"
+                    className="w-full rounded-full border border-red-200 px-3 py-1 text-red-500 hover:border-red-500"
                   >
                     Eliminar
                   </button>
@@ -434,6 +706,7 @@ export function MediaGalleryManager(props: MediaGalleryManagerProps) {
               alt="Vista previa"
               fill
               className="object-cover"
+              sizes="400px"
               priority
             />
           </div>
@@ -449,6 +722,7 @@ export function MediaGalleryManager(props: MediaGalleryManagerProps) {
             alt="preload"
             width={400}
             height={500}
+            sizes="400px"
             priority
           />
         ))}
@@ -503,6 +777,46 @@ export function MediaGalleryManager(props: MediaGalleryManagerProps) {
           </div>
         </div>
       )}
+
+      {/* Rename Modal */}
+      {renamingUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-neutral-900">Renombrar imagen</h3>
+            <p className="mt-2 text-sm text-neutral-600">
+              Introduce el nuevo nombre para el archivo. Se mantendrán los tags y metadatos.
+            </p>
+
+            <div className="mt-4">
+              <input
+                type="text"
+                value={newFilename}
+                onChange={(e) => setNewFilename(e.target.value)}
+                className="w-full rounded-xl border border-neutral-200 px-4 py-3 text-sm focus:border-neutral-900 focus:outline-none"
+                placeholder="nombre-archivo.jpg"
+                autoFocus
+              />
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setRenamingUrl(null)}
+                className="rounded-full px-4 py-2 text-sm font-medium text-neutral-500 hover:text-neutral-900"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleRenameSubmit}
+                disabled={!newFilename.trim() || busy}
+                className="rounded-full bg-neutral-900 px-6 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
+              >
+                {busy ? 'Renombrando...' : 'Renombrar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {taggingUrl && (
         <ImageTaggingModal
           url={taggingUrl}

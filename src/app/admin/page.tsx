@@ -96,6 +96,12 @@ export default async function AdminPricingPage() {
           >
             Estadísticas
           </Link>
+          <Link
+            href="/admin/sales"
+            className="rounded-full border border-neutral-900 px-4 py-2 text-neutral-900 transition hover:bg-neutral-900 hover:text-white"
+          >
+            Ventas
+          </Link>
         </div>
       </div>
 
