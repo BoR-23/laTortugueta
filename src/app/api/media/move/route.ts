@@ -46,11 +46,25 @@ export async function POST(request: NextRequest) {
 
         const sanitizedTargetName = targetProduct.name
             .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
             .replace(/[^a-z0-9]+/g, '-')
             .replace(/^-+|-+$/g, '')
 
-        const timestamp = Date.now()
-        const newFileName = `${targetProductId}-${timestamp}-${sanitizedTargetName}.webp`
+        // Try to extract sequence number/suffix from oldFileName (e.g. _001, -1, etc)
+        // Matches _001 or -001 at the end of the name part
+        const suffixMatch = oldFileName.match(/([_-]\d+)(?=\.\w+$)/)
+        const suffix = suffixMatch ? suffixMatch[1] : ''
+
+        let newFileName: string
+        if (suffix) {
+            newFileName = `${sanitizedTargetName}${suffix}.webp`
+        } else {
+            // Fallback to timestamp if no sequence found to avoid collisions
+            const timestamp = Date.now()
+            newFileName = `${sanitizedTargetName}-${timestamp}.webp`
+        }
+
         const newPath = `images/products/${newFileName}`
 
         // 4. Move files in R2

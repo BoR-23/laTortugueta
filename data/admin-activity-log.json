@@ -375,5 +375,253 @@
       "name": ""
     },
     "timestamp": "2025-11-28T17:19:16.913Z"
+  },
+  {
+    "action": "product.update",
+    "entity": "product",
+    "productId": "al-patro",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "metadata": {
+      "changedFields": [
+        "available",
+        "metadata"
+      ],
+      "name": "Al Patro"
+    },
+    "timestamp": "2025-11-30T16:54:39.651Z"
+  },
+  {
+    "action": "product.update",
+    "entity": "product",
+    "productId": "onil",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "metadata": {
+      "changedFields": [
+        "available",
+        "metadata"
+      ],
+      "name": "Onil"
+    },
+    "timestamp": "2025-11-30T16:55:20.516Z"
+  },
+  {
+    "action": "product.update",
+    "entity": "product",
+    "productId": "colomet",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "metadata": {
+      "changedFields": [
+        "available",
+        "metadata"
+      ],
+      "name": "Colomet"
+    },
+    "timestamp": "2025-11-30T16:55:33.185Z"
+  },
+  {
+    "action": "product.update",
+    "entity": "product",
+    "productId": "gerani",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "metadata": {
+      "changedFields": [
+        "available",
+        "metadata"
+      ],
+      "name": "Gerani"
+    },
+    "timestamp": "2025-11-30T16:55:49.330Z"
+  },
+  {
+    "action": "product.update",
+    "entity": "product",
+    "productId": "horta-d-alacant",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "metadata": {
+      "changedFields": [
+        "available",
+        "metadata"
+      ],
+      "name": "Horta D'alacant"
+    },
+    "timestamp": "2025-11-30T16:55:54.048Z"
+  },
+  {
+    "action": "product.update",
+    "entity": "product",
+    "productId": "la-murada",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "metadata": {
+      "changedFields": [
+        "available",
+        "metadata"
+      ],
+      "name": "La Murada"
+    },
+    "timestamp": "2025-11-30T16:56:06.066Z"
+  },
+  {
+    "action": "product.update",
+    "entity": "product",
+    "productId": "onda",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "metadata": {
+      "changedFields": [
+        "available",
+        "metadata"
+      ],
+      "name": "Onda"
+    },
+    "timestamp": "2025-11-30T16:56:17.522Z"
+  },
+  {
+    "action": "product.update",
+    "entity": "product",
+    "productId": "raim",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "metadata": {
+      "changedFields": [
+        "available",
+        "metadata"
+      ],
+      "name": "Raim"
+    },
+    "timestamp": "2025-11-30T16:56:23.279Z"
+  },
+  {
+    "action": "product.update",
+    "entity": "product",
+    "productId": "lorxa",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "metadata": {
+      "changedFields": [
+        "available",
+        "metadata"
+      ],
+      "name": "Lorxa"
+    },
+    "timestamp": "2025-11-30T16:56:36.619Z"
+  },
+  {
+    "action": "product.update",
+    "entity": "product",
+    "productId": "montduber",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "metadata": {
+      "changedFields": [
+        "available",
+        "metadata"
+      ],
+      "name": "Montduber"
+    },
+    "timestamp": "2025-11-30T16:56:50.442Z"
+  },
+  {
+    "action": "product.update",
+    "entity": "product",
+    "productId": "rosa",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "metadata": {
+      "changedFields": [
+        "available",
+        "metadata"
+      ],
+      "name": "Rosa"
+    },
+    "timestamp": "2025-11-30T16:57:04.736Z"
+  },
+  {
+    "action": "product.update",
+    "entity": "product",
+    "productId": "tarongina",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "metadata": {
+      "changedFields": [
+        "available",
+        "metadata"
+      ],
+      "name": "Tarongina"
+    },
+    "timestamp": "2025-11-30T16:57:16.458Z"
+  },
+  {
+    "action": "product.delete",
+    "entity": "product",
+    "productId": "brodats-en-teler",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "timestamp": "2025-11-30T16:58:45.492Z"
+  },
+  {
+    "action": "product.update",
+    "entity": "product",
+    "productId": "sant-maure",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "metadata": {
+      "changedFields": [
+        "available",
+        "metadata"
+      ],
+      "name": "Sant Maure"
+    },
+    "timestamp": "2025-11-30T16:59:09.219Z"
+  },
+  {
+    "action": "product.update",
+    "entity": "product",
+    "productId": "salze",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "metadata": {
+      "changedFields": [
+        "available",
+        "metadata"
+      ],
+      "name": "Salze"
+    },
+    "timestamp": "2025-11-30T16:59:23.880Z"
   }
 ]

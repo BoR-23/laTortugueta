@@ -592,6 +592,34 @@ export function ProductList({ products, onEdit, onDelete, onPriceUpdate, onToggl
                             >
                               {product.metadata?.archived === true ? 'Publicar' : (product.available ? 'Archivar' : 'Publicar')}
                             </button>
+
+                            {/* Allow Archiving Drafts */}
+                            {!product.metadata?.archived && !product.available && (
+                              <button
+                                type="button"
+                                className="w-full px-4 py-3 text-left text-xs font-medium text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
+                                onClick={() => {
+                                  setOpenMenuId(null)
+                                  onArchiveStatusChange(product.id, true, false)
+                                }}
+                              >
+                                Archivar
+                              </button>
+                            )}
+
+                            {/* Allow Archiving Drafts */}
+                            {!product.metadata?.archived && !product.available && (
+                              <button
+                                type="button"
+                                className="w-full px-4 py-3 text-left text-xs font-medium text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
+                                onClick={() => {
+                                  setOpenMenuId(null)
+                                  onArchiveStatusChange(product.id, true, false)
+                                }}
+                              >
+                                Archivar
+                              </button>
+                            )}
                             {/* Add Desarchivar option only for archived products */}
                             {product.metadata?.archived === true && (
                               <button
