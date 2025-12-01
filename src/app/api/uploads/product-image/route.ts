@@ -47,11 +47,21 @@ export async function POST(request: Request) {
 
     const pipeline = sharp(buffer).rotate().withMetadata()
 
-    const baseBuffer: Buffer = await pipeline
-      .clone()
-      .resize({ width: MAX_BASE_WIDTH, withoutEnlargement: true })
-      .webp({ quality: 82 })
-      .toBuffer()
+    let baseBuffer: Buffer
+    if (productId === 'site-settings') {
+      // Force 1200x630 for OG Image
+      baseBuffer = await pipeline
+        .clone()
+        .resize({ width: 1200, height: 630, fit: 'cover' })
+        .webp({ quality: 82 })
+        .toBuffer()
+    } else {
+      baseBuffer = await pipeline
+        .clone()
+        .resize({ width: MAX_BASE_WIDTH, withoutEnlargement: true })
+        .webp({ quality: 82 })
+        .toBuffer()
+    }
 
     const baseKey = `images/products/${relativeName}`
     await uploadToR2(baseBuffer, baseKey, 'image/webp')

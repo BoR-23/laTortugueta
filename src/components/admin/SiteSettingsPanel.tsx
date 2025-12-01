@@ -4,6 +4,7 @@ import { useRef, useState } from 'react'
 import Image from 'next/image'
 import type { SiteSettings } from '@/lib/settings'
 import { uploadProductImage } from '@/lib/client/uploadProductImage'
+import { getProductImageVariant } from '@/lib/images'
 
 interface SiteSettingsPanelProps {
   initialSettings: SiteSettings
@@ -178,7 +179,7 @@ export function SiteSettingsPanel({ initialSettings, onChange }: SiteSettingsPan
                 <div className="relative h-32 w-56 overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50">
                   {settings.seo_og_image ? (
                     <Image
-                      src={settings.seo_og_image}
+                      src={getProductImageVariant(settings.seo_og_image, 'medium')}
                       alt="OG Image"
                       fill
                       className="object-cover"
@@ -210,6 +211,45 @@ export function SiteSettingsPanel({ initialSettings, onChange }: SiteSettingsPan
                 </div>
               </div>
             </div>
+
+            {/* Google Snippet Preview */}
+            <div className="mt-4 rounded-xl border border-neutral-200 bg-white p-4">
+              <h4 className="mb-3 text-[10px] font-bold uppercase tracking-wider text-neutral-400">Vista Previa en Google</h4>
+              <div className="max-w-[600px] font-sans">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-100 p-1">
+                    {/* Use standard img for reliability in admin panel */}
+                    <img
+                      src="/apple-touch-icon.png"
+                      alt="Favicon"
+                      className="h-4 w-4 rounded-full object-cover"
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm text-[#202124]">La Tortugueta</span>
+                    <span className="text-xs text-[#5f6368]">https://www.latortugueta.com</span>
+                  </div>
+                </div>
+                <h3 className="text-xl text-[#1a0dab] hover:underline cursor-pointer truncate">
+                  {settings.seo_title || 'La Tortugueta — Taller de calcetines a medida y bordados tradicionales'}
+                </h3>
+                <div className="mt-1 flex gap-2 text-sm text-[#4d5156]">
+                  {settings.seo_og_image && (
+                    <div className="relative h-[90px] w-[90px] flex-shrink-0 overflow-hidden rounded-lg border border-neutral-100">
+                      <Image
+                        src={getProductImageVariant(settings.seo_og_image, 'thumb')}
+                        alt="Preview"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  )}
+                  <p className="line-clamp-4">
+                    {settings.seo_description || 'Taller familiar en Alcoi que reproduce calcetines tradicionales históricos y atiende encargos artesanales a medida. Más de 300 diseños documentados...'}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -233,6 +273,6 @@ export function SiteSettingsPanel({ initialSettings, onChange }: SiteSettingsPan
           </label>
         ))}
       </div>
-    </section>
+    </section >
   )
 }
