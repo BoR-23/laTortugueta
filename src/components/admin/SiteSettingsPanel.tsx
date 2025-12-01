@@ -220,7 +220,7 @@ export function SiteSettingsPanel({ initialSettings, onChange }: SiteSettingsPan
                   <div className="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-100 p-1">
                     {/* Use standard img for reliability in admin panel */}
                     <img
-                      src="/apple-touch-icon.png"
+                      src="/favicon.svg"
                       alt="Favicon"
                       className="h-4 w-4 rounded-full object-cover"
                     />
