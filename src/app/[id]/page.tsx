@@ -31,12 +31,18 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const { id } = await params
   try {
     const product = await getProductData(id)
-    const title = product.name
+
+    // SEO: Título específico para producto
+    const title = `${product.name} | Calcetines Tradicionales`
+
+    // SEO: Descripción automática inteligente
     const description =
-      product.description?.slice(0, 140) ||
-      `Calcetines artesanales ${product.category ?? ''} – ${product.name}.`
+      product.description?.slice(0, 160) ||
+      `Compra online calcetines tradicionales modelo ${product.name}. Calcetines bordados de alta calidad para indumentaria valenciana y trajes de fallera.`
+
     const url = absoluteUrl(`/${product.id}`)
     const image = getPrimaryProductImage(product)
+
     return {
       title,
       description,
@@ -52,7 +58,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
           ? [
             {
               url: image,
-              alt: product.name
+              alt: `Calcetines valencianos modelo ${product.name}`
             }
           ]
           : undefined
@@ -66,8 +72,8 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     }
   } catch {
     return {
-      title: 'Calcetín no encontrado · La Tortugueta',
-      description: 'El producto solicitado no está disponible.'
+      title: 'Calcetín no encontrado',
+      description: 'El producto solicitado no está disponible en nuestro catálogo.'
     }
   }
 }
@@ -89,8 +95,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     ]
     const breadcrumbs = [
       { label: 'Inicio', href: '/' },
-      { label: 'Catálogo', href: '/#colecciones' },
-      { label: product.type?.split(' ')[0] || 'Productos', href: '/#colecciones' },
+      { label: 'Catálogo', href: '/#catalogo' }, // Corregido hash para scroll
       { label: product.name, current: true }
     ]
     return (

@@ -3,10 +3,15 @@ import type { BlogPost } from '@/lib/blog'
 import { getProductImageVariant } from '@/lib/images'
 import { INSTAGRAM_URL } from '@/lib/contact'
 
-const SITE_NAME = 'La Tortugueta — Taller de calcetines a medida y bordados tradicionales'
+// --- CAMBIOS CLAVE AQUÍ ---
+// 1. Título con keywords principales (se repetirá en todas las pestañas)
+const SITE_NAME = 'La Tortugueta · Calcetines Tradicionales'
+// 2. Descripción precisa: solo calcetines, nada de trajes completos
 const SITE_DESCRIPTION =
-  'Taller familiar en Alcoi que reproduce calcetines tradicionales históricos y atiende encargos artesanales a medida. Más de 300 diseños documentados, envíos a toda España.'
+  'Taller artesanal de calcetines tradicionales y reproducción de modelos históricos en Alcoi. Especialistas en calcetines bordados para indumentaria valenciana y de fallera.'
 const SITE_TAGLINE = 'Calcetines artesanales bordados en Alcoi desde 1989.'
+// --------------------------
+
 const SITE_LOCALE = 'es_ES'
 const DEFAULT_SOCIAL_PROFILES = [INSTAGRAM_URL.replace(/\/$/, '')]
 
@@ -18,13 +23,15 @@ export const siteMetadata = {
   shortDescription: SITE_TAGLINE,
   locale: SITE_LOCALE,
   keywords: [
-    'calcetines artesanales',
+    'calcetines tradicionales',
+    'calcetines valencianos',
+    'calcetines de fallera',
+    'calcetines fallero',
     'calcetines bordados',
-    'calcetines personalizados',
-    'indumentaria tradicional',
-    'calcetería valenciana',
+    'indumentaria valenciana',
+    'reproducción histórica',
     'La Tortugueta',
-    'taller de calcetines en Alcoi'
+    'taller Alcoi'
   ]
 }
 
@@ -96,7 +103,7 @@ export const getPrimaryProductImage = (product: Product) => {
 export const buildOrganizationJsonLd = () => ({
   '@context': 'https://schema.org',
   '@type': 'Organization',
-  name: SITE_NAME,
+  name: 'La Tortugueta', // Dejamos la marca limpia aquí
   url: getSiteUrl(),
   logo: absoluteUrl('/icon.png'),
   image: absoluteUrl('/og-image.png'),
@@ -113,7 +120,7 @@ export const buildWebsiteJsonLd = () => ({
 export const buildCatalogJsonLd = (totalItems: number) => ({
   '@context': 'https://schema.org',
   '@type': 'CollectionPage',
-  name: `${SITE_NAME} · Catálogo`,
+  name: `Catálogo de Calcetines · ${SITE_NAME}`,
   description: SITE_DESCRIPTION,
   url: absoluteUrl('/'),
   numberOfItems: totalItems
@@ -154,11 +161,15 @@ export const buildProductJsonLd = (product: Product) => {
     images.push(defaultOpenGraphImage)
   }
 
+  // Generar descripción optimizada para el Schema si falta
+  const schemaDescription = product.description ||
+    `Calcetines tradicionales ${product.name}. Calcetines bordados ideales para indumentaria valenciana y de fallera.`
+
   return {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.name,
-    description: product.description || SITE_DESCRIPTION,
+    description: schemaDescription,
     image: images,
     sku: product.id,
     category: product.category ?? undefined,
@@ -166,7 +177,7 @@ export const buildProductJsonLd = (product: Product) => {
     material: product.material || undefined,
     brand: {
       '@type': 'Brand',
-      name: SITE_NAME
+      name: 'La Tortugueta'
     },
     offers: {
       '@type': 'Offer',

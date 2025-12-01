@@ -33,7 +33,8 @@ const buildCategoryNameMap = (records: Awaited<ReturnType<typeof getCategories>>
 }
 
 export const metadata: Metadata = {
-  title: 'Catálogo',
+  // CAMBIO SEO: Título más descriptivo en lugar de solo "Catálogo"
+  title: 'Catálogo de Calcetines Tradicionales',
   description: siteMetadata.description,
   alternates: {
     canonical: '/',
@@ -44,14 +45,14 @@ export const metadata: Metadata = {
     }
   },
   openGraph: {
-    title: `${siteMetadata.name} · Catálogo`,
+    title: `Catálogo · ${siteMetadata.name}`,
     description: siteMetadata.description,
     url: absoluteUrl('/'),
     type: 'website'
   },
   twitter: {
     card: 'summary_large_image',
-    title: `${siteMetadata.name} · Catálogo`,
+    title: `Catálogo · ${siteMetadata.name}`,
     description: siteMetadata.description
   }
 }
@@ -67,12 +68,7 @@ export default async function Home() {
   const siteSettings = await getSiteSettings()
   const slides = await getHeroSlides()
 
-  const headerNameMap = buildCategoryNameMap(headerCategories)
-  const filterNameMap = buildCategoryNameMap(filterCategories)
-
-  // Removed automatic tag-to-category enrichment - categories managed via product.type only
   const visibleProducts = catalogProducts.filter(product => product.price > 0)
-
 
   const catalogJsonLd = buildCatalogJsonLd(visibleProducts.length)
   const enableTestimonials =
