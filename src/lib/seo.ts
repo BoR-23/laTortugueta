@@ -98,7 +98,8 @@ export const buildOrganizationJsonLd = () => ({
   '@type': 'Organization',
   name: SITE_NAME,
   url: getSiteUrl(),
-  logo: absoluteUrl('/favicon.svg'),
+  logo: absoluteUrl('/icon.png'),
+  image: absoluteUrl('/og-image.png'),
   sameAs: DEFAULT_SOCIAL_PROFILES
 })
 

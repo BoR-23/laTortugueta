@@ -48,16 +48,6 @@ export const metadata: Metadata = {
     description: siteMetadata.description,
     images: [defaultOpenGraphImage]
   },
-  icons: {
-    icon: [
-      { url: `${process.env.NEXT_PUBLIC_R2_PUBLIC_URL}/favicons/favicon-16x16.png`, sizes: '16x16', type: 'image/png' },
-      { url: `${process.env.NEXT_PUBLIC_R2_PUBLIC_URL}/favicons/favicon-32x32.png`, sizes: '32x32', type: 'image/png' },
-      { url: `${process.env.NEXT_PUBLIC_R2_PUBLIC_URL}/favicons/favicon.ico`, sizes: 'any' }
-    ],
-    apple: [
-      { url: `${process.env.NEXT_PUBLIC_R2_PUBLIC_URL}/favicons/apple-touch-icon.png`, sizes: '180x180', type: 'image/png' }
-    ]
-  },
 
 }
 
