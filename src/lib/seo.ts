@@ -5,12 +5,15 @@ import { INSTAGRAM_URL } from '@/lib/contact'
 
 // --- CAMBIOS CLAVE AQUÍ ---
 // 1. Título con keywords principales (se repetirá en todas las pestañas)
+// --- CAMBIOS AQUÍ ---
 const SITE_NAME = 'La Tortugueta · Calcetines Tradicionales'
-// 2. Descripción precisa: solo calcetines, nada de trajes completos
+
+// Descripción ajustada: Prioridad a "para fallera/o" y añadimos folklore/regionales al final
 const SITE_DESCRIPTION =
-  'Taller artesanal de calcetines tradicionales y reproducción de modelos históricos en Alcoi. Especialistas en calcetines bordados para indumentaria valenciana y de fallera.'
+  'Taller artesanal de calcetines tradicionales en Alcoi. Especialistas en calcetines para fallera, fallero e indumentaria valenciana. También realizamos calcetines para folklore, regionales y per a grups de danses.'
+
 const SITE_TAGLINE = 'Calcetines artesanales bordados en Alcoi desde 1989.'
-// --------------------------
+// --------------------
 
 const SITE_LOCALE = 'es_ES'
 const DEFAULT_SOCIAL_PROFILES = [INSTAGRAM_URL.replace(/\/$/, '')]
@@ -23,12 +26,20 @@ export const siteMetadata = {
   shortDescription: SITE_TAGLINE,
   locale: SITE_LOCALE,
   keywords: [
+    // Principales (Alta prioridad)
     'calcetines tradicionales',
     'calcetines valencianos',
-    'calcetines de fallera',
-    'calcetines fallero',
-    'calcetines bordados',
+    'calcetines para fallera',  // Frase exacta solicitada
+    'calcetines para fallero',  // Frase exacta solicitada
+    'calcetines de fallera',    // Variación común
     'indumentaria valenciana',
+
+    // Secundarias (Nuevas añadidas)
+    'calcetines para folklore',
+    'calcetines regionales',
+    'calcetines per a grups de danses',
+
+    // Marca y Ubicación
     'reproducción histórica',
     'La Tortugueta',
     'taller Alcoi'

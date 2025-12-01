@@ -30,6 +30,7 @@ if (supabaseUrl) {
 }
 
 const nextConfig = {
+  productionBrowserSourceMaps: true,
   images: {
     remotePatterns,
     formats: ['image/avif', 'image/webp'],

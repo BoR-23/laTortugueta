@@ -23,7 +23,7 @@ export function LayoutShell({ children }: LayoutShellProps) {
               fontFamily: "'Helvetica Neue', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
               fontWeight: 600
             }}
-            aria-label="Ir al inicio"
+            aria-label="Ir al inicio - La Tortugueta"
           >
             La Tortugueta
           </Link>
