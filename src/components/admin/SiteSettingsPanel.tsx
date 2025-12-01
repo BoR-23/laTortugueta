@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import Image from 'next/image'
 import type { SiteSettings } from '@/lib/settings'
 import { uploadProductImage } from '@/lib/client/uploadProductImage'
@@ -44,7 +44,27 @@ export function SiteSettingsPanel({ initialSettings, onChange }: SiteSettingsPan
   const [savingKey, setSavingKey] = useState<keyof SiteSettings | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
+  const [faviconUrl, setFaviconUrl] = useState<string>('/favicon.ico')
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    const fetchFavicon = async () => {
+      try {
+        const res = await fetch('/api/favicons/list')
+        if (res.ok) {
+          const data = await res.json()
+          if (data.files && data.files.length > 0) {
+            // Buscamos preferiblemente el icono de 192px o usamos el primero que encuentre
+            const bestIcon = data.files.find((f: any) => f.name.includes('192')) || data.files[0]
+            if (bestIcon) setFaviconUrl(bestIcon.url)
+          }
+        }
+      } catch (e) {
+        console.error('No se pudo cargar el favicon para la previsualización', e)
+      }
+    }
+    fetchFavicon()
+  }, [])
 
   const handleTextChange = async (key: keyof SiteSettings, value: string) => {
     setSettings(prev => ({ ...prev, [key]: value }))
@@ -218,9 +238,9 @@ export function SiteSettingsPanel({ initialSettings, onChange }: SiteSettingsPan
               <div className="max-w-[600px] font-sans">
                 <div className="flex items-center gap-2 mb-1">
                   <div className="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-100 p-1">
-                    {/* Use standard img for reliability in admin panel */}
+                    {/* Use dynamic favicon from R2 */}
                     <img
-                      src="/favicon.svg"
+                      src={faviconUrl}
                       alt="Favicon"
                       className="h-4 w-4 rounded-full object-cover"
                     />
