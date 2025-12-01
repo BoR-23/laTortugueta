@@ -623,5 +623,35 @@
       "name": "Salze"
     },
     "timestamp": "2025-11-30T16:59:23.880Z"
+  },
+  {
+    "action": "product.delete",
+    "entity": "product",
+    "productId": "tortuguetes",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "timestamp": "2025-11-30T17:21:58.400Z"
+  },
+  {
+    "action": "product.delete",
+    "entity": "product",
+    "productId": "cofia",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "timestamp": "2025-11-30T17:30:21.095Z"
+  },
+  {
+    "action": "product.delete",
+    "entity": "product",
+    "productId": "festeres",
+    "actor": {
+      "email": "bor.arroyo@gmail.com",
+      "name": null
+    },
+    "timestamp": "2025-11-30T17:30:41.445Z"
   }
 ]

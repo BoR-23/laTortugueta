@@ -469,6 +469,12 @@ export function MediaGalleryManager(props: MediaGalleryManagerProps) {
   const handleImageDragLeave = (e: React.DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
+
+    // Check if the element we are entering (relatedTarget) is still inside our container (currentTarget)
+    if (e.currentTarget.contains(e.relatedTarget as Node)) {
+      return
+    }
+
     setDragOverUrl(null)
   }
 
@@ -567,8 +573,8 @@ export function MediaGalleryManager(props: MediaGalleryManagerProps) {
                 {/* DROP ZONE for EXIF restoration */}
                 <div
                   className={`relative h-20 w-16 overflow-hidden rounded-xl transition-all ${dragOverUrl === url
-                      ? 'ring-4 ring-blue-500 ring-offset-2 scale-105'
-                      : 'bg-white'
+                    ? 'ring-4 ring-blue-500 ring-offset-2 scale-105'
+                    : 'bg-white'
                     }`}
                   onDragOver={(e) => handleImageDragOver(e, url)}
                   onDragLeave={handleImageDragLeave}
