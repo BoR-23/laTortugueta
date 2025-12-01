@@ -1,7 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import Image from 'next/image'
 import type { SiteSettings } from '@/lib/settings'
+import { uploadProductImage } from '@/lib/client/uploadProductImage'
 
 interface SiteSettingsPanelProps {
   initialSettings: SiteSettings
@@ -40,6 +42,64 @@ export function SiteSettingsPanel({ initialSettings, onChange }: SiteSettingsPan
   const [settings, setSettings] = useState(initialSettings)
   const [savingKey, setSavingKey] = useState<keyof SiteSettings | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleTextChange = async (key: keyof SiteSettings, value: string) => {
+    setSettings(prev => ({ ...prev, [key]: value }))
+  }
+
+  const handleTextBlur = async (key: keyof SiteSettings, value: string) => {
+    if (value === initialSettings[key]) return
+
+    setSavingKey(key)
+    setError(null)
+    try {
+      const response = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [key]: value })
+      })
+      if (!response.ok) throw new Error('Error al guardar')
+      const updated = await response.json()
+      setSettings(updated)
+      onChange?.(updated)
+    } catch (err) {
+      setError('No se pudo guardar el cambio.')
+    } finally {
+      setSavingKey(null)
+    }
+  }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    setError(null)
+    try {
+      // We use a fixed ID 'site-settings' for global assets
+      const result = await uploadProductImage('site-settings', file)
+
+      // Save the new URL to settings
+      const response = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ seo_og_image: result.path })
+      })
+
+      if (!response.ok) throw new Error('Error al guardar la imagen')
+
+      const updated = await response.json()
+      setSettings(updated)
+      onChange?.(updated)
+    } catch (err) {
+      setError('Error al subir la imagen.')
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
 
   const handleToggle = async (key: keyof SiteSettings) => {
     const nextValue = !settings[key]
@@ -80,6 +140,80 @@ export function SiteSettingsPanel({ initialSettings, onChange }: SiteSettingsPan
       </div>
 
       <div className="mt-5 space-y-4">
+        {/* SEO Section */}
+        <div className="rounded-2xl border border-neutral-200 p-4">
+          <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-neutral-500">SEO Global</h3>
+
+          <div className="space-y-4">
+            <div>
+              <label className="mb-1 block text-xs font-medium text-neutral-700">Título Global (Opcional)</label>
+              <input
+                type="text"
+                value={settings.seo_title || ''}
+                onChange={e => handleTextChange('seo_title', e.target.value)}
+                onBlur={e => handleTextBlur('seo_title', e.target.value)}
+                placeholder="Ej: La Tortugueta | Calcetines Artesanales"
+                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-neutral-900 focus:outline-none"
+                disabled={savingKey === 'seo_title'}
+              />
+              <p className="mt-1 text-[10px] text-neutral-400">Si se deja vacío, se usará el título por defecto.</p>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-medium text-neutral-700">Descripción Global (Opcional)</label>
+              <textarea
+                value={settings.seo_description || ''}
+                onChange={e => handleTextChange('seo_description', e.target.value)}
+                onBlur={e => handleTextBlur('seo_description', e.target.value)}
+                placeholder="Descripción corta para Google..."
+                rows={3}
+                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-neutral-900 focus:outline-none"
+                disabled={savingKey === 'seo_description'}
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-medium text-neutral-700">Imagen OpenGraph (Social)</label>
+              <div className="flex items-start gap-4">
+                <div className="relative h-32 w-56 overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50">
+                  {settings.seo_og_image ? (
+                    <Image
+                      src={settings.seo_og_image}
+                      alt="OG Image"
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-xs text-neutral-400">
+                      Sin imagen
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                    className="rounded-full border border-neutral-300 px-4 py-2 text-xs font-medium hover:bg-neutral-50 disabled:opacity-50"
+                  >
+                    {uploading ? 'Subiendo...' : 'Cambiar imagen'}
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageUpload}
+                  />
+                  <p className="text-[10px] text-neutral-400 w-40">
+                    Recomendado: 1200x630px. Se mostrará al compartir en redes sociales.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3 className="mt-6 mb-2 text-xs font-bold uppercase tracking-wider text-neutral-500">Secciones</h3>
         {OPTIONS.map(option => (
           <label
             key={option.key}

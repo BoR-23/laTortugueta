@@ -14,41 +14,50 @@ import {
 
 const inter = Inter({ subsets: ['latin'] })
 
-export const metadata: Metadata = {
-  metadataBase: new URL(getSiteUrl()),
-  title: {
-    default: `${siteMetadata.name} · ${siteMetadata.shortDescription}`,
-    template: `%s · ${siteMetadata.name}`
-  },
-  description: siteMetadata.description,
-  applicationName: siteMetadata.name,
-  keywords: siteMetadata.keywords,
-  alternates: {
-    canonical: '/'
-  },
-  openGraph: {
-    title: siteMetadata.name,
-    description: siteMetadata.description,
-    type: 'website',
-    url: getSiteUrl(),
-    siteName: siteMetadata.name,
-    locale: siteMetadata.locale,
-    images: [
-      {
-        url: defaultOpenGraphImage,
-        width: 1200,
-        height: 630,
-        alt: siteMetadata.name
-      }
-    ]
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: siteMetadata.name,
-    description: siteMetadata.description,
-    images: [defaultOpenGraphImage]
-  },
+import { getSiteSettings } from '@/lib/settings'
 
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings()
+
+  const title = settings.seo_title || siteMetadata.name
+  const description = settings.seo_description || siteMetadata.description
+  const ogImage = settings.seo_og_image || defaultOpenGraphImage
+
+  return {
+    metadataBase: new URL(getSiteUrl()),
+    title: {
+      default: title,
+      template: `%s · ${siteMetadata.name}`
+    },
+    description: description,
+    applicationName: siteMetadata.name,
+    keywords: siteMetadata.keywords,
+    alternates: {
+      canonical: '/'
+    },
+    openGraph: {
+      title: title,
+      description: description,
+      type: 'website',
+      url: getSiteUrl(),
+      siteName: siteMetadata.name,
+      locale: siteMetadata.locale,
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: title
+        }
+      ]
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: title,
+      description: description,
+      images: [ogImage]
+    }
+  }
 }
 
 export const viewport = {

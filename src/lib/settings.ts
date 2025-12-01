@@ -8,6 +8,9 @@ export type SiteSettings = {
   enableStoryHighlights: boolean
   enableLocalSuggestions: boolean
   enableCatalogBadges: boolean
+  seo_title?: string
+  seo_description?: string
+  seo_og_image?: string
 }
 
 const DEFAULT_SETTINGS: SiteSettings = {
