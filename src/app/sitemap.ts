@@ -6,9 +6,9 @@ import { absoluteUrl, getPrimaryProductImage } from '@/lib/seo'
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [products, posts] = await Promise.all([getAllProducts(), getAllPosts()])
   const entries: MetadataRoute.Sitemap = [
-    { url: absoluteUrl('/') },
-    { url: absoluteUrl('/blog') },
-    { url: absoluteUrl('/quienes-somos') }
+    { url: absoluteUrl('/'), changeFrequency: 'daily', priority: 1 },
+    { url: absoluteUrl('/blog'), changeFrequency: 'weekly', priority: 0.8 },
+    { url: absoluteUrl('/quienes-somos'), changeFrequency: 'monthly', priority: 0.5 }
   ]
 
   const now = new Date()
@@ -17,6 +17,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...products.map(product => ({
       url: absoluteUrl(`/${product.id}`),
       lastModified: product.updatedAt ? new Date(product.updatedAt) : now,
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
       images: [getPrimaryProductImage(product)]
     }))
   )
@@ -24,7 +26,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   entries.push(
     ...posts.map(post => ({
       url: absoluteUrl(`/blog/${post.slug}`),
-      lastModified: post.date ? new Date(post.date) : now
+      lastModified: post.date ? new Date(post.date) : now,
+      changeFrequency: 'monthly' as const,
+      priority: 0.6
     }))
   )
 
