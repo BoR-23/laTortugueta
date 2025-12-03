@@ -1,13 +1,15 @@
 import { NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabaseClient'
 
+import { getProductImageVariant } from '@/lib/images'
+
 export async function GET() {
     const client = createSupabaseServerClient()
 
-    // Fetch all sales
+    // Fetch all sales with product image
     const { data: sales, error } = await client
         .from('sales')
-        .select('*')
+        .select('*, products(image_url)')
         .order('date', { ascending: false })
 
     if (error) {
@@ -25,7 +27,18 @@ export async function GET() {
 
     // 1. Top Products
     const productCounts: Record<string, number> = {}
-    sales.forEach((sale: any) => {
+
+    // Process sales to resolve images
+    const processedSales = sales.map((sale: any) => {
+        // Prefer image from joined product, fallback to sale record
+        const rawImage = sale.products?.image_url || sale.product_image
+        return {
+            ...sale,
+            product_image: getProductImageVariant(rawImage)
+        }
+    })
+
+    processedSales.forEach((sale: any) => {
         const name = sale.product_name || 'Desconocido'
         productCounts[name] = (productCounts[name] || 0) + 1
     })
@@ -37,7 +50,7 @@ export async function GET() {
 
     // 2. Sales by Month
     const monthCounts: Record<string, number> = {}
-    sales.forEach((sale: any) => {
+    processedSales.forEach((sale: any) => {
         if (!sale.date) return
         const d = new Date(sale.date)
         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
@@ -50,7 +63,7 @@ export async function GET() {
 
     // 3. Upcoming Deliveries (Simple text based for now, or try to parse)
     // We just return the latest 10 pending orders with delivery dates
-    const upcomingDeliveries = sales
+    const upcomingDeliveries = processedSales
         .filter((s: any) => s.delivery_date && s.status !== 'delivered')
         .slice(0, 10)
         .map((s: any) => ({
@@ -64,6 +77,6 @@ export async function GET() {
         topProducts,
         salesByMonth,
         upcomingDeliveries,
-        totalOrders: sales.length
+        totalOrders: processedSales.length
     })
 }
