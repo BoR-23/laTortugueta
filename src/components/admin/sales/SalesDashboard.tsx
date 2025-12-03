@@ -182,85 +182,159 @@ export function SalesDashboard() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-neutral-200 bg-white">
-                            {sales.map((sale) => (
-                                <tr key={sale.id} className="group hover:bg-neutral-50">
-                                    {editingId === sale.id ? (
-                                        // Edit Mode
-                                        <>
-                                            <td className="px-6 py-4"><input className="w-full rounded border p-1" value={editForm.order_id} onChange={e => setEditForm({ ...editForm, order_id: e.target.value })} /></td>
-                                            <td className="px-6 py-4"><input type="date" className="w-full rounded border p-1" value={editForm.date} onChange={e => setEditForm({ ...editForm, date: e.target.value })} /></td>
-                                            <td className="px-6 py-4"><input className="w-full rounded border p-1" value={editForm.client} onChange={e => setEditForm({ ...editForm, client: e.target.value })} /></td>
-                                            <td className="px-6 py-4">
-                                                <input className="w-full rounded border p-1 mb-1" placeholder="Modelo" value={editForm.product_name} onChange={e => setEditForm({ ...editForm, product_name: e.target.value })} />
-                                                <input className="w-full rounded border p-1" placeholder="Talla" value={editForm.size} onChange={e => setEditForm({ ...editForm, size: e.target.value })} />
-                                            </td>
-                                            <td className="px-6 py-4"><textarea className="w-full rounded border p-1" value={editForm.details} onChange={e => setEditForm({ ...editForm, details: e.target.value })} /></td>
-                                            <td className="px-6 py-4"><input className="w-full rounded border p-1" value={editForm.delivery_date} onChange={e => setEditForm({ ...editForm, delivery_date: e.target.value })} /></td>
-                                            <td className="px-6 py-4 text-right">
-                                                <button onClick={saveEdit} className="text-green-600 hover:text-green-800 mr-2">Guardar</button>
-                                                <button onClick={() => setEditingId(null)} className="text-neutral-500 hover:text-neutral-700">Cancelar</button>
-                                            </td>
-                                        </>
-                                    ) : (
-                                        // View Mode
-                                        <>
-                                            <td className="px-6 py-4 font-mono text-xs text-neutral-500">{sale.order_id}</td>
-                                            <td className="px-6 py-4 text-neutral-500">{sale.date}</td>
-                                            <td className="px-6 py-4 font-medium text-neutral-900">{sale.client}</td>
-                                            <td className="px-6 py-4">
-                                                <div className="relative group/image">
-                                                    <span className="font-medium text-neutral-900 cursor-help border-b border-dotted border-neutral-300">
-                                                        {sale.product_name}
-                                                    </span>
-                                                    {/* Product Image Popover */}
-                                                    {sale.product_image && (
-                                                        <div className="absolute left-0 bottom-full mb-2 hidden w-32 rounded-lg border border-neutral-200 bg-white p-1 shadow-xl group-hover/image:block z-10">
-                                                            <div className="relative aspect-square w-full overflow-hidden rounded">
-                                                                <Image src={sale.product_image} alt="" fill className="object-cover" />
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <span className="ml-2 rounded bg-neutral-100 px-1.5 py-0.5 text-xs text-neutral-600">T/{sale.size}</span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900">
-                                                {sale.product_price ? `${sale.product_price.toFixed(2)}€` : '-'}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900">
-                                                {sale.is_wholesale ? (
-                                                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                                        Por mayor
-                                                    </span>
-                                                ) : (
-                                                    <span className="text-neutral-500 text-xs">Por menor</span>
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <p className="text-xs text-neutral-600 mb-2">{sale.details}</p>
-                                                <div className="flex flex-wrap gap-1">
-                                                    {extractColors(sale.details || '').map((c, i) => (
-                                                        <div key={i} className="group/color relative h-4 w-4 rounded-full border border-neutral-200 shadow-sm" style={{ backgroundColor: c.hex }}>
-                                                            <span className="absolute bottom-full left-1/2 mb-1 -translate-x-1/2 hidden rounded bg-neutral-900 px-1.5 py-0.5 text-[10px] text-white group-hover/color:block whitespace-nowrap z-10">
-                                                                {c.code}
+                            {(() => {
+                                let lastOrderId = ''
+                                let isAlternateGroup = false
+
+                                return sales.map((sale) => {
+                                    // Grouping Logic
+                                    if (sale.order_id !== lastOrderId) {
+                                        isAlternateGroup = !isAlternateGroup
+                                        lastOrderId = sale.order_id
+                                    }
+                                    const rowClass = isAlternateGroup ? 'bg-neutral-50/50' : 'bg-white'
+
+                                    return (
+                                        <tr key={sale.id} className={`group hover:bg-neutral-100 transition-colors ${rowClass}`}>
+                                            {editingId === sale.id ? (
+                                                // Edit Mode
+                                                <>
+                                                    <td className="px-6 py-4"><input className="w-full rounded border p-1" value={editForm.order_id} onChange={e => setEditForm({ ...editForm, order_id: e.target.value })} /></td>
+                                                    <td className="px-6 py-4"><input type="date" className="w-full rounded border p-1" value={editForm.date} onChange={e => setEditForm({ ...editForm, date: e.target.value })} /></td>
+                                                    <td className="px-6 py-4"><input className="w-full rounded border p-1" value={editForm.client} onChange={e => setEditForm({ ...editForm, client: e.target.value })} /></td>
+                                                    <td className="px-6 py-4">
+                                                        <input className="w-full rounded border p-1 mb-1" placeholder="Modelo" value={editForm.product_name} onChange={e => setEditForm({ ...editForm, product_name: e.target.value })} />
+                                                        <input className="w-full rounded border p-1" placeholder="Talla" value={editForm.size} onChange={e => setEditForm({ ...editForm, size: e.target.value })} />
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <input
+                                                            type="number"
+                                                            step="0.01"
+                                                            className="w-full rounded border p-1"
+                                                            value={editForm.product_price}
+                                                            onChange={e => setEditForm({ ...editForm, product_price: parseFloat(e.target.value) })}
+                                                        />
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <select
+                                                            className="w-full rounded border p-1"
+                                                            value={editForm.is_wholesale ? 'wholesale' : 'retail'}
+                                                            onChange={e => {
+                                                                const isWholesale = e.target.value === 'wholesale'
+                                                                let newPrice = parseFloat(editForm.product_price) || 0
+
+                                                                if (isWholesale && !editForm.is_wholesale) {
+                                                                    newPrice = newPrice * 0.5
+                                                                } else if (!isWholesale && editForm.is_wholesale) {
+                                                                    newPrice = newPrice * 2
+                                                                }
+
+                                                                setEditForm({
+                                                                    ...editForm,
+                                                                    is_wholesale: isWholesale,
+                                                                    product_price: newPrice
+                                                                })
+                                                            }}
+                                                        >
+                                                            <option value="retail">Por menor</option>
+                                                            <option value="wholesale">Por mayor (-50%)</option>
+                                                        </select>
+                                                    </td>
+                                                    <td className="px-6 py-4"><textarea className="w-full rounded border p-1" value={editForm.details} onChange={e => setEditForm({ ...editForm, details: e.target.value })} /></td>
+                                                    <td className="px-6 py-4"><input className="w-full rounded border p-1" value={editForm.delivery_date} onChange={e => setEditForm({ ...editForm, delivery_date: e.target.value })} /></td>
+                                                    <td className="px-6 py-4 text-right">
+                                                        <button onClick={saveEdit} className="text-green-600 hover:text-green-800 mr-2">Guardar</button>
+                                                        <button onClick={() => setEditingId(null)} className="text-neutral-500 hover:text-neutral-700">Cancelar</button>
+                                                    </td>
+                                                </>
+                                            ) : (
+                                                // View Mode
+                                                <>
+                                                    <td className="px-6 py-4 font-mono text-xs text-neutral-500">{sale.order_id}</td>
+                                                    <td className="px-6 py-4 text-neutral-500">{sale.date}</td>
+                                                    <td className="px-6 py-4 font-medium text-neutral-900">{sale.client}</td>
+                                                    <td className="px-6 py-4">
+                                                        <div className="relative group/image">
+                                                            <span className="font-medium text-neutral-900 cursor-help border-b border-dotted border-neutral-300">
+                                                                {sale.product_name}
                                                             </span>
+                                                            {sale.product_image && (
+                                                                <div className="absolute left-0 bottom-full mb-2 hidden w-32 rounded-lg border border-neutral-200 bg-white p-1 shadow-xl group-hover/image:block z-10">
+                                                                    <div className="relative aspect-square w-full overflow-hidden rounded">
+                                                                        <Image src={sale.product_image} alt="" fill className="object-cover" />
+                                                                    </div>
+                                                                </div>
+                                                            )}
                                                         </div>
-                                                    ))}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${sale.status === 'delivered' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'
-                                                    }`}>
-                                                    {sale.delivery_date || 'Pendiente'}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <button onClick={() => startEdit(sale)} className="text-neutral-400 hover:text-neutral-900 mr-3">✎</button>
-                                                <button onClick={() => deleteSale(sale.id)} className="text-neutral-400 hover:text-red-600">🗑</button>
-                                            </td>
-                                        </>
-                                    )}
-                                </tr>
-                            ))}
+                                                        <span className="ml-2 rounded bg-neutral-100 px-1.5 py-0.5 text-xs text-neutral-600">T/{sale.size}</span>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900">
+                                                        {sale.product_price ? `${sale.product_price.toFixed(2)}€` : '-'}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                                        <button
+                                                            onClick={async () => {
+                                                                if (!confirm(`¿Cambiar a ${sale.is_wholesale ? 'Por menor' : 'Por mayor'}? El precio se actualizará.`)) return
+
+                                                                const newIsWholesale = !sale.is_wholesale
+                                                                let newPrice = sale.product_price || 0
+
+                                                                if (newIsWholesale) {
+                                                                    newPrice = newPrice * 0.5
+                                                                } else {
+                                                                    newPrice = newPrice * 2
+                                                                }
+
+                                                                try {
+                                                                    const res = await fetch(`/api/admin/sales/${sale.id}`, {
+                                                                        method: 'PUT',
+                                                                        headers: { 'Content-Type': 'application/json' },
+                                                                        body: JSON.stringify({
+                                                                            ...sale,
+                                                                            is_wholesale: newIsWholesale,
+                                                                            product_price: newPrice
+                                                                        })
+                                                                    })
+                                                                    if (!res.ok) throw new Error('Update failed')
+
+                                                                    setSales(sales.map(s => s.id === sale.id ? { ...s, is_wholesale: newIsWholesale, product_price: newPrice } : s))
+                                                                } catch (error) {
+                                                                    alert('Error al actualizar')
+                                                                }
+                                                            }}
+                                                            className={`cursor-pointer hover:underline ${sale.is_wholesale ? 'text-blue-600 font-semibold' : 'text-neutral-500'}`}
+                                                        >
+                                                            {sale.is_wholesale ? 'Por mayor' : 'Por menor'}
+                                                        </button>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <p className="text-xs text-neutral-600 mb-2">{sale.details}</p>
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {extractColors(sale.details || '').map((c, i) => (
+                                                                <div key={i} className="group/color relative h-4 w-4 rounded-full border border-neutral-200 shadow-sm" style={{ backgroundColor: c.hex }}>
+                                                                    <span className="absolute bottom-full left-1/2 mb-1 -translate-x-1/2 hidden rounded bg-neutral-900 px-1.5 py-0.5 text-[10px] text-white group-hover/color:block whitespace-nowrap z-10">
+                                                                        {c.code}
+                                                                    </span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <span className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${sale.status === 'delivered' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'
+                                                            }`}>
+                                                            {sale.delivery_date || 'Pendiente'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right">
+                                                        <button onClick={() => startEdit(sale)} className="text-neutral-400 hover:text-neutral-900 mr-3">✎</button>
+                                                        <button onClick={() => deleteSale(sale.id)} className="text-neutral-400 hover:text-red-600">🗑</button>
+                                                    </td>
+                                                </>
+                                            )}
+                                        </tr>
+                                    )
+                                })
+                            })()}
                         </tbody>
                     </table>
                 </div>

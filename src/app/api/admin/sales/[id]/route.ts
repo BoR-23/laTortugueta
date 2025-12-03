@@ -15,7 +15,8 @@ export async function PUT(
         details,
         delivery_date,
         status,
-        is_wholesale
+        is_wholesale,
+        product_price
     } = await request.json()
 
     const client = createSupabaseServerClient()
@@ -31,7 +32,8 @@ export async function PUT(
             details,
             delivery_date,
             status,
-            is_wholesale
+            is_wholesale,
+            product_price
         })
         .eq('id', id)
 
