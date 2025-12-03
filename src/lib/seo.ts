@@ -61,7 +61,7 @@ export const getSiteUrl = () => {
     }
   }
 
-  return 'https://www.latortugueta.com'
+  return 'https://latortugueta.com'
 }
 
 export const absoluteUrl = (path = '/') => {

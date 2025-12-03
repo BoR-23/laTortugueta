@@ -61,6 +61,7 @@ export const HeroCarousel = ({ slides }: HeroCarouselProps) => {
                       : 'center'
                   }}
                   priority={index === 0}
+                  fetchPriority={index === 0 ? 'high' : 'auto'}
                   sizes="(max-width: 640px) 100vw, 100vw"
                   quality={80}
                 />

@@ -2,7 +2,7 @@ export type ProductImageVariant = 'original' | 'thumb' | 'medium' | 'full'
 
 const OLD_PRODUCT_IMAGES_BASE = '/images/products/'
 const VARIANTS_FOLDER = '_variants'
-const R2_PUBLIC_URL = process.env.NEXT_PUBLIC_R2_PUBLIC_URL
+const R2_PUBLIC_URL = process.env.NEXT_PUBLIC_R2_PUBLIC_URL || 'https://pub-6d7cc19d77b44520a5ac19e77cb47c4e.r2.dev'
 
 export type ProductPlaceholderMap = Record<string, string>
 
