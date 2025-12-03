@@ -6,11 +6,16 @@ import { getProductImageVariant } from '@/lib/images'
 export async function GET() {
     const client = createSupabaseServerClient()
 
-    // Fetch all sales with product image
+    // Fetch all sales
     const { data: sales, error } = await client
         .from('sales')
-        .select('*, products(image_url)')
+        .select('*')
         .order('date', { ascending: false })
+
+    // Fetch products for image resolution
+    const { data: products } = await client
+        .from('products')
+        .select('id, image_url, name')
 
     if (error) {
         // If table doesn't exist yet, return empty stats gracefully
@@ -30,8 +35,14 @@ export async function GET() {
 
     // Process sales to resolve images
     const processedSales = sales.map((sale: any) => {
-        // Prefer image from joined product, fallback to sale record
-        const rawImage = sale.products?.image_url || sale.product_image
+        // Find matching product by ID or Name
+        const product = products?.find(p =>
+            p.id === sale.product_id ||
+            p.name.toLowerCase() === (sale.product_name || '').toLowerCase()
+        )
+
+        // Prefer image from found product, fallback to sale record
+        const rawImage = product?.image_url || sale.product_image
         return {
             ...sale,
             product_image: getProductImageVariant(rawImage)
