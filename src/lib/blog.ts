@@ -12,6 +12,7 @@ export interface BlogPost {
   author: string
   content: string
   tags: string[]
+  image?: string
   locale: Locale
 }
 
@@ -43,6 +44,7 @@ const buildMarkdownPost = (fileName: string, fileContents: string, locale: Local
     excerpt: typeof data.excerpt === 'string' ? data.excerpt : '',
     author: typeof data.author === 'string' ? data.author : 'Equipo La Tortugueta',
     tags: Array.isArray(data.tags) ? data.tags.map(tag => String(tag)) : [],
+    image: typeof data.image === 'string' ? data.image : undefined,
     content: content.trim(),
     locale
   }

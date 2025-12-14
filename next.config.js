@@ -49,6 +49,10 @@ const nextConfig = {
           {
             key: 'Cache-Control',
             value: 'public, max-age=31536000, immutable'
+          },
+          {
+            key: 'Expires',
+            value: 'Fri, 14 Dec 2026 12:00:00 GMT'
           }
         ]
       },
@@ -58,6 +62,10 @@ const nextConfig = {
           {
             key: 'Cache-Control',
             value: 'public, max-age=31536000, immutable'
+          },
+          {
+            key: 'Expires',
+            value: new Date(Date.now() + 31536000000).toUTCString()
           }
         ]
       },

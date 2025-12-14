@@ -49,7 +49,7 @@ export const generateMetadata = async ({ params }: BlogPageProps): Promise<Metad
       siteName: siteMetadata.name,
       images: [
         {
-          url: defaultOpenGraphImage,
+          url: post.image ? absoluteUrl(post.image) : defaultOpenGraphImage,
           width: 1200,
           height: 630,
           alt: post.title
@@ -60,7 +60,7 @@ export const generateMetadata = async ({ params }: BlogPageProps): Promise<Metad
       card: 'summary_large_image',
       title: post.title,
       description: post.excerpt || siteMetadata.description,
-      images: [defaultOpenGraphImage]
+      images: [post.image ? absoluteUrl(post.image) : defaultOpenGraphImage]
     }
   }
 }
