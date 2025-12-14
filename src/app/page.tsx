@@ -11,6 +11,7 @@ import { TopVisitedSection } from '@/components/home/TopVisitedSection'
 import { HeroCarousel } from '@/components/home/HeroCarousel'
 import { getSiteSettings } from '@/lib/settings'
 import { getHeroSlides } from '@/lib/banners'
+import { SeoContentSection } from '@/components/home/SeoContentSection'
 
 const mapCategoriesToDTO = (records: Awaited<ReturnType<typeof getCategories>>) =>
   records.map(record => ({
@@ -92,6 +93,7 @@ export default async function Home() {
         />
       </div>
       {siteSettings.enableTopVisited ? <TopVisitedSection products={visibleProducts} /> : null}
+      <SeoContentSection />
       <TestimonialsSection show={enableTestimonials} />
       {siteSettings.enableStoryHighlights ? <StoryHighlightsSection /> : null}
       <HowToOrderSection />

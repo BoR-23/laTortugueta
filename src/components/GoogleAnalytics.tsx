@@ -39,7 +39,7 @@ export default function GoogleAnalytics({ GA_MEASUREMENT_ID }: { GA_MEASUREMENT_
         clearTimeout(timeoutId)
       }
       if (idleId !== null && 'cancelIdleCallback' in window) {
-        ;(window as Window & { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback?.(idleId)
+        ; (window as Window & { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback?.(idleId)
       }
     }
   }, [])
@@ -59,9 +59,9 @@ export default function GoogleAnalytics({ GA_MEASUREMENT_ID }: { GA_MEASUREMENT_
     <>
       <Script
         src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
-        strategy="lazyOnload"
+        strategy="afterInteractive"
       />
-      <Script id="ga-init" strategy="lazyOnload">
+      <Script id="ga-init" strategy="afterInteractive">
         {`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}

@@ -16,7 +16,12 @@ const SITE_TAGLINE = 'Calcetines artesanales bordados en Alcoi desde 1989.'
 // --------------------
 
 const SITE_LOCALE = 'es_ES'
-const DEFAULT_SOCIAL_PROFILES = [INSTAGRAM_URL.replace(/\/$/, '')]
+const DEFAULT_SOCIAL_PROFILES = [
+  INSTAGRAM_URL.replace(/\/$/, ''),
+  'https://www.facebook.com/LaTortugueta', // Placeholder para Schema
+  'https://twitter.com/LaTortugueta',     // Placeholder para Schema
+  'https://www.youtube.com/@LaTortugueta' // Placeholder para Schema
+]
 
 const stripTrailingSlash = (value: string) => value.replace(/\/+$/, '')
 
