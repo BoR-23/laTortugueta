@@ -40,10 +40,10 @@ export function LayoutShell({ children }: LayoutShellProps) {
               Catálogo vivo de calcetería artesanal documentado y conservado por La Tortugueta. Ediciones
               limitadas disponibles bajo pedido personalizado.
             </p>
-            <div className="flex flex-col gap-1 text-xs text-neutral-400">
+            <address className="flex flex-col gap-1 text-xs text-neutral-400 not-italic">
               <p>C/ San Nicolás 12, 03801 Alcoy (Alicante)</p>
               <p>WhatsApp: +34 653 452 249</p>
-            </div>
+            </address>
           </div>
           <div className="flex flex-wrap gap-4 text-xs uppercase tracking-[0.3em]">
             {footerNavLinks.map(link =>
