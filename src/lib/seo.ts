@@ -113,8 +113,8 @@ export const getPrimaryProductImage = (product: Product) => {
 
 export const buildOrganizationJsonLd = () => ({
   '@context': 'https://schema.org',
-  '@type': 'Organization',
-  name: 'La Tortugueta', // Dejamos la marca limpia aquí
+  '@type': 'ClothingStore',
+  name: 'La Tortugueta',
   url: getSiteUrl(),
   logo: absoluteUrl('/icon.png'),
   image: absoluteUrl('/og-image.png'),
@@ -133,7 +133,23 @@ export const buildOrganizationJsonLd = () => ({
     contactType: 'customer service',
     areaServed: 'ES',
     availableLanguage: ['es', 'ca', 'en']
-  }
+  },
+  priceRange: '€€',
+  openingHoursSpecification: [
+    {
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+      opens: '09:00',
+      closes: '13:30'
+    },
+    {
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+      opens: '17:00',
+      closes: '20:00'
+    }
+  ],
+  paymentAccepted: 'Cash, Credit Card, Bizum'
 })
 
 export const buildWebsiteJsonLd = () => ({

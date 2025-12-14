@@ -33,8 +33,8 @@ const buildCategoryNameMap = (records: Awaited<ReturnType<typeof getCategories>>
 }
 
 export const metadata: Metadata = {
-  // CAMBIO SEO: Título más descriptivo en lugar de solo "Catálogo"
-  title: 'Catálogo de Calcetines Tradicionales',
+  // CAMBIO SEO: Título optimizado ~55 caracteres (AIOSEO)
+  title: 'Catálogo de Calcetines Tradicionales | La Tortugueta Alcoi',
   description: siteMetadata.description,
   alternates: {
     canonical: '/',
