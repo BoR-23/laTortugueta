@@ -6,11 +6,11 @@ import { INSTAGRAM_URL } from '@/lib/contact'
 // --- CAMBIOS CLAVE AQUÍ ---
 // 1. Título con keywords principales (se repetirá en todas las pestañas)
 // --- CAMBIOS AQUÍ ---
-const SITE_NAME = 'La Tortugueta · Calcetines Tradicionales'
+const SITE_NAME = 'La Tortugueta: Calcetines Tradicionales Indumentaria Valenciana'
 
-// Descripción ajustada: Prioridad a "para fallera/o" y añadimos folklore/regionales al final
+// Descripción ajustada: ~155 caracteres para SEO
 const SITE_DESCRIPTION =
-  'Taller artesanal de calcetines tradicionales en Alcoi. Especialistas en calcetines para fallera, fallero e indumentaria valenciana. También realizamos calcetines para folklore, regionales y per a grups de danses.'
+  'Taller artesanal en Alcoi. Calcetines bordados para fallera, fallero y grupos de danza. Reproducciones históricas y confección a medida desde 1989.'
 
 const SITE_TAGLINE = 'Calcetines artesanales bordados en Alcoi desde 1989.'
 // --------------------
@@ -118,7 +118,22 @@ export const buildOrganizationJsonLd = () => ({
   url: getSiteUrl(),
   logo: absoluteUrl('/icon.png'),
   image: absoluteUrl('/og-image.png'),
-  sameAs: DEFAULT_SOCIAL_PROFILES
+  sameAs: DEFAULT_SOCIAL_PROFILES,
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: 'C/ San Nicolás 12',
+    addressLocality: 'Alcoy',
+    addressRegion: 'Alicante',
+    postalCode: '03801',
+    addressCountry: 'ES'
+  },
+  contactPoint: {
+    '@type': 'ContactPoint',
+    telephone: '+34-653-452-249',
+    contactType: 'customer service',
+    areaServed: 'ES',
+    availableLanguage: ['es', 'ca', 'en']
+  }
 })
 
 export const buildWebsiteJsonLd = () => ({
@@ -134,7 +149,10 @@ export const buildCatalogJsonLd = (totalItems: number) => ({
   name: `Catálogo de Calcetines · ${SITE_NAME}`,
   description: SITE_DESCRIPTION,
   url: absoluteUrl('/'),
-  numberOfItems: totalItems
+  mainEntity: {
+    '@type': 'ItemList',
+    numberOfItems: totalItems
+  }
 })
 
 export const buildProductBreadcrumbJsonLd = (product: Product) => ({
@@ -245,3 +263,15 @@ export const buildArticleJsonLd = (post: BlogPost) => ({
   },
   image: defaultOpenGraphImage
 })
+
+export const buildBreadcrumbJsonLd = (items: { name: string; url: string }[]) => ({
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: items.map((item, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name: item.name,
+    item: absoluteUrl(item.url)
+  }))
+})
+

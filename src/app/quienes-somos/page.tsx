@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { getAllProducts } from '@/lib/products'
-import { absoluteUrl, siteMetadata } from '@/lib/seo'
+import { absoluteUrl, siteMetadata, buildBreadcrumbJsonLd } from '@/lib/seo'
 import { AboutContent } from '@/components/about/AboutContent'
 
 export const dynamic = 'force-dynamic'
@@ -36,12 +36,23 @@ export default async function AboutPage() {
   const products = await getAllProducts()
   const totalDesigns = products.length
   const yearsWeaving = new Date().getFullYear() - 1989
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: 'Inicio', url: '/' },
+    { name: 'Quiénes Somos', url: '/quienes-somos' }
+  ])
 
   return (
-    <AboutContent
-      totalDesigns={totalDesigns}
-      yearsWeaving={yearsWeaving}
-      locale="es"
-    />
+    <>
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <AboutContent
+        totalDesigns={totalDesigns}
+        yearsWeaving={yearsWeaving}
+        locale="es"
+      />
+    </>
   )
 }

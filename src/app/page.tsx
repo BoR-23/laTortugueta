@@ -81,6 +81,7 @@ export default async function Home() {
         suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: JSON.stringify(catalogJsonLd) }}
       />
+      <h1 className="sr-only">La Tortugueta: Calcetines Tradicionales y Valencianos</h1>
       <HeroCarousel slides={slides} />
       <div id="catalogo">
         <TagFilterPanelClient

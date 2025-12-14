@@ -2,15 +2,30 @@ import React from 'react';
 import { YARN_COLORS } from '@/lib/colors/constants';
 import { ColorCatalogGrid } from '@/components/catalog/ColorCatalogGrid';
 import { Metadata } from 'next';
+import { absoluteUrl, buildBreadcrumbJsonLd } from '@/lib/seo';
 
 export const metadata: Metadata = {
     title: 'Catálogo de Colores | La Tortugueta',
     description: 'Explora nuestra carta de colores completa. Encuentra el tono perfecto para tus calcetines personalizados.',
+    alternates: {
+        canonical: absoluteUrl('/colores')
+    }
 };
 
+
 export default function ColorCatalogPage() {
+    const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+        { name: 'Inicio', url: '/' },
+        { name: 'Carta de Colores', url: '/colores' }
+    ])
+
     return (
         <div className="min-h-screen bg-white">
+            <script
+                type="application/ld+json"
+                suppressHydrationWarning
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+            />
             {/* Header Section */}
             <div className="bg-gray-50 border-b border-gray-100">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">

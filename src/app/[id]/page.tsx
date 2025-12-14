@@ -71,10 +71,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
       }
     }
   } catch {
-    return {
-      title: 'Calcetín no encontrado',
-      description: 'El producto solicitado no está disponible en nuestro catálogo.'
-    }
+    notFound()
   }
 }
 

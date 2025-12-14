@@ -1,4 +1,4 @@
-﻿import { WHATSAPP_LINK } from './contact'
+﻿import { WHATSAPP_LINK, INSTAGRAM_URL } from './contact'
 
 export type NavigationLink = {
   label: string
@@ -20,6 +20,7 @@ export const footerNavLinks: NavigationLink[] = [
   { label: 'Blog', href: '/blog' },
   { label: 'Colecciones', href: '/#colecciones' },
   { label: 'Quiénes somos', href: '/quienes-somos' },
+  { label: 'Instagram', href: INSTAGRAM_URL, external: true },
   { label: 'Política de privacidad', href: '/politica-privacidad' }
   ,
   { label: 'FAQ', href: '/faq' },

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { getAllPosts } from '@/lib/blog'
-import { buildBlogListingJsonLd, absoluteUrl, siteMetadata } from '@/lib/seo'
+import { buildBlogListingJsonLd, absoluteUrl, siteMetadata, buildBreadcrumbJsonLd } from '@/lib/seo'
 import { BlogIndex } from '@/components/blog/BlogIndex'
 
 export const metadata: Metadata = {
@@ -32,13 +32,19 @@ export const metadata: Metadata = {
 export default async function BlogIndexPage() {
   const posts = await getAllPosts('es')
   const blogJsonLd = buildBlogListingJsonLd(posts)
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: 'Inicio', url: '/' },
+    { name: 'Blog', url: '/blog' }
+  ])
 
   return (
     <>
       <script
         type="application/ld+json"
         suppressHydrationWarning
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogJsonLd) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([blogJsonLd, breadcrumbJsonLd])
+        }}
       />
       <BlogIndex posts={posts} locale="es" />
     </>

@@ -9,8 +9,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [products, posts] = await Promise.all([getAllProducts(), getAllPosts()])
   const entries: MetadataRoute.Sitemap = [
     { url: absoluteUrl('/'), changeFrequency: 'daily', priority: 1 },
+    { url: absoluteUrl('/colores'), changeFrequency: 'monthly', priority: 0.8 },
     { url: absoluteUrl('/blog'), changeFrequency: 'weekly', priority: 0.8 },
-    { url: absoluteUrl('/quienes-somos'), changeFrequency: 'monthly', priority: 0.5 }
+    { url: absoluteUrl('/quienes-somos'), changeFrequency: 'monthly', priority: 0.5 },
+    { url: absoluteUrl('/contacto'), changeFrequency: 'monthly', priority: 0.5 }
   ]
 
   const now = new Date()

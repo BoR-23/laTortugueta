@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Metadata } from 'next'
 import { CONTACT_NAME, INSTAGRAM_URL, WHATSAPP_LINK } from '@/lib/contact'
-import { absoluteUrl, siteMetadata } from '@/lib/seo'
+import { absoluteUrl, siteMetadata, buildBreadcrumbJsonLd } from '@/lib/seo'
 import { ContactQuickForm } from '@/components/contact/ContactQuickForm'
 
 export const metadata: Metadata = {
@@ -19,8 +19,18 @@ export const metadata: Metadata = {
 }
 
 export default function ContactPage() {
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: 'Inicio', url: '/' },
+    { name: 'Contacto', url: '/contacto' }
+  ])
+
   return (
     <div className="bg-white text-neutral-900">
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <section className="border-b border-neutral-200 bg-white">
         <div className="mx-auto max-w-4xl space-y-6 px-4 py-16 sm:px-6 lg:px-8">
           <p className="text-xs uppercase tracking-[0.35em] text-neutral-500">Contacto</p>

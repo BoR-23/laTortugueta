@@ -27,26 +27,13 @@ export async function generateMetadata(): Promise<Metadata> {
   const icons = r2Url
     ? {
       icon: [
+        { url: `${r2Url}/favicons/favicon.ico`, sizes: 'any' },
+        { url: `${r2Url}/favicons/android-chrome-192x192.png`, sizes: '192x192', type: 'image/png' },
         { url: `${r2Url}/favicons/favicon-32x32.png`, sizes: '32x32', type: 'image/png' },
-        { url: `${r2Url}/favicons/favicon-16x16.png`, sizes: '16x16', type: 'image/png' }
+        { url: `${r2Url}/favicons/android-chrome-512x512.png`, sizes: '512x512', type: 'image/png' }
       ],
-      shortcut: [`${r2Url}/favicons/favicon.ico`],
       apple: [
         { url: `${r2Url}/favicons/apple-touch-icon.png`, sizes: '180x180', type: 'image/png' }
-      ],
-      other: [
-        {
-          rel: 'icon',
-          url: `${r2Url}/favicons/android-chrome-192x192.png`,
-          sizes: '192x192',
-          type: 'image/png'
-        },
-        {
-          rel: 'icon',
-          url: `${r2Url}/favicons/android-chrome-512x512.png`,
-          sizes: '512x512',
-          type: 'image/png'
-        }
       ]
     }
     : undefined
@@ -61,9 +48,6 @@ export async function generateMetadata(): Promise<Metadata> {
     applicationName: siteMetadata.name,
     keywords: siteMetadata.keywords,
     icons: icons,
-    alternates: {
-      canonical: '/'
-    },
     openGraph: {
       title: title,
       description: description,
@@ -108,7 +92,7 @@ export default function RootLayout({
       <head>
         <meta charSet="utf-8" />
         <meta httpEquiv="Content-Language" content="es" />
-        <meta httpEquiv="Content-Language" content="es" />
+
         <script
           type="application/ld+json"
           suppressHydrationWarning
