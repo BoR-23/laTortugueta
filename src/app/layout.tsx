@@ -23,20 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const description = settings.seo_description || siteMetadata.description
   const ogImage = settings.seo_og_image || defaultOpenGraphImage
 
-  const r2Url = process.env.NEXT_PUBLIC_R2_PUBLIC_URL
-  const icons = r2Url
-    ? {
-      icon: [
-        { url: `${r2Url}/favicons/favicon.ico`, sizes: 'any' },
-        { url: `${r2Url}/favicons/android-chrome-192x192.png`, sizes: '192x192', type: 'image/png' },
-        { url: `${r2Url}/favicons/favicon-32x32.png`, sizes: '32x32', type: 'image/png' },
-        { url: `${r2Url}/favicons/android-chrome-512x512.png`, sizes: '512x512', type: 'image/png' }
-      ],
-      apple: [
-        { url: `${r2Url}/favicons/apple-touch-icon.png`, sizes: '180x180', type: 'image/png' }
-      ]
-    }
-    : undefined
+
 
   return {
     metadataBase: new URL(getSiteUrl()),
@@ -47,7 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description: description,
     applicationName: siteMetadata.name,
     keywords: siteMetadata.keywords,
-    icons: icons,
+
     openGraph: {
       title: title,
       description: description,
