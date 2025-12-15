@@ -20,13 +20,13 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     theme_color: '#f8f5ef',
     icons: [
       {
-        src: `${r2Url}/favicons/android-chrome-192x192.png`,
+        src: '/icon.png',
         sizes: '192x192',
         type: 'image/png',
         purpose: 'maskable'
       },
       {
-        src: `${r2Url}/favicons/android-chrome-512x512.png`,
+        src: '/icon.png',
         sizes: '512x512',
         type: 'image/png',
         purpose: 'maskable'

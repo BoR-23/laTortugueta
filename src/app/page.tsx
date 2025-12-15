@@ -38,12 +38,7 @@ export const metadata: Metadata = {
   title: 'Catálogo de Calcetines Tradicionales | La Tortugueta Alcoi',
   description: siteMetadata.description,
   alternates: {
-    canonical: '/',
-    languages: {
-      'es': '/',
-      'ca': '/ca',
-      'en': '/en'
-    }
+    canonical: absoluteUrl('/'),
   },
   openGraph: {
     title: `Catálogo · ${siteMetadata.name}`,

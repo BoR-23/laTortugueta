@@ -52,7 +52,7 @@ export const HeroCarousel = ({ slides }: HeroCarouselProps) => {
                 {/* Desktop - full image */}
                 <Image
                   src={slide.image_url}
-                  alt={slide.title || 'Hero image'}
+                  alt={slide.title || 'Calcetines tradicionales y artesanales La Tortugueta'}
                   fill
                   className="object-cover"
                   style={{

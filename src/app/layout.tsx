@@ -35,6 +35,21 @@ export async function generateMetadata(): Promise<Metadata> {
     applicationName: siteMetadata.name,
     keywords: siteMetadata.keywords,
 
+    icons: {
+      icon: [
+        { url: '/favicon.ico', sizes: 'any' },
+        { url: '/favicon.svg', type: 'image/svg+xml' },
+        { url: '/icon.png', type: 'image/png', sizes: '192x192' },
+      ],
+      apple: [
+        { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+      ]
+    },
+    appleWebApp: {
+      title: siteMetadata.name,
+      statusBarStyle: 'default',
+      capable: true
+    },
     openGraph: {
       title: title,
       description: description,

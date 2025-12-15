@@ -55,10 +55,15 @@ export const getSiteUrl = () => {
   const candidates = [
     process.env.NEXT_PUBLIC_SITE_URL,
     process.env.NEXTAUTH_URL,
-    'http://localhost:3000'
-  ].filter(value => typeof value === 'string' && !/^\*+$/.test(value)) as string[]
+  ]
 
-  for (const candidate of candidates) {
+  if (process.env.NODE_ENV === 'development') {
+    candidates.push('http://localhost:3000')
+  }
+
+  const validCandidates = candidates.filter(value => typeof value === 'string' && !/^\*+$/.test(value)) as string[]
+
+  for (const candidate of validCandidates) {
     try {
       return stripTrailingSlash(new URL(candidate).toString())
     } catch {
