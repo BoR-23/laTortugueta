@@ -31,7 +31,7 @@ const GRID_GAP_BY_COLUMNS: Record<GridColumns, number> = {
   4: 32
 }
 
-const ESTIMATED_TEXT_HEIGHT = 140
+const ESTIMATED_TEXT_HEIGHT = 88
 const DEFAULT_VIRTUALIZATION_BUFFER_ROWS = 2
 const DEFAULT_MIN_ROWS_WITHOUT_VIRTUALIZATION = 4
 const COMPACT_VIRTUALIZATION_BUFFER_ROWS = 6
@@ -104,6 +104,7 @@ export const ProductGrid = ({
 
   const rowCount = Math.max(1, Math.ceil(products.length / columnCount))
   const virtualizationEnabled =
+    !isCompactViewport &&
     containerWidth > 0 &&
     rowMetrics.rowHeight > 0 &&
     rowCount > minRowsWithoutVirtualization
@@ -249,9 +250,11 @@ export const ProductGrid = ({
                     </div>
                   )}
                 </div>
-                <div className="space-y-1">
-                  <h2 className="text-base font-medium text-neutral-900">{product.name}</h2>
-                  <p className="text-sm text-neutral-600">
+                <div className="h-[88px] flex flex-col justify-start gap-1 py-1">
+                  <h2 className="text-base font-medium text-neutral-900 line-clamp-2 leading-tight" title={product.name}>
+                    {product.name}
+                  </h2>
+                  <p className="text-sm text-neutral-600 mt-auto">
                     {product.price.toFixed(2)} €
                     <span className="ml-1 text-xs uppercase tracking-[0.2em] text-neutral-500">+ gastos de envío</span>
                   </p>
