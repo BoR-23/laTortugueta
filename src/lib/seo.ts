@@ -284,7 +284,7 @@ export const buildArticleJsonLd = (post: BlogPost) => ({
     name: SITE_NAME,
     logo: {
       '@type': 'ImageObject',
-      url: absoluteUrl('/favicon.svg')
+      url: absoluteUrl('/icon-192.png')
     }
   },
   image: defaultOpenGraphImage

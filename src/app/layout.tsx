@@ -37,9 +37,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
     icons: {
       icon: [
-        { url: '/favicon.ico', sizes: 'any' },
-        { url: '/icon-96.png', type: 'image/png', sizes: '96x96' },
-        { url: '/icon-192.png', type: 'image/png', sizes: '192x192' },
+        { url: '/favicon.ico?v=2', sizes: 'any' },
+        { url: '/icon-96.png?v=2', type: 'image/png', sizes: '96x96' },
+        { url: '/icon-192.png?v=2', type: 'image/png', sizes: '192x192' },
       ],
       apple: [
         { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },

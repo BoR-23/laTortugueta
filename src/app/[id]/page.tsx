@@ -35,10 +35,11 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     // SEO: Título específico para producto
     const title = `${product.name} | Calcetines Tradicionales`
 
-    // SEO: Descripción blindada con "para fallera" y los términos secundarios
+    // SEO: Descripción enriquecida para evitar "thin content" / duplicidad
     const description =
       product.description?.slice(0, 160) ||
-      `Compra online calcetines tradicionales modelo ${product.name}. Calcetines bordados para fallera y fallero. Ideales para indumentaria valenciana, folklore y trajes regionales.`
+      `Calcetines modelo ${product.name}${product.category ? ` de la colección ${product.category}` : ''}. ` +
+      `Bordados artesanales${product.color ? ` en tono ${product.color}` : ''}, perfectos para indumentaria valenciana y fallera.`
 
     const url = absoluteUrl(`/${product.id}`)
     const image = getPrimaryProductImage(product)
