@@ -14,6 +14,7 @@ import {
 
 const inter = Inter({ subsets: ['latin'] })
 
+import { ClientSessionProvider } from '@/components/providers/ClientSessionProvider'
 import { getSiteSettings } from '@/lib/settings'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -107,7 +108,9 @@ export default function RootLayout({
             <GoogleAnalytics GA_MEASUREMENT_ID={gaMeasurementId} />
           </Suspense>
         ) : null}
-        <LayoutShell>{children}</LayoutShell>
+        <ClientSessionProvider>
+          <LayoutShell>{children}</LayoutShell>
+        </ClientSessionProvider>
       </body>
     </html>
   )

@@ -1,10 +1,8 @@
 import type { Metadata } from 'next'
-import { getServerSession } from 'next-auth'
 import { getAllProductIds, getProductData } from '@/lib/products'
 import { notFound } from 'next/navigation'
 import { ProductShowcase } from '@/components/product/ProductShowcase'
 import { getRecommendationsForProduct } from '@/lib/recommendations'
-import { authOptions } from '@/lib/auth'
 import {
   absoluteUrl,
   buildProductBreadcrumbJsonLd,
@@ -84,16 +82,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
     const recommendations = await getRecommendationsForProduct(id, 4)
     const siteSettings = await getSiteSettings()
 
-    // [RESTORATION] Intentamos obtener sesión con manejo de errores para Next 15
-    let isAdmin = false
-    try {
-      const session = await getServerSession(authOptions)
-      isAdmin = Boolean(session?.user?.role === 'admin')
-    } catch (e) {
-      // Ignoramos error de sesión en Next 15 para no romper la página
-      console.warn('Auth check failed (non-critical):', e)
-    }
-
     // [DIAGNOSTIC] Mantenemos la serialización limpia por seguridad
     const safeProduct = JSON.parse(JSON.stringify(product))
 
@@ -117,7 +105,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <ProductShowcase
           product={safeProduct}
           recommendations={recommendations}
-          isAdmin={isAdmin}
           showLocalSuggestions={siteSettings.enableLocalSuggestions}
         />
       </>

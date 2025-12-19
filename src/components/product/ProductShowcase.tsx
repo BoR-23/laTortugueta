@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
@@ -87,6 +88,8 @@ export function ProductShowcase({
   isAdmin = false,
   showLocalSuggestions = true
 }: ProductShowcaseProps) {
+  const { data: session } = useSession()
+
   const initialGallery = useMemo(() => {
     return product.gallery.length > 0 ? product.gallery : product.image ? [product.image] : []
   }, [product.gallery, product.image])
@@ -163,7 +166,7 @@ export function ProductShowcase({
   }, [gallery, activeIndex])
 
 
-  const adminModeEnabled = isAdmin && !adminPreviewMode
+  const adminModeEnabled = (isAdmin || session?.user?.role === 'admin') && !adminPreviewMode
 
   const whatsappHref = useMemo(() => {
     const colorDetails = [
