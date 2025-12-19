@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
-import { getServerSession } from 'next-auth'
+// import { getServerSession } from 'next-auth'
 import { getAllProductIds, getProductData } from '@/lib/products'
 import { notFound } from 'next/navigation'
 import { ProductShowcase } from '@/components/product/ProductShowcase'
 import { getRecommendationsForProduct } from '@/lib/recommendations'
-import { authOptions } from '@/lib/auth'
+// import { authOptions } from '@/lib/auth'
 import {
   absoluteUrl,
   buildProductBreadcrumbJsonLd,
@@ -82,19 +82,25 @@ export default async function ProductPage({ params }: ProductPageProps) {
   try {
     const product = await getProductData(id)
     const recommendations = await getRecommendationsForProduct(id, 4)
-    const [session, siteSettings] = await Promise.all([
-      getServerSession(authOptions),
-      getSiteSettings()
-    ])
-    const isAdmin = Boolean(session?.user?.role === 'admin')
+    // [DIAGNOSTIC] Comentando getServerSession para descartar fallo en Next 15.1
+    // const [session, siteSettings] = await Promise.all([
+    //   getServerSession(authOptions),
+    //   getSiteSettings()
+    // ])
+    const siteSettings = await getSiteSettings()
+    const isAdmin = false // session?.user?.role === 'admin'
+
+    // [DIAGNOSTIC] Forzar serialización limpia del producto
+    const safeProduct = JSON.parse(JSON.stringify(product))
+
     const jsonLd = [
-      buildProductJsonLd(product),
-      buildProductBreadcrumbJsonLd(product)
+      buildProductJsonLd(safeProduct),
+      buildProductBreadcrumbJsonLd(safeProduct)
     ]
     const breadcrumbs = [
       { label: 'Inicio', href: '/' },
-      { label: 'Catálogo', href: '/#catalogo' }, // Corregido hash para scroll
-      { label: product.name, current: true }
+      { label: 'Catálogo', href: '/#catalogo' },
+      { label: safeProduct.name, current: true }
     ]
     return (
       <>
@@ -105,7 +111,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         />
         <Breadcrumbs items={[...breadcrumbs]} />
         <ProductShowcase
-          product={product}
+          product={safeProduct}
           recommendations={recommendations}
           isAdmin={isAdmin}
           showLocalSuggestions={siteSettings.enableLocalSuggestions}
