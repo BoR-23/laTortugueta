@@ -18,7 +18,7 @@ interface ProductPageProps {
   }>
 }
 
-export const revalidate = 3600
+export const revalidate = 0
 
 export async function generateStaticParams() {
   const productIds = await getAllProductIds()
@@ -34,10 +34,16 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     const title = `${product.name} | Calcetines Tradicionales`
 
     // SEO: Descripción enriquecida para evitar "thin content" / duplicidad
-    const description =
-      product.description?.slice(0, 160) ||
-      `Calcetines modelo ${product.name}${product.category ? ` de la colección ${product.category}` : ''}. ` +
-      `Bordados artesanales${product.color ? ` en tono ${product.color}` : ''}, perfectos para indumentaria valenciana y fallera.`
+    // SEO: Descripción enriquecida. Si la de base de datos es muy corta (<60 chars) o inexistente, generamos una completa.
+    let description = product.description || ''
+
+    const isThinContent = description.length < 60
+
+    if (isThinContent) {
+      description = `Calcetines tradicionales valencianos modelo ${product.name}. Reproducción artesanal${product.color ? ` en color ${product.color}` : ''}. Perfectos para indumentaria de fallera, torrentí y bailes regionales. Confección en Alcoi de alta calidad.`
+    }
+
+    description = description.slice(0, 160)
 
     const url = absoluteUrl(`/${product.id}`)
     const image = getPrimaryProductImage(product)
