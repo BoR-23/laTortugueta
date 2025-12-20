@@ -1,4 +1,5 @@
 ﻿import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import { getAllProducts } from "@/lib/products"
 import { TagFilterPanelClient } from "@/components/catalog/TagFilterPanelClient"
 import { prepareCatalogProducts } from "@/components/catalog/prepareCatalogProducts"
@@ -80,12 +81,14 @@ export default async function Home() {
       <h1 className="sr-only">La Tortugueta: Calcetines Tradicionales y Valencianos</h1>
       <HeroCarousel slides={slides} />
       <div id="catalogo">
-        <TagFilterPanelClient
-          products={visibleProducts}
-          headerCategories={mapCategoriesToDTO(headerCategories)}
-          filterCategories={mapCategoriesToDTO(filterCategories)}
-          settings={siteSettings}
-        />
+        <Suspense fallback={<div className="h-96 w-full animate-pulse bg-neutral-100" />}>
+          <TagFilterPanelClient
+            products={visibleProducts}
+            headerCategories={mapCategoriesToDTO(headerCategories)}
+            filterCategories={mapCategoriesToDTO(filterCategories)}
+            settings={siteSettings}
+          />
+        </Suspense>
       </div>
       {siteSettings.enableTopVisited ? <TopVisitedSection products={visibleProducts} /> : null}
       <SeoContentSection />
