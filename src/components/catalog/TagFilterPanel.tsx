@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { TouchEvent } from 'react'
@@ -461,8 +461,8 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
                 type="button"
                 onClick={toggleMenu}
                 className={`rounded-full border-2 px-4 py-1.5 transition ${menuOpen
-                    ? 'border-neutral-900 bg-neutral-900 text-white'
-                    : 'border-neutral-900 text-neutral-900 hover:bg-neutral-900 hover:text-white'
+                  ? 'border-neutral-900 bg-neutral-900 text-white'
+                  : 'border-neutral-900 text-neutral-900 hover:bg-neutral-900 hover:text-white'
                   }`}
               >
                 Menú
@@ -471,8 +471,8 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
                 type="button"
                 onClick={toggleFilters}
                 className={`rounded-full border-2 px-4 py-1.5 transition ${filtersOpen
-                    ? 'border-neutral-900 bg-neutral-900 text-white'
-                    : 'border-neutral-900 text-neutral-900 hover:bg-neutral-900 hover:text-white'
+                  ? 'border-neutral-900 bg-neutral-900 text-white'
+                  : 'border-neutral-900 text-neutral-900 hover:bg-neutral-900 hover:text-white'
                   }`}
               >
                 {filtersOpen
@@ -545,8 +545,8 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
                       type="button"
                       onClick={() => setGridColumns(option)}
                       className={`rounded-full border px-3 py-1.5 text-[10px] font-semibold transition ${isActive
-                          ? 'border-neutral-900 bg-neutral-900 text-white'
-                          : 'border-neutral-200 text-neutral-500 hover:border-neutral-900 hover:text-neutral-900'
+                        ? 'border-neutral-900 bg-neutral-900 text-white'
+                        : 'border-neutral-200 text-neutral-500 hover:border-neutral-900 hover:text-neutral-900'
                         }`}
                       aria-pressed={isActive}
                     >
@@ -559,8 +559,8 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
                 type="button"
                 onClick={toggleFilters}
                 className={`rounded-full border-2 px-4 py-1.5 text-[10px] font-semibold transition ${filtersOpen
-                    ? 'border-neutral-900 bg-neutral-900 text-white'
-                    : 'border-neutral-900 text-neutral-900 hover:bg-neutral-900 hover:text-white'
+                  ? 'border-neutral-900 bg-neutral-900 text-white'
+                  : 'border-neutral-900 text-neutral-900 hover:bg-neutral-900 hover:text-white'
                   }`}
               >
                 {filtersOpen
