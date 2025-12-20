@@ -8,15 +8,7 @@ import type { CatalogProductSummary } from '@/components/catalog/prepareCatalogP
 import type { CategoryDTO } from '@/types/categories'
 import type { SiteSettings } from '@/lib/settings'
 
-const LazyTagFilterPanel = dynamic(
-  () =>
-    import('@/components/catalog/TagFilterPanel').then(mod => ({
-      default: mod.TagFilterPanel
-    })),
-  {
-    loading: () => <CatalogPanelSkeleton />
-  }
-)
+import { TagFilterPanel } from '@/components/catalog/TagFilterPanel'
 
 interface TagFilterPanelClientProps {
   products: CatalogProductSummary[]
@@ -32,7 +24,7 @@ export function TagFilterPanelClient({
   settings
 }: TagFilterPanelClientProps) {
   return (
-    <LazyTagFilterPanel
+    <TagFilterPanel
       products={products}
       headerCategories={headerCategories}
       filterCategories={filterCategories}
