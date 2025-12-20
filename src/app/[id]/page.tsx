@@ -18,7 +18,7 @@ interface ProductPageProps {
   }>
 }
 
-export const revalidate = 0
+export const revalidate = 3600
 
 export async function generateStaticParams() {
   const productIds = await getAllProductIds()
@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     const isThinContent = description.length < 60
 
     if (isThinContent) {
-      description = `Calcetines tradicionales valencianos modelo ${product.name}. Reproducción artesanal${product.color ? ` en color ${product.color}` : ''}. Perfectos para indumentaria de fallera, torrentí y bailes regionales. Confección en Alcoi de alta calidad.`
+      description = `Calcetines tradicionales valencianos modelo ${product.name}. Reproducción artesanal${product.color ? ` en color ${product.color}` : ''}. Perfectos para indumentaria tradicional y bailes regionales. Confección en Alcoi de alta calidad.`
     }
 
     description = description.slice(0, 160)
