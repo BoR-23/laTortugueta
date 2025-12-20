@@ -243,6 +243,10 @@ export const buildProductJsonLd = (product: Product) => {
           ? 'https://schema.org/PreOrder'
           : 'https://schema.org/InStock',
       url: absoluteUrl(`/${product.id}`)
+    },
+    mainEntityOfPage: {
+      '@type': 'ItemPage',
+      '@id': absoluteUrl(`/${product.id}`)
     }
   }
 }
