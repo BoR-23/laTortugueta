@@ -13,7 +13,6 @@ const LazyTagFilterPanel = dynamic(
       default: mod.TagFilterPanel
     })),
   {
-    ssr: false,
     loading: () => <CatalogPanelSkeleton />
   }
 )

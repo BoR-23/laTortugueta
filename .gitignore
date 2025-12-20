@@ -30,3 +30,8 @@ coverage
 
 # OS
 Thumbs.db
+
+# Local SEO Tool (Audit)
+/seo-tool
+/seo-report.json
+/seo-report.html

@@ -82,7 +82,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     const recommendations = await getRecommendationsForProduct(id, 4)
     const siteSettings = await getSiteSettings()
 
-    // [DIAGNOSTIC] Mantenemos la serialización limpia por seguridad
+    // Serialización segura para pasar datos a componentes cliente
     const safeProduct = JSON.parse(JSON.stringify(product))
 
     const jsonLd = [
