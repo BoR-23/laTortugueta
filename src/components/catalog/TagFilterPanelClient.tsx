@@ -1,4 +1,5 @@
 'use client'
+// Enabling SSR for SEO visibility
 
 import dynamic from 'next/dynamic'
 
