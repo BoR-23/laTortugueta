@@ -1,11 +1,8 @@
-# La Tortugueta
+# llms.txt
+User-agent: *
+Disallow:
 
-La Tortugueta is an artisan sock workshop located in Alcoy, Spain. We specialize in traditional embroidered socks for "fallera", "fallero", and Valencian clothing. We also produce socks for folklore, regional costumes, and dance groups. All our products are made to order with historical reproduction techniques.
-
-## Site Structure
-
-- [Catalog](https://latortugueta.com/) - Main product catalog and collections.
-- [Blog](https://latortugueta.com/blog) - Articles about traditional sock making and history.
-- [Color Chart](https://latortugueta.com/colores) - Available yarn colors for customization.
-- [Contact](https://latortugueta.com/contacto) - Contact information and location.
-- [About Us](https://latortugueta.com/quienes-somos) - History of the workshop since 1989.
+# Site Context
+This is an e-commerce site for "La Tortugueta", selling traditional Valencian socks (indumentaria fallera).
+Main catalog: /
+Product detail pages: /[id]

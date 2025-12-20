@@ -62,16 +62,24 @@ export const HeroCarousel = ({ slides }: HeroCarouselProps) => {
                   }}
                   priority={index === 0}
                   fetchPriority={index === 0 ? 'high' : 'auto'}
+                  loading={index === 0 ? 'eager' : 'lazy'}
+                  decoding={index === 0 ? 'sync' : 'async'}
                   sizes="(max-width: 640px) 100vw, 100vw"
-                  quality={80}
+                  quality={85}
                 />
 
                 {(slide.title || slide.subtitle) && <div className="absolute inset-0 bg-black/30" />}
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white p-4">
                   {slide.title && (
-                    <h2 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl drop-shadow-lg">
-                      {slide.title}
-                    </h2>
+                    index === 0 ? (
+                      <h1 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl drop-shadow-lg">
+                        {slide.title}
+                      </h1>
+                    ) : (
+                      <h2 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl drop-shadow-lg">
+                        {slide.title}
+                      </h2>
+                    )
                   )}
                   {slide.subtitle && (
                     <p className="mb-8 text-lg font-medium sm:text-xl lg:text-2xl drop-shadow-md max-w-2xl">

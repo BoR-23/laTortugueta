@@ -9,7 +9,6 @@ export type CatalogProductSummary = {
   price: number
   tags: string[]
   category?: string
-  description: string
   sizes?: string[]
   available: boolean
   priority: number
@@ -26,7 +25,6 @@ export const prepareCatalogProducts = (products: Product[]): CatalogProductSumma
     price: product.price,
     tags: product.tags || [],
     category: product.category,
-    description: product.description,
     sizes: product.sizes || [],
     available: product.available ?? false,
     priority: product.priority ?? DEFAULT_PRODUCT_PRIORITY,

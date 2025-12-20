@@ -251,9 +251,9 @@ export const ProductGrid = ({
                   )}
                 </div>
                 <div className="h-[88px] flex flex-col justify-start gap-1 py-1">
-                  <h2 className="text-base font-medium text-neutral-900 line-clamp-2 leading-tight" title={product.name}>
+                  <h3 className="text-base font-medium text-neutral-900 line-clamp-2 leading-tight" title={product.name}>
                     {product.name}
-                  </h2>
+                  </h3>
                   <p className="text-sm text-neutral-600 mt-auto">
                     {product.price.toFixed(2)} €
                     <span className="ml-1 text-xs uppercase tracking-[0.2em] text-neutral-500">+ gastos de envío</span>
