@@ -51,8 +51,7 @@ export function TopVisitedSection({ products }: TopVisitedSectionProps) {
                     fill
                     className="object-contain transition-transform duration-500 group-hover:scale-105"
                     sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 90vw"
-                    placeholder={product.imagePlaceholder ? 'blur' : 'empty'}
-                    blurDataURL={product.imagePlaceholder}
+                    placeholder="empty"
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center text-xs uppercase tracking-[0.3em] text-neutral-400">
