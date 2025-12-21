@@ -24,21 +24,26 @@ export const prepareCatalogProducts = (products: Product[]): CatalogProductSumma
       image = ''
     }
 
-    // Sanitize imageTags: drop any that might be weirdly long or invalid (though tags are usually safe)
-    const imageTags = product.mediaAssets?.flatMap(asset => asset.tags || []) || []
+    // Sanitize imageTags: drop any that might be weirdly long or invalid
+    // OPTIMIZATION: Merge imageTags into main tags to avoid sending duplicate data.
+    // The client filter logic combines them anyway (refer to catalogFiltering.ts).
+    const rawImageTags = product.mediaAssets?.flatMap(asset => asset.tags || []) || []
+
+    // Combine and deduplicate
+    const combinedTags = Array.from(new Set([...(product.tags || []), ...rawImageTags]))
 
     return {
       id: product.id,
       name: product.name,
       image,
       price: product.price,
-      tags: product.tags || [],
+      tags: combinedTags,
       category: product.category,
       sizes: product.sizes || [],
       available: product.available ?? false,
       priority: product.priority ?? DEFAULT_PRODUCT_PRIORITY,
       viewCount: product.viewCount,
-      imageTags
+      imageTags: [] // Empty this as we merged them into tags
     }
   })
 }

@@ -10,10 +10,8 @@ interface TopVisitedSectionProps {
 }
 
 export function TopVisitedSection({ products }: TopVisitedSectionProps) {
-  const ranked = [...products]
-    .filter(product => (product.viewCount ?? 0) > 0)
-    .sort((a, b) => (b.viewCount ?? 0) - (a.viewCount ?? 0))
-    .slice(0, 6)
+  // Products are already sorted and sliced by the server
+  const ranked = products
 
   if (ranked.length === 0) {
     return null

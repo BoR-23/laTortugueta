@@ -1,5 +1,6 @@
 ﻿import type { Metadata } from 'next'
 import { getAllProducts } from "@/lib/products"
+// import { getAllProducts } from "@/lib/products/mock_repository"
 import { TagFilterPanelClient } from "@/components/catalog/TagFilterPanelClient"
 import { prepareCatalogProducts } from "@/components/catalog/prepareCatalogProducts"
 import { getCategories } from "@/lib/categories"
@@ -77,6 +78,15 @@ export default async function Home() {
 
   const visibleProducts = catalogProducts.filter(product => product.price > 0)
 
+  /* 
+   Optimization: Compute top visited products on the server to avoid passing 
+   the entire catalog to the client component. 
+  */
+  const topVisitedProducts = [...visibleProducts]
+    .filter(product => (product.viewCount ?? 0) > 0)
+    .sort((a, b) => (b.viewCount ?? 0) - (a.viewCount ?? 0))
+    .slice(0, 6)
+
   const catalogJsonLd = buildCatalogJsonLd(visibleProducts.length)
   const enableTestimonials =
     process.env.NEXT_PUBLIC_ENABLE_TESTIMONIALS !== 'false' && siteSettings.enableTestimonials
@@ -97,7 +107,7 @@ export default async function Home() {
           settings={siteSettings}
         />
       </div>
-      {siteSettings.enableTopVisited ? <TopVisitedSection products={visibleProducts} /> : null}
+      {siteSettings.enableTopVisited ? <TopVisitedSection products={topVisitedProducts} /> : null}
       <SeoContentSection />
       <TestimonialsSection show={enableTestimonials} />
       {siteSettings.enableStoryHighlights ? <StoryHighlightsSection /> : null}
