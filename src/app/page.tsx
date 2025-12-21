@@ -33,23 +33,33 @@ const buildCategoryNameMap = (records: Awaited<ReturnType<typeof getCategories>>
   return map
 }
 
-export const metadata: Metadata = {
-  // CAMBIO SEO: Título optimizado ~55 caracteres (AIOSEO)
-  title: 'Catálogo de Calcetines Tradicionales | La Tortugueta Alcoi',
-  description: siteMetadata.description,
-  alternates: {
-    canonical: absoluteUrl('/'),
-  },
-  openGraph: {
-    title: `Catálogo · ${siteMetadata.name}`,
+import { ResolvingMetadata } from 'next'
+
+export async function generateMetadata(
+  props: {},
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const previousImages = (await parent).openGraph?.images || []
+
+  return {
+    title: 'Catálogo de Calcetines Tradicionales | La Tortugueta Alcoi',
     description: siteMetadata.description,
-    url: absoluteUrl('/'),
-    type: 'website'
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: `Catálogo · ${siteMetadata.name}`,
-    description: siteMetadata.description
+    alternates: {
+      canonical: absoluteUrl('/'),
+    },
+    openGraph: {
+      title: `Catálogo · ${siteMetadata.name}`,
+      description: siteMetadata.description,
+      url: absoluteUrl('/'),
+      type: 'website',
+      images: previousImages,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `Catálogo · ${siteMetadata.name}`,
+      description: siteMetadata.description,
+      images: previousImages,
+    }
   }
 }
 

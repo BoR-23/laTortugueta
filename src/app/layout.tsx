@@ -28,6 +28,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     metadataBase: new URL(getSiteUrl()),
+    alternates: {
+      canonical: './',
+    },
     title: {
       default: title,
       template: `%s · ${siteMetadata.name}`
@@ -38,9 +41,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
     icons: {
       icon: [
-        { url: '/favicon.ico?v=2', sizes: 'any' },
-        { url: '/icon-96.png?v=2', type: 'image/png', sizes: '96x96' },
-        { url: '/icon-192.png?v=2', type: 'image/png', sizes: '192x192' },
+        { url: '/favicon.ico', sizes: 'any' },
+        { url: '/icon-256.png', type: 'image/png', sizes: '256x256' },
       ],
       apple: [
         { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
