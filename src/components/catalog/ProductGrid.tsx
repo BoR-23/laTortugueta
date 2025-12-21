@@ -237,8 +237,7 @@ export const ProductGrid = ({
                             ? '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw'
                             : '(min-width: 640px) 50vw, 100vw'
                       }
-                      placeholder={product.imagePlaceholder ? 'blur' : 'empty'}
-                      blurDataURL={product.imagePlaceholder}
+                      placeholder="empty"
                       priority={isPriorityCard}
                       loading={isPriorityCard ? 'eager' : 'lazy'}
                       fetchPriority={isPriorityCard ? 'high' : 'auto'}
