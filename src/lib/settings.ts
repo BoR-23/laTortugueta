@@ -29,8 +29,14 @@ type RawSetting = {
 }
 
 const mergeSettings = (raw?: Partial<SiteSettings>): SiteSettings => ({
-  ...DEFAULT_SETTINGS,
-  ...raw
+  enableTopVisited: raw?.enableTopVisited ?? DEFAULT_SETTINGS.enableTopVisited,
+  enableTestimonials: raw?.enableTestimonials ?? DEFAULT_SETTINGS.enableTestimonials,
+  enableStoryHighlights: raw?.enableStoryHighlights ?? DEFAULT_SETTINGS.enableStoryHighlights,
+  enableLocalSuggestions: raw?.enableLocalSuggestions ?? DEFAULT_SETTINGS.enableLocalSuggestions,
+  enableCatalogBadges: raw?.enableCatalogBadges ?? DEFAULT_SETTINGS.enableCatalogBadges,
+  seo_title: raw?.seo_title,
+  seo_description: raw?.seo_description,
+  seo_og_image: raw?.seo_og_image
 })
 
 export const getSiteSettings = cache(async (): Promise<SiteSettings> => {

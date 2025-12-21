@@ -162,8 +162,23 @@ export const ProductGrid = ({
     }))
   }, [minRowsWithoutVirtualization])
 
+  // SSR / Initial Load Optimization:
+  // If virtualization is NOT enabled (SSR or initial client render before measure),
+  // we limit the number of rendered items to avoid a massive HTML payload.
+  // 24 items is enough to fill the viewport on most screens (4x6 or 3x8).
+  const INITIAL_RENDER_COUNT = 24
+
   const startIndex = virtualizationEnabled ? visibleRows.start * columnCount : 0
-  const endIndex = virtualizationEnabled ? Math.min(products.length, visibleRows.end * columnCount) : products.length
+
+  // Calculate end index:
+  // 1. If virtualization is ON, use the calculated visible end.
+  // 2. If virtualization is OFF (SSR), use a hard limit (INITIAL_RENDER_COUNT).
+  // 3. But if we are on client and just measured 0 width (unlikely but possible), safe fallback.
+  // The critical part is SSR: containerWidth is 0, so virtualizationEnabled is false.
+
+  const endIndex = virtualizationEnabled
+    ? Math.min(products.length, visibleRows.end * columnCount)
+    : Math.min(products.length, INITIAL_RENDER_COUNT)
 
   const topPadding = virtualizationEnabled ? visibleRows.start * rowMetrics.rowHeight : 0
   const bottomPadding = virtualizationEnabled ? Math.max(rowCount - visibleRows.end, 0) * rowMetrics.rowHeight : 0

@@ -32,5 +32,15 @@ export const getHeroSlides = cache(async (): Promise<HeroSlide[]> => {
         return []
     }
 
-    return data as HeroSlide[]
+    return (data as any[]).map(slide => ({
+        id: slide.id,
+        image_url: slide.image_url,
+        title: slide.title,
+        subtitle: slide.subtitle,
+        cta_text: slide.cta_text,
+        cta_link: slide.cta_link,
+        priority: slide.priority,
+        active: slide.active,
+        mobile_crop: slide.mobile_crop
+    }))
 })
