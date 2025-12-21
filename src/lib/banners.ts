@@ -32,15 +32,24 @@ export const getHeroSlides = cache(async (): Promise<HeroSlide[]> => {
         return []
     }
 
-    return (data as any[]).map(slide => ({
-        id: slide.id,
-        image_url: slide.image_url,
-        title: slide.title,
-        subtitle: slide.subtitle,
-        cta_text: slide.cta_text,
-        cta_link: slide.cta_link,
-        priority: slide.priority,
-        active: slide.active,
-        mobile_crop: slide.mobile_crop
-    }))
+    return (data as any[]).map(slide => {
+        // SAFETY CHECK: Ignore base64 or garbage URLs
+        let imageUrl = slide.image_url
+        if (imageUrl && (imageUrl.length > 500 || imageUrl.startsWith('data:'))) {
+            console.warn(`[WARN] Giant Hero Slide Image ignored (${imageUrl.length} chars).`)
+            imageUrl = ''
+        }
+
+        return {
+            id: slide.id,
+            image_url: imageUrl,
+            title: slide.title,
+            subtitle: slide.subtitle,
+            cta_text: slide.cta_text,
+            cta_link: slide.cta_link,
+            priority: slide.priority,
+            active: slide.active,
+            mobile_crop: slide.mobile_crop
+        }
+    })
 })

@@ -21,8 +21,24 @@ export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings()
 
   const title = settings.seo_title || siteMetadata.name
-  const description = settings.seo_description || siteMetadata.description
-  const ogImage = settings.seo_og_image || defaultOpenGraphImage
+  // SAFETY CHECK: If the DB has garbage (Base64 images), ignore it.
+  const rawOgImage = settings.seo_og_image
+  const ogImage = (rawOgImage && rawOgImage.length < 500 && !rawOgImage.startsWith('data:'))
+    ? rawOgImage
+    : defaultOpenGraphImage
+
+  const rawDescription = settings.seo_description || siteMetadata.description
+  const description = (rawDescription && rawDescription.length < 500)
+    ? rawDescription
+    : siteMetadata.description
+
+  // DIAGNOSTIC LOGGING (Keep enabled to catch other issues)
+  if (settings.seo_og_image && settings.seo_og_image.length > 500) {
+    console.warn(`[WARN] Giant SEO OG Image from DB ignored (${settings.seo_og_image.length} chars).`)
+  }
+  if (description && description.length > 1000) {
+    console.warn(`[WARN] Giant Description detected (${description.length} chars).`)
+  }
 
 
 

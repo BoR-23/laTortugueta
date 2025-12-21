@@ -21,7 +21,7 @@ const supabaseCategoriesEnabled =
   process.env.NETLIFY
     ? true
     : Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL) &&
-      Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY)
+    Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY)
 
 const ensureSupabaseEnabled = () => {
   if (!supabaseCategoriesEnabled) {
@@ -81,7 +81,14 @@ const readCategoriesFromSupabase = async (): Promise<CategoryRecord[]> => {
     throw new Error(error?.message ?? 'No se pudieron leer las categorías.')
   }
 
-  return data.map(mapRowToRecord)
+  return data.map(row => {
+    // SAFETY CHECK: Truncate large strings in categories
+    if (row.name && row.name.length > 100) {
+      console.warn(`[WARN] Giant Category Name truncated (${row.name.length}).`)
+      row.name = row.name.substring(0, 50)
+    }
+    return mapRowToRecord(row)
+  })
 }
 
 export const readCategories = async (): Promise<CategoryRecord[]> => {
@@ -284,7 +291,7 @@ export const deleteCategoryRecord = async (id: string) => {
   if (error) {
     if (error.code === '23503') {
       const err = new Error('CATEGORY_IN_USE')
-      ;(err as Error & { code?: string }).code = 'CATEGORY_IN_USE'
+        ; (err as Error & { code?: string }).code = 'CATEGORY_IN_USE'
       throw err
     }
     throw new Error(error.message)

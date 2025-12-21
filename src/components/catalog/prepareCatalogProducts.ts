@@ -32,6 +32,12 @@ export const prepareCatalogProducts = (products: Product[]): CatalogProductSumma
     // Combine and deduplicate
     const combinedTags = Array.from(new Set([...(product.tags || []), ...rawImageTags]))
 
+    // DIAGNOSTIC LOGGING (will appear in build logs)
+    if (product.name.length > 500) console.warn(`[WARN] Giant Name (${product.name.length} chars) in product ${product.id}`)
+    if (image && image.length > 500) console.warn(`[WARN] Giant Image URL (${image.length} chars) in product ${product.id}`)
+    if (product.category && product.category.length > 100) console.warn(`[WARN] Giant Category (${product.category.length} chars) in product ${product.id}`)
+    if (combinedTags.length > 50) console.warn(`[WARN] Too many tags (${combinedTags.length}) in product ${product.id}`)
+
     return {
       id: product.id,
       name: product.name,
