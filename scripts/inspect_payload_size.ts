@@ -19,7 +19,7 @@ async function inspect() {
         console.log('Sample Product keys:', Object.keys(p));
 
         // Check if any specific field is huge
-        products.forEach(prod => {
+        products.forEach((prod: Record<string, unknown>) => {
             Object.entries(prod).forEach(([key, val]) => {
                 const fieldSize = Buffer.byteLength(JSON.stringify(val) || '', 'utf8');
                 if (fieldSize > 10000) { // Warn if > 10KB
