@@ -81,14 +81,7 @@ const readCategoriesFromSupabase = async (): Promise<CategoryRecord[]> => {
     throw new Error(error?.message ?? 'No se pudieron leer las categorías.')
   }
 
-  return data.map(row => {
-    // SAFETY CHECK: Truncate large strings in categories
-    if (row.name && row.name.length > 100) {
-      console.warn(`[WARN] Giant Category Name truncated (${row.name.length}).`)
-      row.name = row.name.substring(0, 50)
-    }
-    return mapRowToRecord(row)
-  })
+  return data.map(mapRowToRecord)
 }
 
 export const readCategories = async (): Promise<CategoryRecord[]> => {
