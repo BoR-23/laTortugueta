@@ -1,6 +1,6 @@
 import React from 'react';
 import { YARN_COLORS } from '@/lib/colors/constants';
-import { ColorCatalogGrid } from '@/components/catalog/ColorCatalogGrid';
+import { ColorBrowser } from '@/components/catalog/ColorBrowser';
 import { Metadata } from 'next';
 import { absoluteUrl, buildBreadcrumbJsonLd } from '@/lib/seo';
 
@@ -52,7 +52,7 @@ export default function ColorCatalogPage() {
 
             {/* Catalog Grid */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <ColorCatalogGrid colors={YARN_COLORS} />
+                <ColorBrowser colors={YARN_COLORS} />
             </div>
         </div>
     );
