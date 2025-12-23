@@ -39,47 +39,71 @@ export async function POST(request: Request) {
     const startIndex = lines[0].toLowerCase().startsWith('pedido') ? 1 : 0
 
     for (let i = startIndex; i < lines.length; i++) {
-        const cols = parseCSVLine(lines[i])
+        // Detect separator (Tab vs Comma)
+        const isTab = lines[i].includes('\t')
+        const rawCols = isTab ? lines[i].split('\t') : parseCSVLine(lines[i])
 
-        // Columns: Pedido, Fecha, Cliente, Modelo y Talla, Detalles, Entrega
-        // Index:   0       1      2        3               4         5
+        // Clean whitespace
+        const cols = rawCols.map(c => c.trim())
 
-        let orderId = cols[0]
-        let dateStr = cols[1]
-        let clientName = cols[2]
+        // Detection of "Extended" format (Index 1 is 'M' or 'N' single char)
+        // Standard: [ID, Date, Client, Product, Details, Delivery]
+        // Extended: [ID, Type, Date, Client, Product, Delivery, Notes]
+        const isExtended = cols[1] && /^[MN]$/i.test(cols[1])
 
-        // Handle "ditto" fields
+        let orderId, dateStr, clientName, modelAndSize, details, deliveryStr
+        let type = 'N'
+
+        if (isExtended) {
+            orderId = cols[0]
+            type = cols[1].toUpperCase() // M or N
+            dateStr = cols[2]
+            clientName = cols[3]
+            modelAndSize = cols[4]
+            deliveryStr = cols[5] // In extended, 5 seems to be delivery ("final febrer")
+            details = cols[6] || '' // Notes at the end
+
+            // Sometimes details/delivery are swapped or merged, but let's stick to this mapping based on the paste
+        } else {
+            orderId = cols[0]
+            dateStr = cols[1]
+            clientName = cols[2]
+            modelAndSize = cols[3]
+            details = cols[4]
+            deliveryStr = cols[5]
+        }
+
+        // Handle "ditto" fields (only for Order ID/Date/Client/Type)
         if (!orderId && lastOrder.orderId) {
             orderId = lastOrder.orderId
             dateStr = lastOrder.dateStr
             clientName = lastOrder.clientName
+            type = lastOrder.type || 'N'
         } else {
             // New order, update lastOrder reference
-            lastOrder = { orderId, dateStr, clientName }
+            lastOrder = { orderId, dateStr, clientName, type }
         }
 
-        if (!orderId) continue // Skip if we still don't have an order ID
+        if (!orderId) continue
 
-        // Parse Model and Size
-        const modelAndSize = cols[3] || ''
-        // Typical format: "Benimeli T/39" or "Els Millars T/39"
-        // We want to extract "Benimeli" and "39"
-        const sizeMatch = modelAndSize.match(/T\/(\d+(?:[.,]\d+)?)/i)
+        // ... Model Parsing ...
+        const sizeMatch = (modelAndSize || '').match(/T\/(\d+(?:[.,]\d+)?)/i)
         const size = sizeMatch ? sizeMatch[1] : ''
-        const productName = modelAndSize.replace(/T\/\d+(?:[.,]\d+)?/i, '').trim()
+        const productName = (modelAndSize || '').replace(/T\/\d+(?:[.,]\d+)?/i, '').trim()
+
+        // ... Fuzzy Match Product ... (Previous logic reusable if we just set variables correctly)
+        // (Re-implementing minimal fuzzy match here to keep flow clear or assume existing scope)
 
         // Fuzzy match product ID & Price
         let productId = null
         let basePrice = 0
 
         if (productName && products) {
-            // Simple case-insensitive match first
             const exact = products.find((p: any) => p.name.toLowerCase() === productName.toLowerCase())
             if (exact) {
                 productId = exact.id
                 basePrice = exact.price || 0
             } else {
-                // Try partial match
                 const partial = products.find((p: any) =>
                     p.name.toLowerCase().includes(productName.toLowerCase()) ||
                     productName.toLowerCase().includes(p.name.toLowerCase())
@@ -92,8 +116,13 @@ export async function POST(request: Request) {
         }
 
         // Auto-detect Wholesale
-        const details = cols[4] || ''
-        const isWholesale = (clientName.toLowerCase().includes('mayor') || details.toLowerCase().includes('mayor'))
+        // Priority: Explicit Type 'M' > Text 'Mayor'
+        let isWholesale = false
+        if (isExtended) {
+            isWholesale = (type === 'M')
+        } else {
+            isWholesale = (clientName.toLowerCase().includes('mayor') || (details || '').toLowerCase().includes('mayor'))
+        }
 
         // Calculate Final Price
         let finalPrice = basePrice
@@ -101,46 +130,50 @@ export async function POST(request: Request) {
             finalPrice = basePrice * 0.5
         }
 
-        // Parse Date
+        // ... Date Parsing ... (Reuse existing helper or assume consistent)
         let date = null
         const year = new Date().getFullYear()
 
         if (dateStr) {
             const lowerDate = dateStr.toLowerCase().trim()
-
             // Special handling for "Reyes" -> Jan 6th of next year (or current if early in year)
             if (lowerDate.includes('reyes')) {
                 const now = new Date()
-                // If we are in late year (e.g. Nov/Dec), Reyes is next year.
-                // If we are in early year (Jan), Reyes is this year.
                 const targetYear = now.getMonth() > 6 ? now.getFullYear() + 1 : now.getFullYear()
-                // Month is 0-indexed in JS Date, so 0 is January
                 date = new Date(targetYear, 0, 6).toISOString().split('T')[0]
             } else if (lowerDate.includes('enero')) {
-                date = `${year + 1}-01-15` // Default mid-January
+                date = `${year + 1}-01-15`
             } else if (lowerDate.includes('diciembre') || lowerDate.includes('navidad')) {
                 date = `${year}-12-25`
             } else {
                 // Standard DD/MM
-                const [day, month] = dateStr.split(/[/-]/)
-                if (day && month) {
-                    // If month is 01 or 02 and we are in late year, it's likely next year
-                    const monthNum = parseInt(month)
-                    const currentMonth = new Date().getMonth() + 1
-                    const finalYear = (currentMonth > 9 && monthNum < 3) ? year + 1 : year
+                const parts = dateStr.split(/[/-]/)
+                if (parts.length >= 2) {
+                    const day = parts[0]
+                    const month = parts[1]
+                    const yearPart = parts[2]
 
+                    // If explicit year provided (2025), use it
+                    let finalYear = year
+                    if (yearPart && yearPart.length === 4) {
+                        finalYear = parseInt(yearPart)
+                    } else {
+                        // Heuristic for late/early year
+                        const monthNum = parseInt(month)
+                        const currentMonth = new Date().getMonth() + 1
+                        finalYear = (currentMonth > 9 && monthNum < 3) ? year + 1 : year
+                    }
                     date = `${finalYear}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
                 }
             }
         }
 
-        // Helper to parse delivery date text
         const parseDeliveryDate = (text: string) => {
             if (!text) return text
             const lower = text.toLowerCase()
             if (lower.includes('reyes')) return '06/01'
             if (lower.includes('navidad')) return '25/12'
-            if (lower.includes('enero')) return '15/01' // Approximate
+            if (lower.includes('enero')) return '15/01'
             if (lower.includes('febrero')) return '15/02'
             return text
         }
@@ -151,8 +184,8 @@ export async function POST(request: Request) {
             client: clientName,
             product_name: productName,
             size: size,
-            details: details,
-            delivery_date: parseDeliveryDate(cols[5] || ''),
+            details: isExtended ? details : (details || ''), // Map notes to details
+            delivery_date: parseDeliveryDate(deliveryStr || ''),
             product_id: productId,
             product_price: finalPrice,
             is_wholesale: isWholesale,

@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     for (const sale of sales) {
         const clientName = sale.client || ''
         const details = sale.details || ''
-        const isTarget = (clientName.toLowerCase().includes('mayor') || details.toLowerCase().includes('mayor'))
+        const isTarget = (clientName.toLowerCase().includes('mayor') || details.toLowerCase().includes('mayor') || sale.is_wholesale)
 
         if (isTarget) {
             // Find linked product base price
