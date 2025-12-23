@@ -44,7 +44,7 @@ export async function POST(request: Request) {
         const rawCols = isTab ? lines[i].split('\t') : parseCSVLine(lines[i])
 
         // Clean whitespace
-        const cols = rawCols.map(c => c.trim())
+        const cols = rawCols.map((c: string) => c.trim())
 
         // Detection of "Extended" format (Index 1 is 'M' or 'N' single char)
         // Standard: [ID, Date, Client, Product, Details, Delivery]
