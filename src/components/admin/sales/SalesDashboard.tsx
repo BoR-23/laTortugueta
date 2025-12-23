@@ -181,7 +181,7 @@ export function SalesDashboard() {
                                 disabled={importing}
                                 className="text-xs font-medium text-blue-600 hover:text-blue-800 hover:underline disabled:opacity-50"
                             >
-                                🔄 Corregir precios de pedidos antiguos ("Mayor")
+                                🔄 Corregir precios de pedidos antiguos ('Mayor')
                             </button>
                         </div>
                     </div>
