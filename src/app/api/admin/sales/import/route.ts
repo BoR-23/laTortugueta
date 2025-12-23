@@ -27,8 +27,8 @@ export async function POST(request: Request) {
 
     const client = createSupabaseServerClient()
 
-    // Fetch all products for fuzzy matching
-    const { data: products } = await client.from('products').select('id, name')
+    // Fetch all products for fuzzy matching and pricing
+    const { data: products } = await client.from('products').select('id, name, price')
 
     const lines = csv.split('\n').filter((l: string) => l.trim().length > 0)
     const records = []
@@ -68,21 +68,37 @@ export async function POST(request: Request) {
         const size = sizeMatch ? sizeMatch[1] : ''
         const productName = modelAndSize.replace(/T\/\d+(?:[.,]\d+)?/i, '').trim()
 
-        // Fuzzy match product ID
+        // Fuzzy match product ID & Price
         let productId = null
+        let basePrice = 0
+
         if (productName && products) {
             // Simple case-insensitive match first
             const exact = products.find((p: any) => p.name.toLowerCase() === productName.toLowerCase())
             if (exact) {
                 productId = exact.id
+                basePrice = exact.price || 0
             } else {
                 // Try partial match
                 const partial = products.find((p: any) =>
                     p.name.toLowerCase().includes(productName.toLowerCase()) ||
                     productName.toLowerCase().includes(p.name.toLowerCase())
                 )
-                if (partial) productId = partial.id
+                if (partial) {
+                    productId = partial.id
+                    basePrice = partial.price || 0
+                }
             }
+        }
+
+        // Auto-detect Wholesale
+        const details = cols[4] || ''
+        const isWholesale = (clientName.toLowerCase().includes('mayor') || details.toLowerCase().includes('mayor'))
+
+        // Calculate Final Price
+        let finalPrice = basePrice
+        if (isWholesale) {
+            finalPrice = basePrice * 0.5
         }
 
         // Parse Date
@@ -135,9 +151,11 @@ export async function POST(request: Request) {
             client: clientName,
             product_name: productName,
             size: size,
-            details: cols[4] || '',
+            details: details,
             delivery_date: parseDeliveryDate(cols[5] || ''),
             product_id: productId,
+            product_price: finalPrice,
+            is_wholesale: isWholesale,
             status: 'pending'
         })
     }

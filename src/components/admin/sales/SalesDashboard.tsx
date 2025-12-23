@@ -160,6 +160,30 @@ export function SalesDashboard() {
                         >
                             {importing ? 'Procesando...' : 'Importar Datos'}
                         </button>
+
+                        <div className="mt-6 border-t border-neutral-100 pt-4">
+                            <p className="text-xs text-neutral-400 mb-2">Herramientas de Mantenimiento</p>
+                            <button
+                                onClick={async () => {
+                                    if (!confirm('Esto revisará TODOS los pedidos antiguos buscando "Mayor" y corregirá sus precios al 50%. ¿Continuar?')) return
+                                    setImporting(true)
+                                    try {
+                                        const res = await fetch('/api/admin/sales/fix-wholesale', { method: 'POST' })
+                                        const data = await res.json()
+                                        alert(data.message || 'Proceso terminado')
+                                        fetchStats()
+                                    } catch (e) {
+                                        alert('Error al corregir')
+                                    } finally {
+                                        setImporting(false)
+                                    }
+                                }}
+                                disabled={importing}
+                                className="text-xs font-medium text-blue-600 hover:text-blue-800 hover:underline disabled:opacity-50"
+                            >
+                                🔄 Corregir precios de pedidos antiguos ("Mayor")
+                            </button>
+                        </div>
                     </div>
                 </details>
             </div>
