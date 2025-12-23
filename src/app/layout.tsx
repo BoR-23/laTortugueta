@@ -58,7 +58,7 @@ export async function generateMetadata(): Promise<Metadata> {
     icons: {
       icon: [
         { url: '/favicon.svg', type: 'image/svg+xml' },
-        { url: '/favicon.ico', sizes: 'any' },
+        { url: '/favicon.ico', type: 'image/x-icon', sizes: 'any' },
         { url: '/icon-96.png', type: 'image/png', sizes: '96x96' },
         { url: '/icon.png', type: 'image/png', sizes: '32x32' }, // Fallback standard
         { url: '/icon-192.png', type: 'image/png', sizes: '192x192' },
