@@ -20,6 +20,7 @@ export function LayoutShell({ children }: LayoutShellProps) {
             href="/"
             className="text-xl font-semibold font-sans uppercase tracking-[0.3em] text-neutral-900 sm:text-2xl sm:tracking-[0.35em] whitespace-nowrap"
             aria-label="Ir al inicio - La Tortugueta"
+            title="La Tortugueta - Inicio"
           >
             La Tortugueta
           </Link>
@@ -48,11 +49,11 @@ export function LayoutShell({ children }: LayoutShellProps) {
           <div className="flex flex-wrap gap-4 text-xs uppercase tracking-[0.3em]">
             {footerNavLinks.map(link =>
               link.external ? (
-                <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer">
+                <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer" title={link.label}>
                   {link.label}
                 </a>
               ) : (
-                <Link key={link.label} href={link.href}>
+                <Link key={link.label} href={link.href} title={link.label}>
                   {link.label}
                 </Link>
               )

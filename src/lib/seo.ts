@@ -10,7 +10,7 @@ const SITE_NAME = 'La Tortugueta: Calcetines Tradicionales Indumentaria Valencia
 
 // Descripción ajustada: ~155 caracteres para SEO
 const SITE_DESCRIPTION =
-  'Taller artesanal en Alcoi. Calcetines bordados para fallera, fallero y grupos de danza. Reproducciones históricas y confección a medida desde 1989.'
+  'Taller artesanal en Alcoi. Calcetines bordados para fallera, fallero y grupos de Danses. Reproducciones históricas y confección a medida desde 1989.'
 
 const SITE_TAGLINE = 'Calcetines artesanales bordados en Alcoi desde 1989.'
 // --------------------

@@ -98,7 +98,10 @@ export default async function Home() {
         suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: JSON.stringify(catalogJsonLd) }}
       />
-      <HeroCarousel slides={slides} />
+      <HeroCarousel
+        slides={slides}
+        mainH1="Catálogo de Calcetines Tradicionales y Artesanales en Alcoi"
+      />
       <div id="catalogo">
         <TagFilterPanelClient
           products={visibleProducts}

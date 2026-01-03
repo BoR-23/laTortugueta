@@ -109,7 +109,7 @@ export function TestimonialsSection({
           <p className="text-xs uppercase tracking-[0.35em] text-neutral-500">Que dicen los talleres</p>
           <h2 className="text-3xl font-semibold text-neutral-900">Confían en La Tortugueta</h2>
           <p className="text-sm text-neutral-600">
-            Grupos de danzas, compañías de teatro y coleccionistas trabajan con nosotros porque documentamos cada pieza.
+            Grupos de Danses, compañías de teatro y coleccionistas trabajan con nosotros porque documentamos cada pieza.
           </p>
         </div>
 
@@ -123,11 +123,10 @@ export function TestimonialsSection({
                     key={group.id}
                     type="button"
                     onClick={() => handleGroupClick(group.id)}
-                    className={`rounded-full border px-4 py-2 transition ${
-                      isActive
+                    className={`rounded-full border px-4 py-2 transition ${isActive
                         ? 'border-neutral-900 bg-neutral-900 text-white'
                         : 'border-transparent bg-white text-neutral-600 hover:border-neutral-900 hover:text-neutral-900'
-                    }`}
+                      }`}
                     aria-pressed={isActive}
                   >
                     {group.label}

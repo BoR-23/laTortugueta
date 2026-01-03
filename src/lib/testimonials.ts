@@ -17,7 +17,7 @@ export type TestimonialGroup = {
 export const defaultTestimonialGroups: TestimonialGroup[] = [
   {
     id: 'danzas',
-    label: 'Grupos de danzas',
+    label: 'Grupos de Danses',
     description:
       'Festes majors, collas falleras y escuelas de danza colaboran con el archivo para recrear piezas históricas idénticas a las originales.',
     matchTags: ['danza', 'danzas', 'folklore', 'ballet', 'fiesta', 'festes'],

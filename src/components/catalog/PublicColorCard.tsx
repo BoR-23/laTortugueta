@@ -34,6 +34,7 @@ export const PublicColorCard: React.FC<PublicColorCardProps> = ({ color, priorit
         <Link
             href={href}
             className="group relative aspect-square overflow-hidden rounded-2xl bg-gray-100 shadow-sm transition-transform duration-300 hover:scale-[2] hover:shadow-xl hover:z-50 origin-center block"
+            title={`Color ${color.id}${color.marketingName ? ' - ' + color.marketingName : ''}`}
         >
             <div className="relative aspect-square bg-gray-50">
                 {!imageError ? (

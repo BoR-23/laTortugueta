@@ -46,11 +46,17 @@ export function HeaderNav() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="transition hover:text-neutral-900"
+                        title={label}
                     >
                         {label}
                     </a>
                 ) : (
-                    <Link key={link.label} href={href} className="transition hover:text-neutral-900">
+                    <Link
+                        key={link.label}
+                        href={href}
+                        className="transition hover:text-neutral-900"
+                        title={label}
+                    >
                         {label}
                     </Link>
                 )

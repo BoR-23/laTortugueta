@@ -18,6 +18,10 @@ export const ThreadCard: React.FC<ThreadCardProps> = ({ color, onClick }) => {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             className="bg-white rounded-[1.2rem] p-4 shadow-[0_1px_4px_rgba(0,0,0,0.02)] hover:shadow-[0_15px_30px_rgba(0,0,0,0.05)] transition-all duration-300 cursor-pointer group border border-slate-100/50 flex flex-col h-full"
+            role="button"
+            tabIndex={0}
+            title={`Ver detalles del color ${color.id} - ${color.marketingName || ''}`}
+            aria-label={`Color ${color.id} ${color.marketingName || ''}`}
         >
             {/* Contenedor del Hilo con fondo suave */}
             <div className="relative mb-5 flex items-center justify-center h-[110px] rounded-xl bg-slate-50/50">

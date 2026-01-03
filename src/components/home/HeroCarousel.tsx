@@ -23,9 +23,10 @@ export interface HeroSlide {
 
 interface HeroCarouselProps {
   slides: HeroSlide[]
+  mainH1?: string
 }
 
-export const HeroCarousel = ({ slides }: HeroCarouselProps) => {
+export const HeroCarousel = ({ slides, mainH1 }: HeroCarouselProps) => {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [
     Autoplay({ delay: 5000, stopOnInteraction: false })
   ])
@@ -70,8 +71,13 @@ export const HeroCarousel = ({ slides }: HeroCarouselProps) => {
 
                 {(slide.title || slide.subtitle) && <div className="absolute inset-0 bg-black/30" />}
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white p-4">
+                  {/* Hidden Perfect SEO H1 */}
+                  {index === 0 && mainH1 && (
+                    <h1 className="sr-only">{mainH1}</h1>
+                  )}
+
                   {slide.title && (
-                    index === 0 ? (
+                    !mainH1 && index === 0 ? (
                       <h1 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl drop-shadow-lg">
                         {slide.title}
                       </h1>
@@ -89,6 +95,7 @@ export const HeroCarousel = ({ slides }: HeroCarouselProps) => {
                   {slide.cta_text && slide.cta_link && (
                     <Link
                       href={slide.cta_link}
+                      title={slide.cta_text}
                       className="rounded-full bg-white px-8 py-3 text-sm font-bold uppercase tracking-widest text-black transition-transform hover:scale-105 hover:bg-neutral-100"
                     >
                       {slide.cta_text}

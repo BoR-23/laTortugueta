@@ -77,7 +77,7 @@ export async function generateMetadata(): Promise<Metadata> {
       description: description,
       type: 'website',
       url: getSiteUrl(),
-      siteName: siteMetadata.name,
+      siteName: siteMetadata.name, // "La Tortugueta"
       locale: siteMetadata.locale,
       images: [
         {

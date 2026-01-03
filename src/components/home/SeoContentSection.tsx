@@ -18,13 +18,13 @@ export function SeoContentSection() {
                             </h3>
                             <p>
                                 En <strong>La Tortugueta</strong>, llevamos más de 30 años dedicados a la investigación y confección
-                                de <em>calcetines tradicionales valencianos</em>. Desde nuestro taller artesanal en Alcoi,
+                                de <em>calcetines tradicionales valencianos</em>. Desde nuestro taller artesanal en <strong>Alcoi</strong>,
                                 recuperamos diseños antiguos de los siglos XVIII y XIX para adaptarlos a las necesidades de la
-                                indumentaria actual, manteniendo siempre la esencia y el rigor histórico que exige nuestra fiesta.
+                                indumentaria actual, ofreciendo un <strong>catálogo de calidad</strong> que mantiene siempre la esencia y el rigor histórico que exige nuestra fiesta.
                             </p>
                             <p>
                                 Nuestra especialidad son los <strong>calcetines bordados para fallera</strong> y fallero, así como
-                                medias para grupos de danza y folklore. Cada pieza se teje pensando en la durabilidad y la estética,
+                                medias para grupos de Danses y folklore. Cada pieza se teje pensando en la durabilidad y la estética,
                                 utilizando hilos de alta calidad (algodón, seda, hilo de Escocia) que garantizan un ajuste perfecto
                                 sin renunciar a la comodidad durante las largas jornadas de ofrenda y pasacalle.
                             </p>

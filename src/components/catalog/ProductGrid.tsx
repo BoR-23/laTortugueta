@@ -213,6 +213,7 @@ export const ProductGrid = ({
                 href={`/${product.id}`}
                 prefetch={false}
                 className="group space-y-4 text-center sm:text-left"
+                title={product.name}
               >
                 <div className="relative mx-auto aspect-[3/4] w-full overflow-hidden bg-white">
                   {onToggleFavorite ? (
