@@ -39,6 +39,7 @@ export function TopVisitedSection({ products }: TopVisitedSectionProps) {
               key={product.id}
               href={`/${product.id}`}
               className="group flex flex-col gap-4 rounded-3xl border border-neutral-200 p-5 transition hover:border-neutral-900"
+              title={product.name}
             >
               <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-white">
                 {product.image ? (

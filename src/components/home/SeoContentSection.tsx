@@ -32,7 +32,7 @@ export function SeoContentSection() {
 
                         <div className="space-y-6">
                             <h3 className="text-lg font-semibold text-neutral-900">
-                                El valor de lo artesanal en la indumentaria regional
+                                El valor de los calcetines artesanales en la indumentaria regional
                             </h3>
                             <p>
                                 Más allá de ser un simple complemento, los calcetines son una parte fundamental de la

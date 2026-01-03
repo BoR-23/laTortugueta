@@ -124,8 +124,8 @@ export function TestimonialsSection({
                     type="button"
                     onClick={() => handleGroupClick(group.id)}
                     className={`rounded-full border px-4 py-2 transition ${isActive
-                        ? 'border-neutral-900 bg-neutral-900 text-white'
-                        : 'border-transparent bg-white text-neutral-600 hover:border-neutral-900 hover:text-neutral-900'
+                      ? 'border-neutral-900 bg-neutral-900 text-white'
+                      : 'border-transparent bg-white text-neutral-600 hover:border-neutral-900 hover:text-neutral-900'
                       }`}
                     aria-pressed={isActive}
                   >
@@ -180,6 +180,7 @@ export function TestimonialsSection({
               href="https://wa.me/34653452249"
               className="inline-flex items-center justify-center rounded-full border border-neutral-900 px-4 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-neutral-900 transition hover:bg-neutral-900 hover:text-white"
               onClick={handleReserveCta}
+              title="Contactar y reservar cita por WhatsApp"
             >
               Reservar cita
             </a>

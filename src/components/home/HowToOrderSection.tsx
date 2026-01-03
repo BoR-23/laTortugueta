@@ -55,6 +55,7 @@ export function HowToOrderSection() {
             <Link
               href="/contacto"
               className="rounded-full border border-neutral-900 px-5 py-3 text-xs uppercase tracking-[0.3em] text-neutral-900 transition hover:bg-neutral-900 hover:text-white"
+              title="Ir a formulario de contacto"
             >
               Formulario de contacto
             </Link>

@@ -116,6 +116,7 @@ export default function RootLayout({
       <head>
         <meta charSet="utf-8" />
         <meta httpEquiv="Content-Language" content="es" />
+        <meta property="og:site_name" content={siteMetadata.name} />
 
         <script
           type="application/ld+json"
