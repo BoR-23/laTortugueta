@@ -57,11 +57,11 @@ export async function generateMetadata(): Promise<Metadata> {
 
     icons: {
       icon: [
-        { url: '/icon-96.png', type: 'image/png', sizes: '96x96' },
-        { url: '/favicon.ico', type: 'image/x-icon', sizes: 'any' },
-        { url: '/favicon.svg', type: 'image/svg+xml' },
-        { url: '/icon.png', type: 'image/png', sizes: '32x32' }, // Fallback standard
         { url: '/icon-192.png', type: 'image/png', sizes: '192x192' },
+        { url: '/icon.png', type: 'image/png', sizes: '32x32' },
+        { url: '/icon-96.png', type: 'image/png', sizes: '96x96' },
+        { url: '/favicon.svg', type: 'image/svg+xml' },
+        { url: '/favicon.ico', type: 'image/x-icon', sizes: 'any' },
       ],
       apple: [
         { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
