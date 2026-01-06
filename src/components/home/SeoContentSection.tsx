@@ -14,37 +14,25 @@ export function SeoContentSection() {
                     <div className="grid gap-10 md:grid-cols-2">
                         <div className="space-y-6">
                             <h3 className="text-lg font-semibold text-neutral-900">
-                                Confección a medida y reproducciones históricas desde 1989
+                                Artesanía en calcetines tradicionales y cultura valenciana
                             </h3>
                             <p>
-                                En <strong>La Tortugueta</strong>, llevamos más de 30 años dedicados a la investigación y confección
-                                de <em>calcetines tradicionales valencianos</em>. Desde nuestro taller artesanal en <strong>Alcoi</strong>,
-                                recuperamos diseños antiguos de los siglos XVIII y XIX para adaptarlos a las necesidades de la
-                                indumentaria actual, ofreciendo un <strong>catálogo de calidad</strong> que mantiene siempre la esencia y el rigor histórico que exige nuestra fiesta.
+                                En <strong>La Tortugueta</strong>, somos artesanos dedicados a la confección de <strong>calcetines tradicionales</strong> para <strong>indumentaria tradicional</strong>. Desde nuestro taller, llevamos más de 30 años recuperando diseños del <strong>siglo XVIII</strong> y adaptándolos a la fiesta actual.
                             </p>
                             <p>
-                                Nuestra especialidad son los <strong>calcetines bordados para fallera</strong> y fallero, así como
-                                medias para grupos de Danses y folklore. Cada pieza se teje pensando en la durabilidad y la estética,
-                                utilizando hilos de alta calidad (algodón, seda, hilo de Escocia) que garantizan un ajuste perfecto
-                                sin renunciar a la comodidad durante las largas jornadas de ofrenda y pasacalle.
+                                Nuestros <strong>calcetines artesanales</strong> están pensados para resistir y lucir en actos de <strong>Fallas</strong>, <strong>Grupos de Danses</strong> y recreación histórica. Utilizamos materiales nobles y técnicas respetuosas para ofrecer un producto auténtico y de máxima calidad.
                             </p>
                         </div>
 
                         <div className="space-y-6">
                             <h3 className="text-lg font-semibold text-neutral-900">
-                                El valor de los calcetines artesanales en la indumentaria regional
+                                Piezas únicas para tu indumentaria
                             </h3>
                             <p>
-                                Más allá de ser un simple complemento, los calcetines son una parte fundamental de la
-                                <strong>indumentaria valenciana</strong>. Ya sea para un traje de torrentí, saragüell o el rico
-                                traje de valenciana, ofrecemos personalización completa en colores y motivos. Trabajamos mano a mano
-                                con indumentaristas de toda la Comunidad Valenciana para asegurar que el tono del hilo combine
-                                exactamente con la seda del espolín o el damasco del jubón.
+                                Más allá de ser un simple complemento, los calcetines son una parte fundamental de la riqueza de nuestra vestimenta. Ofrecemos <strong>personalización completa</strong> en colores y motivos para que cada par sea único.
                             </p>
                             <p>
-                                Realizamos <strong>reproducciones históricas</strong> a partir de fragmentos antiguos o fotografías
-                                de museo. Si buscas una pieza única para completar tu atuendo regional con rigor y elegancia,
-                                nuestro catálogo vivo es el punto de partida para encontrar ese detalle que marca la diferencia.
+                                Trabajamos mano a mano con quienes aman la fiesta para asegurar que el tono del hilo y el diseño encajen perfectamente. Si buscas <strong>calcetines bordados</strong> hechos con rigor y cariño, aquí encontrarás el detalle que marca la diferencia.
                             </p>
                         </div>
                     </div>

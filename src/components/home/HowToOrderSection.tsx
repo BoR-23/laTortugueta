@@ -5,22 +5,22 @@ const STEPS = [
   {
     title: 'Cuéntanos tu idea',
     description:
-      'Envíanos fotos antiguas, referencias de color o el modelo del catálogo que quieres recrear. Respondemos por WhatsApp o correo en menos de 24h.'
+      'Envíanos fotos, referencias de color o el modelo que te gusta. Respondemos por WhatsApp o correo en menos de 24h.'
   },
   {
     title: 'Definimos ficha y presupuesto',
     description:
-      'Documentamos tallas, hilo y técnica. Cada pedido incluye ficha técnica firmada, precio cerrado y plazo estimado.'
+      'Documentamos tallas, hilo y técnica. Recibirás una ficha técnica con el precio cerrado y el plazo de entrega.'
   },
   {
     title: 'Tejemos y revisamos',
     description:
-      'Producimos bajo pedido, vaporizamos y comprobamos cada costura antes de guardar el par en su carpeta con el certificado de fidelidad.'
+      'Producimos bajo pedido, cuidando cada detalle. Comprobamos cada par antes de prepararlo para su entrega.'
   },
   {
     title: 'Entrega y archivo',
     description:
-      'Puedes recoger en el taller de Alcoi o recibir envío con seguimiento. Actualizamos tu ficha para futuros encargos y restauraciones.'
+      'Lo recibes en casa o recoges en taller. Guardamos tu ficha para futuros encargos o restauraciones.'
   }
 ]
 

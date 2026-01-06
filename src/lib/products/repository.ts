@@ -18,7 +18,19 @@ const buildCategoryLookup = async () => {
 }
 
 const mapRecords = (records: Record<string, any>[], lookup: Map<string, string>): Product[] =>
-  records.map(record => buildProductFromSupabase(record, lookup))
+  records.map(record => {
+    const p = buildProductFromSupabase(record, lookup)
+    // OPTIMIZATION: Strip heavy fields for list views to prevent HTML bloat
+    // This reduces the payload size significantly by removing unused data in the catalog
+    p.metadata = undefined
+    p.description = ''
+    p.content = ''
+    // We only need the first image for the grid
+    if (p.gallery && p.gallery.length > 1) {
+      p.gallery = [p.gallery[0]]
+    }
+    return p
+  })
 
 const fetchAllProductsFromSupabase = async () => {
   const client = createSupabaseServerClient()

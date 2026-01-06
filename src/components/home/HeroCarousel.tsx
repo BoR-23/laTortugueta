@@ -66,7 +66,7 @@ export const HeroCarousel = ({ slides, mainH1 }: HeroCarouselProps) => {
                   loading={index === 0 ? 'eager' : 'lazy'}
                   decoding={index === 0 ? 'sync' : 'async'}
                   sizes="(max-width: 640px) 100vw, 100vw"
-                  quality={85}
+                  quality={75}
                 />
 
                 {(slide.title || slide.subtitle) && <div className="absolute inset-0 bg-black/30" />}
