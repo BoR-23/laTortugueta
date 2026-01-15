@@ -17,7 +17,7 @@ export function SeoContentSection() {
                                 Artesanía en calcetines tradicionales y cultura valenciana
                             </h3>
                             <p>
-                                En <strong>La Tortugueta</strong>, somos artesanos dedicados a la confección de <strong>calcetines tradicionales</strong> para <strong>indumentaria tradicional</strong>. Desde nuestro taller, llevamos más de 30 años recuperando diseños del <strong>siglo XVIII</strong> y adaptándolos a la fiesta actual.
+                                En <strong>La Tortugueta</strong>, somos artesanos de <strong>Alcoi</strong> dedicados a la confección de <strong>calcetines tradicionales</strong> para <strong>indumentaria tradicional</strong>. Desde nuestro taller en la montaña alicantina, llevamos más de 30 años recuperando diseños del <strong>siglo XVIII</strong>.
                             </p>
                             <p>
                                 Nuestros <strong>calcetines artesanales</strong> están pensados para resistir y lucir en actos de <strong>Fallas</strong>, <strong>Grupos de Danses</strong> y recreación histórica. Utilizamos materiales nobles y técnicas respetuosas para ofrecer un producto auténtico y de máxima calidad.

@@ -180,7 +180,7 @@ export function TestimonialsSection({
               href="https://wa.me/34653452249"
               className="inline-flex items-center justify-center rounded-full border border-neutral-900 px-4 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-neutral-900 transition hover:bg-neutral-900 hover:text-white"
               onClick={handleReserveCta}
-              title="Contactar y reservar cita por WhatsApp"
+              title="Contactar y reservar cita por WhatsApp - La Tortugueta Alcoi"
             >
               Reservar cita
             </a>

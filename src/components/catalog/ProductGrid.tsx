@@ -271,7 +271,7 @@ export const ProductGrid = ({
                   </h3>
                   <p className="text-sm text-neutral-600 mt-auto">
                     {product.price.toFixed(2)} €
-                    <span className="ml-1 text-xs uppercase tracking-[0.2em] text-neutral-500">+ gastos de envío</span>
+                    <span className="ml-1 text-xs uppercase tracking-[0.2em] text-neutral-400" aria-label="y gastos de envío no incluidos">+ envío</span>
                   </p>
                 </div>
               </Link>
