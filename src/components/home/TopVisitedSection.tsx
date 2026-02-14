@@ -4,12 +4,14 @@ import Link from 'next/link'
 
 import type { CatalogProductSummary } from '@/components/catalog/prepareCatalogProducts'
 import { ProductImage } from '@/components/common/ProductImage'
+import { dictionaries } from '@/i18n/dictionaries'
 
 interface TopVisitedSectionProps {
   products: CatalogProductSummary[]
+  dictionary: typeof dictionaries['es']['home']['topVisited']
 }
 
-export function TopVisitedSection({ products }: TopVisitedSectionProps) {
+export function TopVisitedSection({ products, dictionary }: TopVisitedSectionProps) {
   // Products are already sorted and sliced by the server
   const ranked = products
 
@@ -22,14 +24,14 @@ export function TopVisitedSection({ products }: TopVisitedSectionProps) {
       <div className="mx-auto max-w-6xl 3xl:max-w-8xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.35em] text-neutral-500">Archivo vivo</p>
-            <h2 className="text-3xl font-semibold text-neutral-900">Top visitas de la semana</h2>
+            <p className="text-xs uppercase tracking-[0.35em] text-neutral-500">{dictionary.eyebrow}</p>
+            <h2 className="text-3xl font-semibold text-neutral-900">{dictionary.title}</h2>
             <p className="text-sm text-neutral-600">
-              Las fichas más consultadas dentro del catálogo, actualizadas automáticamente con las métricas reales.
+              {dictionary.description}
             </p>
           </div>
           <span className="rounded-full border border-neutral-200 px-4 py-2 text-[11px] uppercase tracking-[0.3em] text-neutral-500">
-            {ranked.length} destacados
+            {ranked.length} {dictionary.badge}
           </span>
         </div>
 
@@ -54,20 +56,20 @@ export function TopVisitedSection({ products }: TopVisitedSectionProps) {
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center text-xs uppercase tracking-[0.3em] text-neutral-400">
-                    Sin imagen
+                    {dictionary.noImage}
                   </div>
                 )}
                 <div className="absolute left-3 top-3 rounded-full border border-white bg-black/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-white">
                   +{product.viewCount}
-                  <span className="ml-1 text-[9px] text-neutral-200">visitas</span>
+                  <span className="ml-1 text-[9px] text-neutral-200">{dictionary.visits}</span>
                 </div>
               </div>
               <div className="space-y-1">
-                <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">{product.category ?? 'Archivo'}</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">{product.category ?? dictionary.archive}</p>
                 <h3 className="text-lg font-semibold text-neutral-900">{product.name}</h3>
                 <p className="text-sm text-neutral-600">
                   {product.price.toFixed(2)} €
-                  <span className="ml-1 text-xs uppercase tracking-[0.2em] text-neutral-500">+ gastos de envío</span>
+                  <span className="ml-1 text-xs uppercase tracking-[0.2em] text-neutral-500">{dictionary.shipping}</span>
                 </p>
               </div>
             </Link>

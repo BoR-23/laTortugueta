@@ -31,13 +31,13 @@ export async function generateMetadata(
     parent: ResolvingMetadata
 ): Promise<Metadata> {
     const previousImages = (await parent).openGraph?.images || []
-    const dictionary = dictionaries['en']
+    const dictionary = dictionaries['ca']
 
     return {
-        title: 'Traditional Hosiery Catalog | La Tortugueta Alcoi',
+        title: 'Catàleg de Calcetins Tradicionals | La Tortugueta Alcoi',
         description: dictionary.about.metaDescription,
         alternates: {
-            canonical: absoluteUrl('/en'),
+            canonical: absoluteUrl('/ca'),
             languages: {
                 'es': absoluteUrl('/'),
                 'en': absoluteUrl('/en'),
@@ -45,15 +45,15 @@ export async function generateMetadata(
             }
         },
         openGraph: {
-            title: `Catalog · ${siteMetadata.name}`,
+            title: `Catàleg · ${siteMetadata.name}`,
             description: dictionary.about.metaDescription,
-            url: absoluteUrl('/en'),
+            url: absoluteUrl('/ca'),
             type: 'website',
             images: previousImages,
         },
         twitter: {
             card: 'summary_large_image',
-            title: `Catalog · ${siteMetadata.name}`,
+            title: `Catàleg · ${siteMetadata.name}`,
             description: dictionary.about.metaDescription,
             images: previousImages,
         }
@@ -63,7 +63,7 @@ export async function generateMetadata(
 export const revalidate = 0
 export const dynamic = 'force-dynamic'
 
-export default async function EnglishHome() {
+export default async function CatalanHome() {
     const products = await getAllProducts()
     const catalogProducts = prepareCatalogProducts(products)
     const allCategories = await getCategories()
@@ -87,7 +87,7 @@ export default async function EnglishHome() {
     const enableTestimonials =
         process.env.NEXT_PUBLIC_ENABLE_TESTIMONIALS !== 'false' && siteSettings.enableTestimonials
 
-    const dictionary = dictionaries['en']
+    const dictionary = dictionaries['ca']
 
     return (
         <>

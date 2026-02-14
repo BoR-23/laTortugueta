@@ -72,6 +72,97 @@ export const dictionaries = {
                     p2: 'Hacemos un llamamiento: si tienes calcetines antiguos, fotografías o historias familiares, podemos documentarlas y devolverlas restauradas o replicadas para que sigan presentes en fiestas, escenarios y grupos de folclore.'
                 }
             }
+        },
+        home: {
+            hero: {
+                mainH1: 'Catálogo de Calcetines Tradicionales y Artesanales en Alcoi'
+            },
+            topVisited: {
+                eyebrow: 'Archivo vivo',
+                title: 'Top visitas de la semana',
+                description: 'Las fichas más consultadas dentro del catálogo, actualizadas automáticamente con las métricas reales.',
+                badge: 'destacados', // Usage: "{count} destacados"
+                noImage: 'Sin imagen',
+                visits: 'visitas',
+                archive: 'Archivo',
+                shipping: '+ gastos de envío'
+            },
+            testimonials: {
+                eyebrow: 'Que dicen los talleres',
+                title: 'Confían en La Tortugueta',
+                description: 'Grupos de Danses, compañías de teatro y coleccionistas trabajan con nosotros porque documentamos cada pieza.',
+                ctaText: 'Pide una cita privada para ver el archivo completo.',
+                ctaButton: 'Reservar cita',
+                empty: 'Todavía no hay testimonios publicados en esta categoría.',
+                fallbackGroup: {
+                    label: 'Historias destacadas',
+                    description: 'Testimonios reales de equipos que ya confían en el archivo de calcetería.'
+                }
+            },
+            storyHighlights: {
+                eyebrow: 'Por qué elegir La Tortugueta',
+                title: 'Conservamos, producimos y documentamos',
+                description: 'Además del catálogo público, ofrecemos acompañamiento integral para equipos que necesitan rigor histórico y seguimiento artesanal.',
+                items: {
+                    archivo: {
+                        eyebrow: 'Archivo vivo',
+                        title: '1.985 pares catalogados',
+                        description: 'Custodiamos piezas originales desde 1930 y generamos réplicas listas para uso escénico. Todas las visitas son bajo cita privada.',
+                        bullets: [
+                            'Digitalización y fichas técnicas en la nube',
+                            'Muestras físicas disponibles en 48h',
+                            'Visitas al taller de Alcoi o sesiones remotas'
+                        ],
+                        cta: 'Conoce el archivo'
+                    },
+                    colectivos: {
+                        eyebrow: 'Encargos colectivos',
+                        title: 'Producción coordinada para grupos',
+                        description: 'Gestionamos tallas, colores y entregas para compañías de danza, fiestas patronales y producciones audiovisuales.',
+                        bullets: [
+                            'Bloques de 10 a 80 pares con prioridad de calendario',
+                            'Seguimiento semanal y fotos de control de calidad',
+                            'Plan de reposiciones para futuras temporadas'
+                        ],
+                        cta: 'Pedir presupuesto'
+                    },
+                    restauracion: {
+                        eyebrow: 'Restauración y documentación',
+                        title: 'Réplicas certificadas para colecciones',
+                        description: 'Creamos copias fieles para museos y familias, adjuntando certificados, cuidados y embalaje libre de ácido.',
+                        bullets: [
+                            'Informe de conservación y humedad',
+                            'Fotos antes/después para archivo',
+                            'Plan de almacenamiento y transporte'
+                        ],
+                        cta: 'Ver historias en el blog'
+                    }
+                }
+            },
+            howToOrder: {
+                eyebrow: 'Cómo trabajamos',
+                title: 'Pasos para encargar tus calcetines',
+                description: 'No hay stock masivo: cada par nace a medida. Este es el recorrido habitual desde el primer mensaje hasta la entrega final.',
+                step1: {
+                    title: 'Cuéntanos tu idea',
+                    description: 'Envíanos fotos, referencias de color o el modelo que te gusta. Respondemos por WhatsApp o correo en menos de 24h.'
+                },
+                step2: {
+                    title: 'Definimos ficha y presupuesto',
+                    description: 'Documentamos tallas, hilo y técnica. Recibirás una ficha técnica con el precio cerrado y el plazo de entrega.'
+                },
+                step3: {
+                    title: 'Tejemos y revisamos',
+                    description: 'Producimos bajo pedido, cuidando cada detalle. Comprobamos cada par antes de prepararlo para su entrega.'
+                },
+                step4: {
+                    title: 'Entrega y archivo',
+                    description: 'Lo recibes en casa o recoges en taller. Guardamos tu ficha para futuros encargos o restauraciones.'
+                },
+                footer: '¿Tienes un diseño nuevo o quieres restaurar uno antiguo? Escríbenos y te guiamos paso a paso.',
+                contactBtn: 'Formulario de contacto',
+                whatsappBtn: 'Abrir WhatsApp'
+            }
         }
     },
     ca: {
@@ -145,6 +236,97 @@ export const dictionaries = {
                     p2: 'Fem una crida: si tens calcetins antics, fotografies o històries familiars, podem documentar-les i tornar-les restaurades o replicades perquè segueixin presents en festes, escenaris i grups de folklore.'
                 }
             }
+        },
+        home: {
+            hero: {
+                mainH1: 'Catàleg de Calcetins Tradicionals i Artesanals a Alcoi'
+            },
+            topVisited: {
+                eyebrow: 'Arxiu viu',
+                title: 'Top visites de la setmana',
+                description: 'Les fitxes més consultades dins del catàleg, actualitzades automàticament amb les mètriques reals.',
+                badge: 'destacats',
+                noImage: 'Sense imatge',
+                visits: 'visites',
+                archive: 'Arxiu',
+                shipping: '+ despeses d\'enviament'
+            },
+            testimonials: {
+                eyebrow: 'Què diuen els tallers',
+                title: 'Confien en La Tortugueta',
+                description: 'Grups de Danses, companyies de teatre i col·leccionistes treballen amb nosaltres perquè documentem cada peça.',
+                ctaText: 'Demana una cita privada per veure l\'arxiu complet.',
+                ctaButton: 'Reservar cita',
+                empty: 'Encara no hi ha testimonis publicats en aquesta categoria.',
+                fallbackGroup: {
+                    label: 'Històries destacades',
+                    description: 'Testimonis reals d\'equips que ja confien en l\'arxiu de calceteria.'
+                }
+            },
+            storyHighlights: {
+                eyebrow: 'Per què triar La Tortugueta',
+                title: 'Conservem, produïm i documentem',
+                description: 'A més del catàleg públic, oferim acompanyament integral per a equips que necessiten rigor històric i seguiment artesanal.',
+                items: {
+                    archivo: {
+                        eyebrow: 'Arxiu viu',
+                        title: '1.985 parells catalogats',
+                        description: 'Custodiem peces originals des de 1930 i generem rèpliques llestes per a ús escènic. Totes les visites són sota cita privada.',
+                        bullets: [
+                            'Digitalització i fitxes tècniques al núvol',
+                            'Mostres físiques disponibles en 48h',
+                            'Visites al taller d\'Alcoi o sessions remotes'
+                        ],
+                        cta: 'Coneix l\'arxiu'
+                    },
+                    colectivos: {
+                        eyebrow: 'Encàrrecs col·lectius',
+                        title: 'Producció coordinada per a grups',
+                        description: 'Gestionem talles, colors i entregues per a companyies de dansa, festes patronals i produccions audiovisuals.',
+                        bullets: [
+                            'Blocs de 10 a 80 parells amb prioritat de calendari',
+                            'Seguiment setmanal i fotos de control de qualitat',
+                            'Pla de reposicions per a futures temporades'
+                        ],
+                        cta: 'Demanar pressupost'
+                    },
+                    restauracion: {
+                        eyebrow: 'Restauració i documentació',
+                        title: 'Rèpliques certificades per a col·leccions',
+                        description: 'Creem còpies fidels per a museus i famílies, adjuntant certificats, cures i embalatge lliure d\'àcid.',
+                        bullets: [
+                            'Informe de conservació i humitat',
+                            'Fotos abans/després per a arxiu',
+                            'Pla d\'emmagatzematge i transport'
+                        ],
+                        cta: 'Veure històries al blog'
+                    }
+                }
+            },
+            howToOrder: {
+                eyebrow: 'Com treballem',
+                title: 'Passos per encarregar els teus calcetins',
+                description: 'No hi ha estoc massiu: cada parell neix a mida. Aquest és el recorregut habitual des del primer missatge fins a l\'entrega final.',
+                step1: {
+                    title: 'Explica\'ns la teva idea',
+                    description: 'Envia\'ns fotos, referències de color o el model que t\'agrada. Responem per WhatsApp o correu en menys de 24h.'
+                },
+                step2: {
+                    title: 'Definim fitxa i pressupost',
+                    description: 'Documentem talles, fil i tècnica. Rebràs una fitxa tècnica amb el preu tancat i el termini d\'entrega.'
+                },
+                step3: {
+                    title: 'Teixim i revisem',
+                    description: 'Produïm sota comanda, cuidant cada detall. Comprovem cada parell abans de preparar-lo per a la seva entrega.'
+                },
+                step4: {
+                    title: 'Entrega i arxiu',
+                    description: 'Ho reps a casa o reculls al taller. Guardem la teva fitxa per a futurs encàrrecs o restauracions.'
+                },
+                footer: 'Tens un disseny nou o vols restaurar-ne un d\'antic? Escriu-nos i et guiem pas a pas.',
+                contactBtn: 'Formulari de contacte',
+                whatsappBtn: 'Obrir WhatsApp'
+            }
         }
     },
     en: {
@@ -217,6 +399,97 @@ export const dictionaries = {
                     p1: 'We share processes because textile memory needs to be public. We do this through reports in blogs like “Diario de una Peineta”, local press, and festival magazines, and through our participation in theater and film productions. We maintain a constant presence on Facebook and Instagram (@latortugueta.calcetines), where we show processes and news.',
                     p2: 'We make a call: if you have old socks, photographs, or family stories, we can document them and return them restored or replicated so they continue to be present in festivals, stages, and folklore groups.'
                 }
+            }
+        },
+        home: {
+            hero: {
+                mainH1: 'Traditional and Artisan Hosiery Catalog in Alcoi'
+            },
+            topVisited: {
+                eyebrow: 'Living Archive',
+                title: 'Top Visits of the Week',
+                description: 'The most consulted items in the catalog, automatically updated with real metrics.',
+                badge: 'highlights',
+                noImage: 'No image',
+                visits: 'visits',
+                archive: 'Archive',
+                shipping: '+ shipping costs'
+            },
+            testimonials: {
+                eyebrow: 'What Workshops Say',
+                title: 'They Trust La Tortugueta',
+                description: 'Dance groups, theater companies, and collectors work with us because we document every piece.',
+                ctaText: 'Request a private appointment to view the complete archive.',
+                ctaButton: 'Book Appointment',
+                empty: 'No testimonials published in this category yet.',
+                fallbackGroup: {
+                    label: 'Featured Stories',
+                    description: 'Real testimonials from teams that already trust the hosiery archive.'
+                }
+            },
+            storyHighlights: {
+                eyebrow: 'Why Choose La Tortugueta',
+                title: 'We Conserve, Produce, and Document',
+                description: 'In addition to the public catalog, we offer comprehensive support for teams needing historical rigor and artisanal follow-up.',
+                items: {
+                    archivo: {
+                        eyebrow: 'Living Archive',
+                        title: '1,985 Cataloged Pairs',
+                        description: 'We guard original pieces since 1930 and generate replicas ready for stage use. All visits are by private appointment.',
+                        bullets: [
+                            'Digitization and technical sheets in the cloud',
+                            'Physical samples available in 48h',
+                            'Visits to the Alcoi workshop or remote sessions'
+                        ],
+                        cta: 'Discover the Archive'
+                    },
+                    colectivos: {
+                        eyebrow: 'Collective Orders',
+                        title: 'Coordinated Production for Groups',
+                        description: 'We manage sizes, colors, and deliveries for dance companies, patronal festivals, and audiovisual productions.',
+                        bullets: [
+                            'Blocks of 10 to 80 pairs with calendar priority',
+                            'Weekly monitoring and quality control photos',
+                            'Replacement plan for future seasons'
+                        ],
+                        cta: 'Request Quote'
+                    },
+                    restauracion: {
+                        eyebrow: 'Restoration and Documentation',
+                        title: 'Certified Replicas for Collections',
+                        description: 'We create faithful copies for museums and families, attaching certificates, care instructions, and acid-free packaging.',
+                        bullets: [
+                            'Conservation and humidity report',
+                            'Before/after photos for archive',
+                            'Storage and transport plan'
+                        ],
+                        cta: 'View Stories on Blog'
+                    }
+                }
+            },
+            howToOrder: {
+                eyebrow: 'How We Work',
+                title: 'Steps to Order Your Socks',
+                description: 'No mass stock: every pair is born to measure. This is the usual journey from the first message to final delivery.',
+                step1: {
+                    title: 'Tell Us Your Idea',
+                    description: 'Send us photos, color references, or the model you like. We respond via WhatsApp or email in less than 24h.'
+                },
+                step2: {
+                    title: 'Define Sheet and Budget',
+                    description: 'We document sizes, yarn, and technique. You will receive a technical sheet with the closed price and delivery time.'
+                },
+                step3: {
+                    title: 'We Knit and Review',
+                    description: 'We produce on demand, taking care of every detail. We check every pair before preparing it for delivery.'
+                },
+                step4: {
+                    title: 'Delivery and Archive',
+                    description: 'Receive it at home or pick it up at the workshop. We save your sheet for future orders or restorations.'
+                },
+                footer: 'Do you have a new design or want to restore an old one? Write to us and we guide you step by step.',
+                contactBtn: 'Contact Form',
+                whatsappBtn: 'Open WhatsApp'
             }
         }
     }

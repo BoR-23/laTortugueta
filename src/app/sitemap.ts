@@ -3,7 +3,7 @@ import { getAllProducts } from '@/lib/products'
 import { getAllPosts } from '@/lib/blog'
 import { absoluteUrl, getPrimaryProductImage } from '@/lib/seo'
 
-export const revalidate = 86400
+export const revalidate = 3600
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [products, posts] = await Promise.all([getAllProducts(), getAllPosts()])

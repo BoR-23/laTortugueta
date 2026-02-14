@@ -18,7 +18,7 @@ interface ProductPageProps {
   }>
 }
 
-export const revalidate = 3600
+export const revalidate = 600
 
 export async function generateStaticParams() {
   const productIds = await getAllProductIds()

@@ -13,6 +13,7 @@ import { HeroCarousel } from '@/components/home/HeroCarousel'
 import { getSiteSettings } from '@/lib/settings'
 import { getHeroSlides } from '@/lib/banners'
 import { SeoContentSection } from '@/components/home/SeoContentSection'
+import { dictionaries } from '@/i18n/dictionaries'
 
 const mapCategoriesToDTO = (records: Awaited<ReturnType<typeof getCategories>>) =>
   records.map(record => ({
@@ -47,6 +48,11 @@ export async function generateMetadata(
     description: siteMetadata.description,
     alternates: {
       canonical: absoluteUrl('/'),
+      languages: {
+        'es': absoluteUrl('/'),
+        'en': absoluteUrl('/en'),
+        'ca': absoluteUrl('/ca'),
+      }
     },
     openGraph: {
       title: `Catálogo · ${siteMetadata.name}`,
@@ -91,6 +97,8 @@ export default async function Home() {
   const enableTestimonials =
     process.env.NEXT_PUBLIC_ENABLE_TESTIMONIALS !== 'false' && siteSettings.enableTestimonials
 
+  const dictionary = dictionaries['es']
+
   return (
     <>
       <script
@@ -100,7 +108,7 @@ export default async function Home() {
       />
       <HeroCarousel
         slides={slides}
-        mainH1="Catálogo de Calcetines Tradicionales y Artesanales en Alcoi"
+        mainH1={dictionary.home.hero.mainH1}
       />
       <div id="catalogo">
         <TagFilterPanelClient
@@ -110,11 +118,11 @@ export default async function Home() {
           settings={siteSettings}
         />
       </div>
-      {siteSettings.enableTopVisited ? <TopVisitedSection products={topVisitedProducts} /> : null}
+      {siteSettings.enableTopVisited ? <TopVisitedSection products={topVisitedProducts} dictionary={dictionary.home.topVisited} /> : null}
       <SeoContentSection />
-      <TestimonialsSection show={enableTestimonials} />
-      {siteSettings.enableStoryHighlights ? <StoryHighlightsSection /> : null}
-      <HowToOrderSection />
+      <TestimonialsSection show={enableTestimonials} dictionary={dictionary.home.testimonials} />
+      {siteSettings.enableStoryHighlights ? <StoryHighlightsSection dictionary={dictionary.home.storyHighlights} /> : null}
+      <HowToOrderSection dictionary={dictionary.home.howToOrder} />
     </>
   )
 }

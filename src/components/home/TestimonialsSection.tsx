@@ -9,27 +9,30 @@ import {
   type TestimonialGroup
 } from '@/lib/testimonials'
 import { trackEvent } from '@/lib/analytics'
+import { dictionaries } from '@/i18n/dictionaries'
 
 interface TestimonialsSectionProps {
   testimonials?: Testimonial[]
   groups?: TestimonialGroup[]
   show?: boolean
-}
-
-const CTA_TEXT = 'Pide una cita privada para ver el archivo completo.'
-const FALLBACK_GROUP: TestimonialGroup = {
-  id: 'general',
-  label: 'Historias destacadas',
-  description: 'Testimonios reales de equipos que ya confían en el archivo de calcetería.',
-  testimonials: defaultTestimonials
+  dictionary: typeof dictionaries['es']['home']['testimonials']
 }
 
 export function TestimonialsSection({
   testimonials = defaultTestimonials,
   groups = defaultTestimonialGroups,
-  show = true
+  show = true,
+  dictionary
 }: TestimonialsSectionProps) {
   const [activeTags, setActiveTags] = useState<string[]>([])
+
+  const fallbackGroup: TestimonialGroup = useMemo(() => ({
+    id: 'general',
+    label: dictionary.fallbackGroup.label,
+    description: dictionary.fallbackGroup.description,
+    testimonials: defaultTestimonials
+  }), [dictionary])
+
   const groupsToRender = useMemo<TestimonialGroup[]>(() => {
     if (groups && groups.length) {
       return groups
@@ -37,13 +40,13 @@ export function TestimonialsSection({
     if (testimonials.length) {
       return [
         {
-          ...FALLBACK_GROUP,
+          ...fallbackGroup,
           testimonials
         }
       ]
     }
     return []
-  }, [groups, testimonials])
+  }, [groups, testimonials, fallbackGroup])
 
   const [activeGroupId, setActiveGroupId] = useState(groupsToRender[0]?.id)
 
@@ -106,10 +109,10 @@ export function TestimonialsSection({
     <section className="border-t border-neutral-200 bg-white">
       <div className="mx-auto flex max-w-6xl 3xl:max-w-8xl flex-col gap-8 px-4 py-16 sm:px-6 lg:px-8">
         <div className="space-y-3">
-          <p className="text-xs uppercase tracking-[0.35em] text-neutral-500">Que dicen los talleres</p>
-          <h2 className="text-3xl font-semibold text-neutral-900">Confían en La Tortugueta</h2>
+          <p className="text-xs uppercase tracking-[0.35em] text-neutral-500">{dictionary.eyebrow}</p>
+          <h2 className="text-3xl font-semibold text-neutral-900">{dictionary.title}</h2>
           <p className="text-sm text-neutral-600">
-            Grupos de Danses, compañías de teatro y coleccionistas trabajan con nosotros porque documentamos cada pieza.
+            {dictionary.description}
           </p>
         </div>
 
@@ -145,7 +148,7 @@ export function TestimonialsSection({
         ) : null}
 
         {!activeGroup?.testimonials.length && (
-          <p className="text-sm text-neutral-600">Todavía no hay testimonios publicados en esta categoría.</p>
+          <p className="text-sm text-neutral-600">{dictionary.empty}</p>
         )}
 
         {activeGroup?.testimonials.length ? (
@@ -175,14 +178,14 @@ export function TestimonialsSection({
 
         <div className="rounded-3xl border border-neutral-200 bg-neutral-50 px-6 py-5 text-sm text-neutral-700">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p>{CTA_TEXT}</p>
+            <p>{dictionary.ctaText}</p>
             <a
               href="https://wa.me/34653452249"
               className="inline-flex items-center justify-center rounded-full border border-neutral-900 px-4 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-neutral-900 transition hover:bg-neutral-900 hover:text-white"
               onClick={handleReserveCta}
               title="Contactar y reservar cita por WhatsApp - La Tortugueta Alcoi"
             >
-              Reservar cita
+              {dictionary.ctaButton}
             </a>
           </div>
         </div>

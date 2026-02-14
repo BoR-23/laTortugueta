@@ -1,38 +1,27 @@
 import Link from 'next/link'
 import { WHATSAPP_LINK } from '@/lib/contact'
+import { dictionaries } from '@/i18n/dictionaries'
 
-const STEPS = [
-  {
-    title: 'Cuéntanos tu idea',
-    description:
-      'Envíanos fotos, referencias de color o el modelo que te gusta. Respondemos por WhatsApp o correo en menos de 24h.'
-  },
-  {
-    title: 'Definimos ficha y presupuesto',
-    description:
-      'Documentamos tallas, hilo y técnica. Recibirás una ficha técnica con el precio cerrado y el plazo de entrega.'
-  },
-  {
-    title: 'Tejemos y revisamos',
-    description:
-      'Producimos bajo pedido, cuidando cada detalle. Comprobamos cada par antes de prepararlo para su entrega.'
-  },
-  {
-    title: 'Entrega y archivo',
-    description:
-      'Lo recibes en casa o recoges en taller. Guardamos tu ficha para futuros encargos o restauraciones.'
-  }
-]
+interface HowToOrderProps {
+  dictionary: typeof dictionaries['es']['home']['howToOrder']
+}
 
-export function HowToOrderSection() {
+export function HowToOrderSection({ dictionary }: HowToOrderProps) {
+  const STEPS = [
+    dictionary.step1,
+    dictionary.step2,
+    dictionary.step3,
+    dictionary.step4
+  ]
+
   return (
     <section className="border-t border-neutral-200 bg-white">
       <div className="mx-auto flex max-w-6xl 3xl:max-w-8xl flex-col gap-10 px-4 py-16 sm:px-6 lg:px-8">
         <div className="space-y-3">
-          <p className="text-xs uppercase tracking-[0.35em] text-neutral-500">Cómo trabajamos</p>
-          <h2 className="text-3xl font-semibold text-neutral-900">Pasos para encargar tus calcetines</h2>
+          <p className="text-xs uppercase tracking-[0.35em] text-neutral-500">{dictionary.eyebrow}</p>
+          <h2 className="text-3xl font-semibold text-neutral-900">{dictionary.title}</h2>
           <p className="text-sm leading-relaxed text-neutral-600">
-            No hay stock masivo: cada par nace a medida. Este es el recorrido habitual desde el primer mensaje hasta la entrega final.
+            {dictionary.description}
           </p>
         </div>
         <div className="grid gap-6 md:grid-cols-2">
@@ -49,21 +38,21 @@ export function HowToOrderSection() {
         </div>
         <div className="flex flex-col gap-3 rounded-3xl border border-neutral-900 px-6 py-5 text-sm text-neutral-800 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-base font-medium text-neutral-900">
-            ¿Tienes un diseño nuevo o quieres restaurar uno antiguo? Escríbenos y te guiamos paso a paso.
+            {dictionary.footer}
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
               href="/contacto"
               className="rounded-full border border-neutral-900 px-5 py-3 text-xs uppercase tracking-[0.3em] text-neutral-900 transition hover:bg-neutral-900 hover:text-white"
-              title="Ir a formulario de contacto"
+              title={dictionary.contactBtn}
             >
-              Formulario de contacto
+              {dictionary.contactBtn}
             </Link>
             <a
               href={WHATSAPP_LINK}
               className="rounded-full border border-neutral-200 px-5 py-3 text-xs uppercase tracking-[0.3em] text-neutral-500 transition hover:border-neutral-900 hover:text-neutral-900"
             >
-              Abrir WhatsApp
+              {dictionary.whatsappBtn}
             </a>
           </div>
         </div>

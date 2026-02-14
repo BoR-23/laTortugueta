@@ -4,73 +4,41 @@ import Link from 'next/link'
 
 import { WHATSAPP_LINK } from '@/lib/contact'
 import { trackEvent } from '@/lib/analytics'
+import { dictionaries } from '@/i18n/dictionaries'
 
-type Highlight = {
-  id: string
-  eyebrow: string
-  title: string
-  description: string
-  bullets: string[]
-  cta?: {
-    label: string
-    href: string
-    external?: boolean
-  }
+interface StoryHighlightsSectionProps {
+  dictionary: typeof dictionaries['es']['home']['storyHighlights']
 }
 
-const HIGHLIGHTS: Highlight[] = [
-  {
-    id: 'archivo',
-    eyebrow: 'Archivo vivo',
-    title: '1.985 pares catalogados',
-    description:
-      'Custodiamos piezas originales desde 1930 y generamos réplicas listas para uso escénico. Todas las visitas son bajo cita privada.',
-    bullets: [
-      'Digitalización y fichas técnicas en la nube',
-      'Muestras físicas disponibles en 48h',
-      'Visitas al taller de Alcoi o sesiones remotas'
-    ],
-    cta: {
-      label: 'Conoce el archivo',
-      href: '/quienes-somos'
-    }
-  },
-  {
-    id: 'colectivos',
-    eyebrow: 'Encargos colectivos',
-    title: 'Producción coordinada para grupos',
-    description:
-      'Gestionamos tallas, colores y entregas para compañías de danza, fiestas patronales y producciones audiovisuales.',
-    bullets: [
-      'Bloques de 10 a 80 pares con prioridad de calendario',
-      'Seguimiento semanal y fotos de control de calidad',
-      'Plan de reposiciones para futuras temporadas'
-    ],
-    cta: {
-      label: 'Pedir presupuesto',
-      href: WHATSAPP_LINK,
-      external: true
-    }
-  },
-  {
-    id: 'restauracion',
-    eyebrow: 'Restauración y documentación',
-    title: 'Réplicas certificadas para colecciones',
-    description:
-      'Creamos copias fieles para museos y familias, adjuntando certificados, cuidados y embalaje libre de ácido.',
-    bullets: [
-      'Informe de conservación y humedad',
-      'Fotos antes/después para archivo',
-      'Plan de almacenamiento y transporte'
-    ],
-    cta: {
-      label: 'Ver historias en el blog',
-      href: '/blog'
-    }
-  }
+type HighlightConfig = {
+  id: 'archivo' | 'colectivos' | 'restauracion'
+  href: string
+  external?: boolean
+}
+
+const HIGHLIGHT_CONFIG: HighlightConfig[] = [
+  { id: 'archivo', href: '/quienes-somos', external: false },
+  { id: 'colectivos', href: WHATSAPP_LINK, external: true },
+  { id: 'restauracion', href: '/blog', external: false }
 ]
 
-export function StoryHighlightsSection() {
+export function StoryHighlightsSection({ dictionary }: StoryHighlightsSectionProps) {
+  const highlights = HIGHLIGHT_CONFIG.map(config => {
+    const item = dictionary.items[config.id]
+    return {
+      ...config,
+      eyebrow: item.eyebrow,
+      title: item.title,
+      description: item.description,
+      bullets: item.bullets,
+      cta: {
+        label: item.cta,
+        href: config.href,
+        external: config.external
+      }
+    }
+  })
+
   const handleHighlightClick = (highlightId: string, label: string) => {
     trackEvent('cta_click', {
       location: 'story_highlights',
@@ -83,15 +51,14 @@ export function StoryHighlightsSection() {
     <section className="border-t border-neutral-200 bg-neutral-50">
       <div className="mx-auto flex max-w-6xl 3xl:max-w-8xl flex-col gap-8 px-4 py-16 sm:px-6 lg:px-8">
         <div className="space-y-3">
-          <p className="text-xs uppercase tracking-[0.35em] text-neutral-500">Por qué elegir La Tortugueta</p>
-          <h2 className="text-3xl font-semibold text-neutral-900">Conservamos, producimos y documentamos</h2>
+          <p className="text-xs uppercase tracking-[0.35em] text-neutral-500">{dictionary.eyebrow}</p>
+          <h2 className="text-3xl font-semibold text-neutral-900">{dictionary.title}</h2>
           <p className="text-sm leading-relaxed text-neutral-600">
-            Además del catálogo público, ofrecemos acompañamiento integral para equipos que necesitan rigor histórico y
-            seguimiento artesanal.
+            {dictionary.description}
           </p>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {HIGHLIGHTS.map(highlight => (
+          {highlights.map(highlight => (
             <article
               key={highlight.id}
               className="flex h-full flex-col rounded-3xl border border-neutral-200 bg-white px-5 py-6 shadow-sm"
