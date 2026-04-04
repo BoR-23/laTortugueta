@@ -16,7 +16,12 @@ export const metadata: Metadata = {
   description:
     'Descubre nuestros calcetines tradicionales valencianos, hechos a mano con técnicas artesanales. Diseños únicos, materiales naturales y encargos personalizados.',
   alternates: {
-    canonical: absoluteUrl('/calcetines-tradicionales')
+    canonical: absoluteUrl('/calcetines-tradicionales'),
+    languages: {
+      es: '/calcetines-tradicionales',
+      ca: '/ca/calcetines-tradicionales',
+      en: '/en/calcetines-tradicionales'
+    }
   },
   openGraph: {
     title: 'Calcetines Tradicionales Valencianos | La Tortugueta',
