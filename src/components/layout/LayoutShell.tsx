@@ -38,12 +38,15 @@ export function LayoutShell({ children }: LayoutShellProps) {
         <div className="mx-auto flex max-w-6xl 3xl:max-w-8xl flex-col gap-6 px-4 py-12 text-sm text-neutral-500 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 max-w-xl">
             <p className="leading-relaxed">
-              Catálogo vivo de calcetería artesanal documentado y conservado por La Tortugueta. Ediciones
-              limitadas disponibles bajo pedido personalizado.
+              Catálogo vivo de calcetería artesanal documentado y conservado por La Tortugueta. Descubre nuestros
+              <Link href="/calcetines-tradicionales" className="mx-1 underline underline-offset-4">
+                calcetines tradicionales valencianos
+              </Link>
+              y las ediciones limitadas disponibles bajo pedido personalizado.
             </p>
             <address className="flex flex-col gap-1 text-xs text-neutral-500 not-italic">
-              <p>C/ San Nicolás 12, 03801 Alcoy (Alicante)</p>
               <p>WhatsApp: +34 653 452 249</p>
+              <p>Email: hola@latortugueta.com</p>
             </address>
           </div>
           <div className="flex flex-wrap gap-4 text-xs uppercase tracking-[0.3em]">

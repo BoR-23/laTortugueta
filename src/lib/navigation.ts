@@ -7,6 +7,7 @@ export type NavigationLink = {
 }
 
 export const primaryNavLinks: NavigationLink[] = [
+  { label: 'Calcetines Tradicionales', href: '/calcetines-tradicionales' },
   { label: 'Catálogo', href: '/#colecciones' },
   { label: 'Colores', href: '/colores' },
   { label: 'Blog', href: '/blog' },
@@ -16,6 +17,7 @@ export const primaryNavLinks: NavigationLink[] = [
 ]
 
 export const footerNavLinks: NavigationLink[] = [
+  { label: 'Calcetines Tradicionales', href: '/calcetines-tradicionales' },
   { label: 'Contacto', href: '/contacto' },
   { label: 'Blog', href: '/blog' },
   { label: 'Colecciones', href: '/#colecciones' },

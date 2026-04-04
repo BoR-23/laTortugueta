@@ -68,6 +68,17 @@ export function AboutContent({ totalDesigns, yearsWeaving, locale }: AboutConten
                 ))}
 
                 <section className="space-y-3">
+                    <h2 className="text-2xl font-semibold text-neutral-900">Calcetines tradicionales valencianos</h2>
+                    <p>
+                        Si quieres una visión más práctica de nuestros modelos, materiales y formas de encargo, hemos preparado una guía específica sobre{' '}
+                        <Link href="/calcetines-tradicionales" className="underline underline-offset-4">
+                            calcetines tradicionales valencianos
+                        </Link>.
+                        Ahí reunimos la colección, preguntas frecuentes y recursos para elegir mejor cada par.
+                    </p>
+                </section>
+
+                <section className="space-y-3">
                     <h2 className="text-2xl font-semibold text-neutral-900">{t.contactTitle}</h2>
                     <p>
                         {t.contactText}{' '}

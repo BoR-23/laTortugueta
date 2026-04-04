@@ -181,6 +181,40 @@ export const buildCatalogJsonLd = (totalItems: number) => ({
   }
 })
 
+export const buildFaqPageJsonLd = (
+  entries: { question: string; answer: string }[]
+) => ({
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: entries.map(entry => ({
+    '@type': 'Question',
+    name: entry.question,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: entry.answer
+    }
+  }))
+})
+
+export const buildProductAltText = (input: {
+  name: string
+  color?: string | null
+  category?: string | null
+  viewIndex?: number
+}) => {
+  const fragments = [
+    'calcetines tradicionales valencianos',
+    input.name?.trim() || null,
+    input.color?.trim() || input.category?.trim() || null
+  ].filter(Boolean)
+
+  const alt = `${fragments.join(' ')} - La Tortugueta`
+  if (typeof input.viewIndex === 'number') {
+    return `${alt} vista ${input.viewIndex + 1}`
+  }
+  return alt
+}
+
 export const buildProductBreadcrumbJsonLd = (product: Product) => ({
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
@@ -242,6 +276,11 @@ export const buildProductJsonLd = (product: Product) => {
         product.available === false
           ? 'https://schema.org/PreOrder'
           : 'https://schema.org/InStock',
+      itemCondition: 'https://schema.org/NewCondition',
+      seller: {
+        '@type': 'Organization',
+        name: 'La Tortugueta'
+      },
       url: absoluteUrl(`/${product.id}`)
     },
     mainEntityOfPage: {
@@ -304,4 +343,3 @@ export const buildBreadcrumbJsonLd = (items: { name: string; url: string }[]) =>
     item: absoluteUrl(item.url)
   }))
 })
-

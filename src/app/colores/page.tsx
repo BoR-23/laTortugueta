@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import { YARN_COLORS } from '@/lib/colors/constants';
 import { ColorBrowser } from '@/components/catalog/ColorBrowser';
 import { Metadata } from 'next';
@@ -40,6 +41,17 @@ export default function ColorCatalogPage() {
                             </p>
                             <p>
                                 ¿Y sabes qué es lo mejor? Cómo absorbe el tinte. Los colores quedan vivos, intensos, y aguantan lavado tras lavado sin perder esa alegría y sin hacer esas bolitas molestas que tanto afean. Lo traemos de muy lejos, sí, pero lo tintamos y lo tejemos aquí, en nuestra tierra, en talleres de confianza de toda la vida. Porque para hacer las cosas bien, hay que mezclar lo mejor de fuera con la maestría de casa.
+                            </p>
+                        </div>
+
+                        <div className="rounded-3xl border border-gray-200 bg-white px-6 py-5 text-left max-w-3xl mx-auto">
+                            <p className="text-xs uppercase tracking-[0.3em] text-gray-500">Guía recomendada</p>
+                            <p className="mt-2 text-base text-gray-800">
+                                Antes de elegir combinaciones, puedes leer nuestra página sobre{' '}
+                                <Link href="/calcetines-tradicionales" className="underline underline-offset-4">
+                                    calcetines tradicionales valencianos
+                                </Link>{' '}
+                                para entender mejor estilos, materiales y cómo encaja cada modelo en la indumentaria.
                             </p>
                         </div>
 

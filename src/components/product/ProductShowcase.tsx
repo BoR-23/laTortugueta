@@ -15,6 +15,7 @@ import {
   getProductImageVariant
 } from '@/lib/images'
 import { WHATSAPP_LINK } from '@/lib/contact'
+import { buildProductAltText } from '@/lib/seo'
 import { uploadProductImage } from '@/lib/client/uploadProductImage'
 import { ColorSelectionModal, SelectedColors } from '@/components/product/ColorSelectionModal'
 import { Palette } from 'lucide-react'
@@ -477,7 +478,12 @@ export function ProductShowcase({
                   <ProductImage
                     imagePath={activeImage}
                     variant="full"
-                    alt={`${product.name} · ${product.category ?? 'calcetines artesanales'} · vista ${activeIndex + 1}`}
+                    alt={buildProductAltText({
+                      name: product.name,
+                      color: product.color,
+                      category: product.category,
+                      viewIndex: activeIndex
+                    })}
                     fill
                     priority
                     fetchPriority={activeIndex === 0 ? 'high' : 'auto'}
@@ -623,7 +629,12 @@ export function ProductShowcase({
                         <ProductImage
                           imagePath={photo}
                           variant="thumb"
-                          alt={`Miniatura ${index + 1} · ${product.name} · ${product.color || 'color artesanal'}`}
+                          alt={buildProductAltText({
+                            name: product.name,
+                            color: product.color,
+                            category: product.category,
+                            viewIndex: index
+                          })}
                           fill
                           className="object-contain"
                           sizes="80px"
@@ -896,7 +907,11 @@ export function ProductShowcase({
                     >
                       <ProductImage
                         imagePath={url}
-                        alt={`Historia ${product.name}`}
+                        alt={buildProductAltText({
+                          name: product.name,
+                          color: product.color,
+                          category: product.category
+                        })}
                         fill
                         className="object-cover"
                         sizes="180px"
@@ -931,7 +946,12 @@ export function ProductShowcase({
             <ProductImage
               imagePath={activeImage}
               variant="full"
-              alt={`${product.name} ampliada ${activeIndex + 1}`}
+              alt={buildProductAltText({
+                name: product.name,
+                color: product.color,
+                category: product.category,
+                viewIndex: activeIndex
+              })}
               fill
               className="object-contain"
               sizes="(min-width: 1024px) 50vw, 90vw"
@@ -986,7 +1006,10 @@ export function ProductShowcase({
                         <ProductImage
                           imagePath={item.image}
                           variant="thumb"
-                          alt={item.name}
+                          alt={buildProductAltText({
+                            name: item.name,
+                            category: item.category
+                          })}
                           fill
                           className="object-contain transition-transform duration-500 group-hover:scale-105"
                           sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, 45vw"
@@ -1044,7 +1067,10 @@ export function ProductShowcase({
                         <ProductImage
                           imagePath={item.image}
                           variant="thumb"
-                          alt={item.name}
+                          alt={buildProductAltText({
+                            name: item.name,
+                            category: item.category
+                          })}
                           fill
                           className="object-contain transition-transform duration-500 group-hover:scale-105"
                           sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, 45vw"

@@ -31,6 +31,7 @@ export function HeaderNav() {
                 // Adjust href for locale only for supported routes
                 let href = link.href
                 const isSupportedRoute =
+                    link.href === '/calcetines-tradicionales' ||
                     link.href === '/blog' ||
                     link.href.startsWith('/blog/') ||
                     link.href === '/quienes-somos'

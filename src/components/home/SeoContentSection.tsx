@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 export function SeoContentSection() {
     return (
         <section className="border-t border-neutral-200 bg-white" aria-labelledby="seo-title">
@@ -22,6 +24,12 @@ export function SeoContentSection() {
                             <p>
                                 Nuestros <strong>calcetines artesanales</strong> están pensados para resistir y lucir en actos de <strong>Fallas</strong>, <strong>Grupos de Danses</strong> y recreación histórica. Utilizamos materiales nobles y técnicas respetuosas para ofrecer un producto auténtico y de máxima calidad.
                             </p>
+                            <p>
+                                Si quieres entender mejor qué hace especial a un par bien resuelto, visita nuestra página sobre{' '}
+                                <Link href="/calcetines-tradicionales" className="underline underline-offset-4">
+                                    calcetines tradicionales valencianos
+                                </Link>.
+                            </p>
                         </div>
 
                         <div className="space-y-6">
@@ -34,6 +42,14 @@ export function SeoContentSection() {
                             <p>
                                 Trabajamos mano a mano con quienes aman la fiesta para asegurar que el tono del hilo y el diseño encajen perfectamente. Si buscas <strong>calcetines bordados</strong> hechos con rigor y cariño, aquí encontrarás el detalle que marca la diferencia.
                             </p>
+                            <div className="pt-2">
+                                <Link
+                                    href="/calcetines-tradicionales"
+                                    className="inline-flex rounded-full border border-neutral-900 px-6 py-3 text-xs uppercase tracking-[0.3em] text-neutral-900"
+                                >
+                                    Ver colección
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 </article>

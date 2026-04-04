@@ -7,6 +7,7 @@ import {
   absoluteUrl,
   buildProductBreadcrumbJsonLd,
   buildProductJsonLd,
+  buildProductAltText,
   getPrimaryProductImage
 } from '@/lib/seo'
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs'
@@ -63,7 +64,11 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
           ? [
             {
               url: image,
-              alt: `Calcetines valencianos modelo ${product.name}`
+              alt: buildProductAltText({
+                name: product.name,
+                color: product.color,
+                category: product.category
+              })
             }
           ]
           : undefined
