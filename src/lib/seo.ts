@@ -107,6 +107,16 @@ const toAbsoluteImageUrl = (value?: string) => {
 
 export const defaultOpenGraphImage = absoluteUrl('/og-image.png')
 
+const getLocalizedBlogBasePath = (locale?: string) => {
+  if (locale === 'en') {
+    return '/en/blog'
+  }
+  if (locale === 'ca') {
+    return '/ca/blog'
+  }
+  return '/blog'
+}
+
 const resolveProductImage = (image?: string) => {
   if (!image) {
     return undefined
@@ -290,16 +300,16 @@ export const buildProductJsonLd = (product: Product) => {
   }
 }
 
-export const buildBlogListingJsonLd = (posts: BlogPost[]) => ({
+export const buildBlogListingJsonLd = (posts: BlogPost[], locale: string = 'es') => ({
   '@context': 'https://schema.org',
   '@type': 'Blog',
   name: `${SITE_NAME} · Blog`,
-  url: absoluteUrl('/blog'),
+  url: absoluteUrl(getLocalizedBlogBasePath(locale)),
   blogPost: posts.slice(0, 12).map(post => ({
     '@type': 'BlogPosting',
     headline: post.title,
     datePublished: post.date,
-    url: absoluteUrl(`/blog/${post.slug}`),
+    url: absoluteUrl(`${getLocalizedBlogBasePath(post.locale)}/${post.slug}`),
     author: {
       '@type': 'Person',
       name: post.author
@@ -316,7 +326,7 @@ export const buildArticleJsonLd = (post: BlogPost) => ({
   description: post.excerpt || SITE_DESCRIPTION,
   mainEntityOfPage: {
     '@type': 'WebPage',
-    '@id': absoluteUrl(`/blog/${post.slug}`)
+    '@id': absoluteUrl(`${getLocalizedBlogBasePath(post.locale)}/${post.slug}`)
   },
   author: {
     '@type': 'Person',
@@ -330,7 +340,7 @@ export const buildArticleJsonLd = (post: BlogPost) => ({
       url: absoluteUrl('/icon-192.png')
     }
   },
-  image: defaultOpenGraphImage
+  image: post.image ? absoluteUrl(post.image) : defaultOpenGraphImage
 })
 
 export const buildBreadcrumbJsonLd = (items: { name: string; url: string }[]) => ({
