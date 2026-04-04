@@ -6,9 +6,9 @@ import { AboutContent } from '@/components/about/AboutContent'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Quiénes somos',
+  title: 'Quiénes Somos | Taller Artesano de Calcetines Tradicionales',
   description:
-    'Calcetería artesana nacida en Alcoi en 1989. Taller familiar que documenta modelos históricos, trabaja bajo pedido y apuesta por materiales de proximidad.',
+    'Conoce La Tortugueta: taller artesano de calcetines tradicionales valencianos desde 1989. Historia, oficio familiar y encargos personalizados desde Alcoi.',
   alternates: {
     canonical: absoluteUrl('/quienes-somos'),
     languages: {
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: `${siteMetadata.name} · Quiénes somos`,
     description:
-      'Taller familiar fundado por Macu García: tejemos calcetines tradicionales, restauramos modelos antiguos y trabajamos bajo pedido con materiales locales.',
+      'Descubre la historia de La Tortugueta, el taller familiar de Macu García especializado en calcetines tradicionales valencianos y reproducciones históricas.',
     url: absoluteUrl('/quienes-somos'),
     type: 'website'
   },
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: `${siteMetadata.name} · Quiénes somos`,
     description:
-      'Calcetería artesana nacida en Alcoi y activa desde 1989. Oficio familiar con sello oficial de artesanía.'
+      'Taller artesano de calcetines tradicionales valencianos desde 1989. Historia, oficio familiar y trabajo bajo pedido.'
   }
 }
 

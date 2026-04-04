@@ -11,6 +11,8 @@ interface AboutContentProps {
 export function AboutContent({ totalDesigns, yearsWeaving, locale }: AboutContentProps) {
     const t = dictionaries[locale].about
     const whatsappDisplay = '+34 653 45 22 49'
+    const pillarHref = locale === 'es' ? '/calcetines-tradicionales' : `/${locale}/calcetines-tradicionales`
+    const catalogHref = locale === 'es' ? '/catalogo' : `/${locale}`
 
     const sections = [
         {
@@ -68,6 +70,17 @@ export function AboutContent({ totalDesigns, yearsWeaving, locale }: AboutConten
                 ))}
 
                 <section className="space-y-3">
+                    <h2 className="text-2xl font-semibold text-neutral-900">Calcetines tradicionales valencianos</h2>
+                    <p>
+                        Si quieres una visión más práctica de nuestros modelos, materiales y formas de encargo, hemos preparado una guía específica sobre{' '}
+                        <Link href={pillarHref} className="underline underline-offset-4">
+                            calcetines tradicionales valencianos
+                        </Link>.
+                        Ahí reunimos la colección, preguntas frecuentes y recursos para elegir mejor cada par.
+                    </p>
+                </section>
+
+                <section className="space-y-3">
                     <h2 className="text-2xl font-semibold text-neutral-900">{t.contactTitle}</h2>
                     <p>
                         {t.contactText}{' '}
@@ -83,7 +96,7 @@ export function AboutContent({ totalDesigns, yearsWeaving, locale }: AboutConten
                 </section>
 
                 <div className="flex flex-wrap gap-4 text-xs uppercase tracking-[0.35em] text-neutral-500">
-                    <Link href={locale === 'es' ? "/catalogo" : `/${locale}`} className="rounded-full border border-neutral-900 px-6 py-3">
+                    <Link href={catalogHref} className="rounded-full border border-neutral-900 px-6 py-3">
                         {t.viewCatalog}
                     </Link>
                     <a href={WHATSAPP_LINK} className="rounded-full border border-neutral-900 px-6 py-3">

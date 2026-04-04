@@ -7,8 +7,8 @@ import { dictionaries } from '@/i18n/dictionaries'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-    title: dictionaries.en.about.metaTitle,
-    description: dictionaries.en.about.metaDescription,
+    title: 'About Us | Traditional Valencian Socks Workshop',
+    description: 'Meet La Tortugueta, a family workshop crafting traditional Valencian socks since 1989. Heritage, craftsmanship and bespoke orders from Alcoi.',
     alternates: {
         canonical: absoluteUrl('/en/quienes-somos'),
         languages: {
@@ -18,10 +18,15 @@ export const metadata: Metadata = {
         }
     },
     openGraph: {
-        title: `${siteMetadata.name} · ${dictionaries.en.about.metaTitle}`,
-        description: dictionaries.en.about.metaDescription,
+        title: `${siteMetadata.name} · About us`,
+        description: 'Discover the story of La Tortugueta, a family workshop focused on traditional Valencian socks, historical references and made-to-order craftsmanship.',
         url: absoluteUrl('/en/quienes-somos'),
         type: 'website'
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: `${siteMetadata.name} · About us`,
+        description: 'Family workshop for traditional Valencian socks since 1989, with heritage craft and bespoke production.'
     }
 }
 

@@ -24,6 +24,8 @@ export function BlogIndex({ posts, locale }: BlogIndexProps) {
         { label: navT.home, href: locale === 'es' ? '/' : `/${locale}` },
         { label: navT.blog, current: true }
     ]
+    const pillarHref = locale === 'es' ? '/calcetines-tradicionales' : `/${locale}/calcetines-tradicionales`
+    const catalogHref = locale === 'es' ? '/#catalogo' : `/${locale}#catalogo`
 
     return (
         <div className="bg-white text-neutral-900">
@@ -99,6 +101,28 @@ export function BlogIndex({ posts, locale }: BlogIndexProps) {
                                     </div>
                                 ))}
                             </nav>
+
+                            <div className="rounded-3xl border border-neutral-200 bg-stone-50 p-4">
+                                <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">Nuestros productos</p>
+                                <div className="mt-3 space-y-2 text-sm text-neutral-700">
+                                    <p>
+                                        Empieza por nuestra guía de{' '}
+                                        <Link href={pillarHref} className="underline underline-offset-4">
+                                            calcetines tradicionales valencianos
+                                        </Link>.
+                                    </p>
+                                    <p>
+                                        También puedes volver al{' '}
+                                        <Link href={catalogHref} className="underline underline-offset-4">
+                                            catálogo completo
+                                        </Link>{' '}
+                                        o revisar la{' '}
+                                        <Link href="/colores" className="underline underline-offset-4">
+                                            carta de colores
+                                        </Link>.
+                                    </p>
+                                </div>
+                            </div>
                         </aside>
                     </div>
                 )}

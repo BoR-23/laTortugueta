@@ -32,11 +32,21 @@ export async function GET() {
     // Sort by position to get the main image (usually position 0 or 1)
     assets.sort((a: any, b: any) => (a.position || 0) - (b.position || 0))
     const image = assets.length > 0 ? assets[0].url : null
+    const catalogPrice = sale.products?.price ?? null
+    const storedPrice = sale.product_price ?? null
+    const resolvedPrice =
+      storedPrice ??
+      (catalogPrice !== null
+        ? sale.is_wholesale
+          ? catalogPrice * 0.5
+          : catalogPrice
+        : null)
 
     return {
       ...sale,
       product_image: image,
-      product_price: sale.products?.price || null
+      catalog_price: catalogPrice,
+      product_price: resolvedPrice
     }
   })
 

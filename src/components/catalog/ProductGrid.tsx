@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { ProductImage } from '@/components/common/ProductImage'
+import { buildProductAltText } from '@/lib/seo'
 
 import type { CatalogProduct, FilterState } from './catalogFiltering'
 
@@ -243,7 +244,11 @@ export const ProductGrid = ({
                     <ProductImage
                       imagePath={product.image}
                       variant="thumb"
-                      alt={product.name}
+                      alt={buildProductAltText({
+                        name: product.name,
+                        category: product.category,
+                        viewIndex: realIndex
+                      })}
                       fill
                       className="object-contain transition-transform duration-700 group-hover:scale-[1.03]"
                       sizes={
