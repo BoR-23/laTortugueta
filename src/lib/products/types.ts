@@ -5,6 +5,8 @@ export type ProductMetadata = {
   storyOrigin?: string
   storyCost?: string
   storyBody?: string
+  storyBodyVa?: string
+  storyMetaDescription?: string
   storyImages?: string[] | string
   imagePlaceholders?: ImagePlaceholderMap
   imageReview?: Record<string, boolean>

@@ -320,6 +320,26 @@ export function ProductForm({
           />
         </label>
         <label className="text-xs uppercase tracking-[0.3em] text-neutral-500">
+          Resumen en valencià
+          <textarea
+            rows={3}
+            value={String(metadata.storyBodyVa ?? '')}
+            onChange={event => handleMetadataChange('storyBodyVa', event.target.value)}
+            className="mt-2 w-full rounded-3xl border border-neutral-300 px-4 py-3 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none focus:ring-0"
+            placeholder="Versió breu en valencià per a reforçar la fitxa sense duplicar la pàgina."
+          />
+        </label>
+        <label className="text-xs uppercase tracking-[0.3em] text-neutral-500">
+          Meta description SEO
+          <textarea
+            rows={2}
+            value={String(metadata.storyMetaDescription ?? '')}
+            onChange={event => handleMetadataChange('storyMetaDescription', event.target.value)}
+            className="mt-2 w-full rounded-3xl border border-neutral-300 px-4 py-3 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none focus:ring-0"
+            placeholder="Texto corto para Google con keyword y tono editorial."
+          />
+        </label>
+        <label className="text-xs uppercase tracking-[0.3em] text-neutral-500">
           Fotos históricas (URLs separadas por coma)
           <input
             type="text"
