@@ -1,7 +1,6 @@
 'use client'
 
 import { useDeferredValue, useEffect, useMemo, useState } from 'react'
-import Fuse from 'fuse.js'
 
 import { registerFilterUsage } from '@/lib/analytics'
 import { expandSearchQuery } from '@/lib/search'
@@ -74,10 +73,26 @@ export const useCatalogFilters = (
     setSortDirectionState(value)
   }
 
-  // Instanciamos Fuse solo cuando cambia la lista para no recalcular índices en cada pulsación.
-  const fuse = useMemo(
-    () =>
-      new Fuse<CatalogProduct>(products, {
+  const deferredSearch = useDeferredValue(filterState.search)
+  const searchTerms = useMemo(() => expandSearchQuery(deferredSearch), [deferredSearch])
+  const hasSearchQuery = searchTerms.length > 0
+
+  const [searchMatches, setSearchMatches] = useState<SearchMatchesMap>(null)
+
+  useEffect(() => {
+    if (!hasSearchQuery) {
+      setSearchMatches(null)
+      return
+    }
+
+    let cancelled = false
+    const scores = new Map<string, number>()
+    setSearchMatches(null)
+
+    import('fuse.js').then(({ default: Fuse }) => {
+      if (cancelled) return
+
+      const fuse = new Fuse<CatalogProduct>(products, {
         keys: [
           { name: 'name', weight: 0.5 },
           { name: 'description', weight: 0.3 },
@@ -88,29 +103,31 @@ export const useCatalogFilters = (
         ignoreLocation: true,
         minMatchCharLength: 2,
         includeScore: true
-      }),
-    [products]
-  )
-
-  const deferredSearch = useDeferredValue(filterState.search)
-  const searchTerms = useMemo(() => expandSearchQuery(deferredSearch), [deferredSearch])
-  const hasSearchQuery = searchTerms.length > 0
-
-  const searchMatches = useMemo<SearchMatchesMap>(() => {
-    if (!hasSearchQuery) return null
-
-    const scores = new Map<string, number>()
-    searchTerms.forEach(term => {
-      fuse.search(term).forEach(result => {
-        const score = typeof result.score === 'number' ? result.score : 0
-        const current = scores.get(result.item.id)
-        if (current === undefined || score < current) {
-          scores.set(result.item.id, score)
-        }
       })
+
+      searchTerms.forEach(term => {
+        fuse.search(term).forEach(result => {
+          const score = typeof result.score === 'number' ? result.score : 0
+          const current = scores.get(result.item.id)
+          if (current === undefined || score < current) {
+            scores.set(result.item.id, score)
+          }
+        })
+      })
+
+      if (!cancelled) {
+        setSearchMatches(scores)
+      }
+    }).catch(() => {
+      if (!cancelled) {
+        setSearchMatches(new Map())
+      }
     })
-    return scores
-  }, [fuse, hasSearchQuery, searchTerms])
+
+    return () => {
+      cancelled = true
+    }
+  }, [hasSearchQuery, products, searchTerms])
 
   // Si cambian los precios base (por ejemplo, tras un refetch) reajustamos los límites del slider.
   useEffect(() => {

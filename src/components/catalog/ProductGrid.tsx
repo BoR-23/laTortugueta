@@ -223,7 +223,6 @@ export const ProductGrid = ({
         <div className={GRID_CLASS_BY_COLUMNS[gridColumns]}>
           {renderProducts.map((product, localIndex) => {
             const realIndex = startIndex + localIndex
-            const isPriorityCard = realIndex === 0
             return (
               <Link
                 key={product.id}
@@ -271,10 +270,9 @@ export const ProductGrid = ({
                             : '(min-width: 640px) 50vw, 100vw'
                       }
                       placeholder="empty"
-                      priority={isPriorityCard}
-                      loading={isPriorityCard ? 'eager' : 'lazy'}
-                      fetchPriority={isPriorityCard ? 'high' : 'auto'}
-                      quality={80}
+                      loading="lazy"
+                      fetchPriority="auto"
+                      quality={75}
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center text-xs uppercase tracking-[0.3em] text-neutral-400">
