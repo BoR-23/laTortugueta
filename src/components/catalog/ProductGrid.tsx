@@ -34,9 +34,27 @@ const GRID_GAP_BY_COLUMNS: Record<GridColumns, number> = {
 const ESTIMATED_TEXT_HEIGHT = 88
 const DEFAULT_VIRTUALIZATION_BUFFER_ROWS = 2
 const DEFAULT_MIN_ROWS_WITHOUT_VIRTUALIZATION = 4
-const COMPACT_VIRTUALIZATION_BUFFER_ROWS = 6
-const COMPACT_MIN_ROWS_WITHOUT_VIRTUALIZATION = 8
+const COMPACT_VIRTUALIZATION_BUFFER_ROWS = 2
+const COMPACT_MIN_ROWS_WITHOUT_VIRTUALIZATION = 4
 const COMPACT_VIEWPORT_BREAKPOINT = 1024
+const TAILWIND_SM_BREAKPOINT = 640
+const TAILWIND_MD_BREAKPOINT = 768
+
+const getResponsiveColumnCount = (gridColumns: GridColumns, viewportWidth: number) => {
+  if (viewportWidth <= 0) {
+    return gridColumns
+  }
+  if (viewportWidth < TAILWIND_SM_BREAKPOINT) {
+    return 1
+  }
+  if (viewportWidth < TAILWIND_MD_BREAKPOINT) {
+    return Math.min(gridColumns, 2)
+  }
+  if (viewportWidth < COMPACT_VIEWPORT_BREAKPOINT) {
+    return gridColumns === 4 ? 3 : Math.min(gridColumns, 2)
+  }
+  return gridColumns
+}
 
 export const ProductGrid = ({
   products,
@@ -84,7 +102,7 @@ export const ProductGrid = ({
     : DEFAULT_MIN_ROWS_WITHOUT_VIRTUALIZATION
 
   const gap = GRID_GAP_BY_COLUMNS[gridColumns]
-  const columnCount = gridColumns
+  const columnCount = getResponsiveColumnCount(gridColumns, viewportWidth)
   const cardWidth = useMemo(() => {
     if (containerWidth <= 0) return 0
     const totalGap = gap * Math.max(columnCount - 1, 0)
@@ -102,7 +120,6 @@ export const ProductGrid = ({
 
   const rowCount = Math.max(1, Math.ceil(products.length / columnCount))
   const virtualizationEnabled =
-    !isCompactViewport &&
     containerWidth > 0 &&
     rowMetrics.rowHeight > 0 &&
     rowCount > minRowsWithoutVirtualization
@@ -171,8 +188,8 @@ export const ProductGrid = ({
   // Calculate end index:
   // 1. If virtualization is ON, use the calculated visible end.
   // 2. If the viewport has not been measured yet, use a hard initial limit.
-  // 3. If virtualization is intentionally OFF for compact screens, render the full catalog.
-  // The initial limit keeps the first paint small without trapping mobile users at 24 items.
+  // 3. If virtualization is not needed for a short result set, render the full catalog.
+  // The initial limit keeps the first paint small; measured viewports then virtualize long lists.
 
   const endIndex = virtualizationEnabled
     ? Math.min(products.length, visibleRows.end * columnCount)

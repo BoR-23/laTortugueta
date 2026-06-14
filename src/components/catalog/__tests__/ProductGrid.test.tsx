@@ -1,6 +1,6 @@
 import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { ProductGrid } from '../ProductGrid'
 import type { CatalogProduct } from '../catalogFiltering'
@@ -47,15 +47,48 @@ const buildProducts = (count: number): CatalogProduct[] =>
   }))
 
 describe('ProductGrid', () => {
+  let scrollOffset = 0
+
   beforeEach(() => {
+    scrollOffset = 0
     vi.stubGlobal(
       'ResizeObserver',
       class ResizeObserver {
-        observe() {}
+        private callback: ResizeObserverCallback
+
+        constructor(callback: ResizeObserverCallback) {
+          this.callback = callback
+        }
+
+        observe(target: Element) {
+          this.callback(
+            [{ target, contentRect: { width: 380, height: 20000 } as DOMRectReadOnly } as ResizeObserverEntry],
+            this
+          )
+        }
+
         unobserve() {}
         disconnect() {}
       }
     )
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+      return window.setTimeout(() => callback(performance.now()), 0)
+    })
+    vi.stubGlobal('cancelAnimationFrame', (handle: number) => {
+      window.clearTimeout(handle)
+    })
+
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(() => ({
+      x: 0,
+      y: -scrollOffset,
+      top: -scrollOffset,
+      bottom: 20000 - scrollOffset,
+      left: 0,
+      right: 380,
+      width: 380,
+      height: 20000,
+      toJSON: () => ({})
+    } as DOMRect))
 
     Object.defineProperty(window, 'innerWidth', {
       configurable: true,
@@ -69,7 +102,12 @@ describe('ProductGrid', () => {
     })
   })
 
-  it('renders the complete catalog on compact viewports after hydration', async () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+    vi.unstubAllGlobals()
+  })
+
+  it('virtualizes compact viewports while keeping the end of the catalog reachable', async () => {
     render(
       <ProductGrid
         products={buildProducts(30)}
@@ -80,8 +118,16 @@ describe('ProductGrid', () => {
     )
 
     await waitFor(() => {
+      expect(screen.queryByText('Producto 24')).not.toBeInTheDocument()
+    })
+    expect(screen.getAllByRole('link').length).toBeLessThan(30)
+
+    scrollOffset = 18000
+    window.dispatchEvent(new Event('scroll'))
+
+    await waitFor(() => {
       expect(screen.getByText('Producto 30')).toBeInTheDocument()
     })
-    expect(screen.getAllByRole('link')).toHaveLength(30)
+    expect(screen.getAllByRole('link').length).toBeLessThan(30)
   })
 })
