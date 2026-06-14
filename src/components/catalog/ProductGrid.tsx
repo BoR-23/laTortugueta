@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 import { ProductImage } from '@/components/common/ProductImage'
 
@@ -52,7 +52,6 @@ export const ProductGrid = ({
   const [containerWidth, setContainerWidth] = useState(0)
   const [windowHeight, setWindowHeight] = useState(0)
   const [viewportWidth, setViewportWidth] = useState(0)
-  const [isTouchDevice, setIsTouchDevice] = useState(false)
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -70,7 +69,6 @@ export const ProductGrid = ({
     const updateViewportSize = () => {
       setWindowHeight(window.innerHeight || 0)
       setViewportWidth(window.innerWidth || 0)
-      setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0)
     }
     updateViewportSize()
     window.addEventListener('resize', updateViewportSize)
@@ -172,13 +170,15 @@ export const ProductGrid = ({
 
   // Calculate end index:
   // 1. If virtualization is ON, use the calculated visible end.
-  // 2. If virtualization is OFF (SSR), use a hard limit (INITIAL_RENDER_COUNT).
-  // 3. But if we are on client and just measured 0 width (unlikely but possible), safe fallback.
-  // The critical part is SSR: containerWidth is 0, so virtualizationEnabled is false.
+  // 2. If the viewport has not been measured yet, use a hard initial limit.
+  // 3. If virtualization is intentionally OFF for compact screens, render the full catalog.
+  // The initial limit keeps the first paint small without trapping mobile users at 24 items.
 
   const endIndex = virtualizationEnabled
     ? Math.min(products.length, visibleRows.end * columnCount)
-    : Math.min(products.length, INITIAL_RENDER_COUNT)
+    : viewportWidth > 0
+      ? products.length
+      : Math.min(products.length, INITIAL_RENDER_COUNT)
 
   const topPadding = virtualizationEnabled ? visibleRows.start * rowMetrics.rowHeight : 0
   const bottomPadding = virtualizationEnabled ? Math.max(rowCount - visibleRows.end, 0) * rowMetrics.rowHeight : 0
