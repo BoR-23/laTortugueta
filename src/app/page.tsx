@@ -70,7 +70,8 @@ export async function generateMetadata(
   }
 }
 
-export const revalidate = 300
+export const revalidate = 0
+export const dynamic = 'force-dynamic'
 
 export default async function Home() {
   const products = await getAllProducts()
