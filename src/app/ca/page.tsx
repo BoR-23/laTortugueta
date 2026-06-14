@@ -64,13 +64,15 @@ export const revalidate = 0
 export const dynamic = 'force-dynamic'
 
 export default async function CatalanHome() {
-    const products = await getAllProducts()
+    const [products, allCategories, siteSettings, slides] = await Promise.all([
+        getAllProducts(),
+        getCategories(),
+        getSiteSettings(),
+        getHeroSlides()
+    ])
     const catalogProducts = prepareCatalogProducts(products)
-    const allCategories = await getCategories()
     const headerCategories = allCategories.filter(c => c.scope === 'header')
     const filterCategories = allCategories.filter(c => c.scope === 'filter')
-    const siteSettings = await getSiteSettings()
-    const slides = await getHeroSlides()
 
     const visibleProducts = catalogProducts.filter(product => product.price > 0)
 

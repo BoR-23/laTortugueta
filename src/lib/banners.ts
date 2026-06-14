@@ -1,5 +1,8 @@
 import { createSupabaseServerClient } from './supabaseClient'
-import { cache } from 'react'
+import { revalidateTag, unstable_cache } from 'next/cache'
+import { CACHE_TAGS } from './cacheTags'
+
+const HERO_SLIDES_CACHE_REVALIDATE_SECONDS = 300
 
 export interface HeroSlide {
     id: string
@@ -17,7 +20,7 @@ export interface HeroSlide {
     }
 }
 
-export const getHeroSlides = cache(async (): Promise<HeroSlide[]> => {
+const fetchHeroSlides = async (): Promise<HeroSlide[]> => {
     const client = createSupabaseServerClient()
 
     const { data, error } = await client
@@ -43,4 +46,17 @@ export const getHeroSlides = cache(async (): Promise<HeroSlide[]> => {
         active: slide.active,
         mobile_crop: slide.mobile_crop
     }))
-})
+}
+
+export const getHeroSlides = unstable_cache(
+    fetchHeroSlides,
+    ['hero-slides-active'],
+    {
+        tags: [CACHE_TAGS.heroSlides],
+        revalidate: HERO_SLIDES_CACHE_REVALIDATE_SECONDS
+    }
+)
+
+export const invalidateHeroSlidesCache = () => {
+    revalidateTag(CACHE_TAGS.heroSlides)
+}

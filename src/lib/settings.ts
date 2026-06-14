@@ -1,6 +1,7 @@
-import { cache } from 'react'
+import { revalidateTag, unstable_cache } from 'next/cache'
 
 import { createSupabaseServerClient, supabaseBrowserClient } from './supabaseClient'
+import { CACHE_TAGS } from './cacheTags'
 
 export type SiteSettings = {
   enableTopVisited: boolean
@@ -22,6 +23,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
 }
 
 const SETTINGS_KEY = 'site_default'
+const SETTINGS_CACHE_REVALIDATE_SECONDS = 300
 
 type RawSetting = {
   key: string
@@ -39,7 +41,7 @@ const mergeSettings = (raw?: Partial<SiteSettings>): SiteSettings => ({
   seo_og_image: raw?.seo_og_image
 })
 
-export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
+const fetchSiteSettings = async (): Promise<SiteSettings> => {
   try {
     const client = createSupabaseServerClient()
     const { data, error } = await client
@@ -58,13 +60,22 @@ export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
     console.warn('[settings] falling back to defaults', error)
     return DEFAULT_SETTINGS
   }
-})
+}
+
+export const getSiteSettings = unstable_cache(
+  fetchSiteSettings,
+  ['site-settings'],
+  {
+    tags: [CACHE_TAGS.siteSettings],
+    revalidate: SETTINGS_CACHE_REVALIDATE_SECONDS
+  }
+)
 
 export const updateSiteSettings = async (partial: Partial<SiteSettings>) => {
   const client = createSupabaseServerClient()
 
   // Get current settings first
-  const current = await getSiteSettings()
+  const current = await fetchSiteSettings()
 
   // Merge current settings with the partial update
   const merged = {
@@ -83,6 +94,7 @@ export const updateSiteSettings = async (partial: Partial<SiteSettings>) => {
   if (error) {
     throw error
   }
+  revalidateTag(CACHE_TAGS.siteSettings)
   return merged
 }
 

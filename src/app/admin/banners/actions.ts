@@ -2,7 +2,15 @@
 
 import { createSupabaseServerClient } from '@/lib/supabaseClient'
 import { revalidatePath } from 'next/cache'
-import { HeroSlide } from '@/lib/banners'
+import { invalidateHeroSlidesCache, type HeroSlide } from '@/lib/banners'
+
+const revalidateBannerViews = () => {
+    invalidateHeroSlidesCache()
+    revalidatePath('/')
+    revalidatePath('/ca')
+    revalidatePath('/en')
+    revalidatePath('/admin/banners')
+}
 
 export async function getBanners() {
     const client = createSupabaseServerClient()
@@ -52,8 +60,7 @@ export async function createBanner(formData: FormData) {
     })
 
     if (error) throw new Error(error.message)
-    revalidatePath('/')
-    revalidatePath('/admin/banners')
+    revalidateBannerViews()
 }
 
 export async function updateBanner(id: string, formData: FormData) {
@@ -90,8 +97,7 @@ export async function updateBanner(id: string, formData: FormData) {
         .eq('id', id)
 
     if (error) throw new Error(error.message)
-    revalidatePath('/')
-    revalidatePath('/admin/banners')
+    revalidateBannerViews()
 }
 
 export async function deleteBanner(id: string) {
@@ -99,6 +105,5 @@ export async function deleteBanner(id: string) {
     const { error } = await client.from('hero_slides').delete().eq('id', id)
 
     if (error) throw new Error(error.message)
-    revalidatePath('/')
-    revalidatePath('/admin/banners')
+    revalidateBannerViews()
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { HeroSlide } from '@/lib/banners'
+import type { HeroSlide } from '@/lib/banners'
 import { createBanner, updateBanner, deleteBanner } from '@/app/admin/banners/actions'
 import Image from 'next/image'
 import { MobileCropSelector } from './MobileCropSelector'

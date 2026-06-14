@@ -1,8 +1,10 @@
 import { promises as fs } from 'fs'
 import path from 'path'
 import { randomUUID } from 'crypto'
+import { revalidateTag, unstable_cache } from 'next/cache'
 
 import { createSupabaseServerClient } from './supabaseClient'
+import { CACHE_TAGS } from './cacheTags'
 
 export type CategoryScope = 'header' | 'filter'
 
@@ -16,6 +18,7 @@ export type CategoryRecord = {
 }
 
 const categoriesFilePath = path.join(process.cwd(), 'data', 'categories.json')
+const CATEGORIES_CACHE_REVALIDATE_SECONDS = 300
 
 const supabaseCategoriesEnabled =
   process.env.NETLIFY
@@ -92,6 +95,33 @@ export const readCategories = async (): Promise<CategoryRecord[]> => {
   return readCategoriesFromDisk()
 }
 
+export const invalidateCategoryDataCache = () => {
+  revalidateTag(CACHE_TAGS.categories)
+  revalidateTag(CACHE_TAGS.products)
+}
+
+const sortCategories = (records: CategoryRecord[], scope?: CategoryScope) => {
+  const filtered = scope ? records.filter(category => category.scope === scope) : records
+  return [...filtered].sort((a, b) => {
+    if (a.scope !== b.scope) {
+      return a.scope.localeCompare(b.scope)
+    }
+    if ((a.parentId ?? '') === (b.parentId ?? '')) {
+      return a.order - b.order
+    }
+    return (a.parentId ?? '').localeCompare(b.parentId ?? '')
+  })
+}
+
+const getCachedCategories = unstable_cache(
+  async (scope?: CategoryScope) => sortCategories(await readCategories(), scope),
+  ['catalog-categories'],
+  {
+    tags: [CACHE_TAGS.categories],
+    revalidate: CATEGORIES_CACHE_REVALIDATE_SECONDS
+  }
+)
+
 const replaceTagForProducts = async (
   client: ReturnType<typeof createSupabaseServerClient>,
   previousTag: string,
@@ -125,17 +155,7 @@ const replaceTagForProducts = async (
 }
 
 export const getCategories = async (scope?: CategoryScope) => {
-  const all = await readCategories()
-  const filtered = scope ? all.filter(category => category.scope === scope) : all
-  return filtered.sort((a, b) => {
-    if (a.scope !== b.scope) {
-      return a.scope.localeCompare(b.scope)
-    }
-    if ((a.parentId ?? '') === (b.parentId ?? '')) {
-      return a.order - b.order
-    }
-    return (a.parentId ?? '').localeCompare(b.parentId ?? '')
-  })
+  return getCachedCategories(scope)
 }
 
 const nextOrderForParent = (records: CategoryRecord[], scope: CategoryScope, parentId: string | null) => {
@@ -205,6 +225,7 @@ export const createCategoryRecord = async (input: {
 
   const created = mapRowToRecord(data as CategoryRow)
   await mergeDuplicateCategories(client, created.id, created.scope, created.tagKey)
+  invalidateCategoryDataCache()
   return created
 }
 
@@ -262,6 +283,7 @@ export const updateCategoryRecord = async (
 
   await mergeDuplicateCategories(client, updatedRecord.id, updatedRecord.scope, updatedRecord.tagKey)
 
+  invalidateCategoryDataCache()
   return updatedRecord
 }
 
@@ -289,6 +311,7 @@ export const deleteCategoryRecord = async (id: string) => {
     }
     throw new Error(error.message)
   }
+  invalidateCategoryDataCache()
   return { deleted: idsToDelete.size }
 }
 
@@ -317,6 +340,7 @@ export const reorderCategories = async (
     throw new Error(error.message)
   }
 
+  invalidateCategoryDataCache()
   return readCategories()
 }
 

@@ -1,10 +1,14 @@
 import { cache } from 'react'
+import { revalidateTag, unstable_cache } from 'next/cache'
 
 import { createSupabaseServerClient } from '../supabaseClient'
 import { getCategories } from '../categories'
+import { CACHE_TAGS } from '../cacheTags'
 
 import { buildProductFromSupabase, compareByPriority } from './builders'
 import type { Product } from './types'
+
+const CATALOG_CACHE_REVALIDATE_SECONDS = 300
 
 const buildCategoryLookup = async () => {
   const categories = await getCategories()
@@ -126,12 +130,49 @@ const fetchProductsByTypeFromSupabase = async (type: string) => {
   return mapRecords(data, lookup)
 }
 
-let memoizedGetProduct = cache(fetchProductByIdFromSupabase)
-let memoizedGetAllProducts = cache(fetchAllProductsFromSupabase)
+const cachedGetProduct = unstable_cache(
+  fetchProductByIdFromSupabase,
+  ['catalog-product-by-id'],
+  {
+    tags: [CACHE_TAGS.products, CACHE_TAGS.categories],
+    revalidate: CATALOG_CACHE_REVALIDATE_SECONDS
+  }
+)
+
+const cachedGetAllProducts = unstable_cache(
+  fetchAllProductsFromSupabase,
+  ['catalog-products-all'],
+  {
+    tags: [CACHE_TAGS.products, CACHE_TAGS.categories],
+    revalidate: CATALOG_CACHE_REVALIDATE_SECONDS
+  }
+)
+
+const cachedGetProductsByTag = unstable_cache(
+  fetchProductsByTagFromSupabase,
+  ['catalog-products-by-tag'],
+  {
+    tags: [CACHE_TAGS.products, CACHE_TAGS.categories],
+    revalidate: CATALOG_CACHE_REVALIDATE_SECONDS
+  }
+)
+
+const cachedGetProductsByType = unstable_cache(
+  fetchProductsByTypeFromSupabase,
+  ['catalog-products-by-type'],
+  {
+    tags: [CACHE_TAGS.products, CACHE_TAGS.categories],
+    revalidate: CATALOG_CACHE_REVALIDATE_SECONDS
+  }
+)
+
+const memoizedGetProduct = cache(cachedGetProduct)
+const memoizedGetAllProducts = cache(cachedGetAllProducts)
+const memoizedGetProductsByTag = cache(cachedGetProductsByTag)
+const memoizedGetProductsByType = cache(cachedGetProductsByType)
 
 export const invalidateProductDataCache = () => {
-  memoizedGetProduct = cache(fetchProductByIdFromSupabase)
-  memoizedGetAllProducts = cache(fetchAllProductsFromSupabase)
+  revalidateTag(CACHE_TAGS.products)
 }
 
 export async function getProductData(id: string): Promise<Product> {
@@ -143,11 +184,11 @@ export async function getAllProducts(): Promise<Product[]> {
 }
 
 export async function getProductsByTag(tag: string): Promise<Product[]> {
-  return fetchProductsByTagFromSupabase(tag)
+  return memoizedGetProductsByTag(tag)
 }
 
 export async function getProductsByType(type: string): Promise<Product[]> {
-  return fetchProductsByTypeFromSupabase(type.toLowerCase())
+  return memoizedGetProductsByType(type.toLowerCase())
 }
 
 export async function getAllProductIds() {
