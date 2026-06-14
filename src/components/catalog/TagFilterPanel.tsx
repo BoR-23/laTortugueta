@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { TouchEvent } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 
 import { CategoryTabsNav, type CategoryNavNode } from '@/components/layout/CategoryTabsNav'
 import type { CategoryDTO, CategoryTreeNode, CategorySidebarNode } from '@/types/categories'
@@ -246,10 +246,10 @@ interface TagFilterPanelProps {
 
 export function TagFilterPanel({ products, headerCategories, filterCategories, showPopularityBadges = false }: TagFilterPanelProps) {
   const priceStats = useMemo(() => computePriceStats(products), [products])
-  const searchParams = useSearchParams()
   const pathname = usePathname()
   const router = useRouter()
-  const currentQuery = searchParams.toString()
+  const [currentQuery, setCurrentQuery] = useState('')
+  const searchParams = useMemo(() => new URLSearchParams(currentQuery), [currentQuery])
   const tagSummaries = useMemo(() => summariseTags(products), [products])
   const collectionTags = useMemo(() => tagSummaries.filter(tag => tag.type === 'collection'), [tagSummaries])
   const descriptorTags = useMemo(() => tagSummaries.filter(tag => tag.type === 'descriptor'), [tagSummaries])
@@ -345,6 +345,24 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
   )
 
   useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const readLocationQuery = () => {
+      const query = window.location.search.startsWith('?')
+        ? window.location.search.slice(1)
+        : window.location.search
+      setCurrentQuery(query)
+      lastAppliedQueryRef.current = query
+    }
+
+    readLocationQuery()
+    window.addEventListener('popstate', readLocationQuery)
+    return () => {
+      window.removeEventListener('popstate', readLocationQuery)
+    }
+  }, [])
+
+  useEffect(() => {
     const params = serializeFiltersToParams(filterState, sortKey, sortDirection, priceStats)
     const queryString = params.toString()
     const targetPath = queryString ? `${pathname}?${queryString}` : pathname
@@ -365,6 +383,7 @@ export function TagFilterPanel({ products, headerCategories, filterCategories, s
 
     lastAppliedQueryRef.current = queryString
     router.replace(targetPath, { scroll: false })
+    setCurrentQuery(queryString)
     if (typeof window !== 'undefined') {
       setShareUrl(`${window.location.origin}${targetPath}`)
     } else {
