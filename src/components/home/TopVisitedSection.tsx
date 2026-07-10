@@ -5,6 +5,7 @@ import Link from 'next/link'
 import type { CatalogProductSummary } from '@/components/catalog/prepareCatalogProducts'
 import { ProductImage } from '@/components/common/ProductImage'
 import { dictionaries } from '@/i18n/dictionaries'
+import { buildProductAltText } from '@/lib/seo'
 
 interface TopVisitedSectionProps {
   products: CatalogProductSummary[]
@@ -48,7 +49,10 @@ export function TopVisitedSection({ products, dictionary }: TopVisitedSectionPro
                   <ProductImage
                     imagePath={product.image}
                     variant="thumb"
-                    alt={product.name}
+                    alt={buildProductAltText({
+                      name: product.name,
+                      category: product.category
+                    })}
                     fill
                     className="object-contain transition-transform duration-500 group-hover:scale-105"
                     sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 90vw"

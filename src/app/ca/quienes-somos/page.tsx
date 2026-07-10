@@ -7,8 +7,8 @@ import { dictionaries } from '@/i18n/dictionaries'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-    title: dictionaries.ca.about.metaTitle,
-    description: dictionaries.ca.about.metaDescription,
+    title: 'Qui Som | Taller Artesà de Calcetins Tradicionals',
+    description: 'Coneix La Tortugueta, taller artesà de calcetins tradicionals valencians des de 1989. Història, ofici familiar i encàrrecs personalitzats des d’Alcoi.',
     alternates: {
         canonical: absoluteUrl('/ca/quienes-somos'),
         languages: {
@@ -18,10 +18,15 @@ export const metadata: Metadata = {
         }
     },
     openGraph: {
-        title: `${siteMetadata.name} · ${dictionaries.ca.about.metaTitle}`,
-        description: dictionaries.ca.about.metaDescription,
+        title: `${siteMetadata.name} · Qui som`,
+        description: 'Descobreix la història de La Tortugueta, un taller familiar especialitzat en calcetins tradicionals valencians, referències històriques i treball per encàrrec.',
         url: absoluteUrl('/ca/quienes-somos'),
         type: 'website'
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: `${siteMetadata.name} · Qui som`,
+        description: 'Taller familiar de calcetins tradicionals valencians des de 1989, amb ofici artesà i producció personalitzada.'
     }
 }
 

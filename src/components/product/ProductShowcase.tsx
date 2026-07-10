@@ -15,6 +15,8 @@ import {
   getProductImageVariant
 } from '@/lib/images'
 import { WHATSAPP_LINK } from '@/lib/contact'
+import { extractProductStory } from '@/lib/productEditorial'
+import { buildProductAltText } from '@/lib/seo'
 import { uploadProductImage } from '@/lib/client/uploadProductImage'
 import { ColorSelectionModal, SelectedColors } from '@/components/product/ColorSelectionModal'
 import { Palette } from 'lucide-react'
@@ -43,44 +45,6 @@ const ProductAdminPanel = dynamic(() => import('./ProductAdminPanel'), {
   ssr: false,
   loading: () => null
 })
-
-type ProductStory = {
-  title: string
-  body: string
-  origin?: string
-  cost?: string
-  images: string[]
-}
-
-const extractProductStory = (product: Product): ProductStory | null => {
-  const metadata = product.metadata ?? {}
-  const title = typeof metadata.storyTitle === 'string' ? metadata.storyTitle.trim() : ''
-  const body = typeof metadata.storyBody === 'string' ? metadata.storyBody.trim() : ''
-  const origin = typeof metadata.storyOrigin === 'string' ? metadata.storyOrigin.trim() : ''
-  const cost = typeof metadata.storyCost === 'string' ? metadata.storyCost.trim() : ''
-  const imagesRaw = metadata.storyImages
-  let images: string[] = []
-  if (Array.isArray(imagesRaw)) {
-    images = imagesRaw.map(value => String(value ?? '').trim()).filter(Boolean)
-  } else if (typeof imagesRaw === 'string') {
-    images = imagesRaw
-      .split(',')
-      .map(value => value.trim())
-      .filter(Boolean)
-  }
-
-  if (!title && !body && !origin && !cost && images.length === 0) {
-    return null
-  }
-
-  return {
-    title: title || product.name,
-    body,
-    origin,
-    cost,
-    images
-  }
-}
 
 export function ProductShowcase({
   product,
@@ -477,7 +441,12 @@ export function ProductShowcase({
                   <ProductImage
                     imagePath={activeImage}
                     variant="full"
-                    alt={`${product.name} · ${product.category ?? 'calcetines artesanales'} · vista ${activeIndex + 1}`}
+                    alt={buildProductAltText({
+                      name: product.name,
+                      color: product.color,
+                      category: product.category,
+                      viewIndex: activeIndex
+                    })}
                     fill
                     priority
                     fetchPriority={activeIndex === 0 ? 'high' : 'auto'}
@@ -623,7 +592,12 @@ export function ProductShowcase({
                         <ProductImage
                           imagePath={photo}
                           variant="thumb"
-                          alt={`Miniatura ${index + 1} · ${product.name} · ${product.color || 'color artesanal'}`}
+                          alt={buildProductAltText({
+                            name: product.name,
+                            color: product.color,
+                            category: product.category,
+                            viewIndex: index
+                          })}
                           fill
                           className="object-contain"
                           sizes="80px"
@@ -825,6 +799,65 @@ export function ProductShowcase({
               </div>
 
               <div className="space-y-4 text-sm leading-relaxed text-neutral-600">
+                {story && (
+                  <div className="rounded-3xl border border-neutral-200 bg-neutral-50 p-5">
+                    <div className="grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">Historia</p>
+                          <h3 className="text-2xl font-semibold text-neutral-900">{story.title}</h3>
+                        </div>
+                        {(story.origin || story.cost) && (
+                          <dl className="grid gap-4 sm:grid-cols-2 text-sm text-neutral-600">
+                            {story.origin && (
+                              <div>
+                                <dt className="text-xs uppercase tracking-[0.3em] text-neutral-500">Procedencia</dt>
+                                <dd className="mt-1 text-neutral-800">{story.origin}</dd>
+                              </div>
+                            )}
+                            {story.cost && (
+                              <div>
+                                <dt className="text-xs uppercase tracking-[0.3em] text-neutral-500">Coste / dedicación</dt>
+                                <dd className="mt-1 text-neutral-800">{story.cost}</dd>
+                              </div>
+                            )}
+                          </dl>
+                        )}
+                        {story.body && <p className="text-neutral-700">{story.body}</p>}
+                        {story.bodyVa && (
+                          <div className="rounded-2xl border border-neutral-200 bg-white px-4 py-3">
+                            <p className="text-[11px] uppercase tracking-[0.3em] text-neutral-500">
+                              En valencià
+                            </p>
+                            <p className="mt-2 text-neutral-700">{story.bodyVa}</p>
+                          </div>
+                        )}
+                      </div>
+                      {story.images.length > 0 && (
+                        <div className="grid grid-cols-2 gap-3">
+                          {story.images.map(url => (
+                            <div
+                              key={url}
+                              className="relative h-32 overflow-hidden rounded-2xl border border-neutral-100 bg-white"
+                            >
+                              <ProductImage
+                                imagePath={url}
+                                alt={buildProductAltText({
+                                  name: product.name,
+                                  color: product.color,
+                                  category: product.category
+                                })}
+                                fill
+                                className="object-cover"
+                                sizes="180px"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
                 <p>
                   Elaboración artesanal en talleres valencianos. Cada par se documenta en fotografía de
                   estudio para mostrar con precisión la textura y la caída del tejido.
@@ -862,54 +895,6 @@ export function ProductShowcase({
         </div>
       </section>
 
-      {story && (
-        <section className="border-b border-neutral-200 bg-neutral-50">
-          <div className="mx-auto max-w-6xl 3xl:max-w-8xl px-4 py-16 sm:px-6 lg:px-8">
-            <div className="grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.2fr)]">
-              <div className="space-y-4">
-                <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">Historia</p>
-                <h3 className="text-2xl font-semibold text-neutral-900">{story.title}</h3>
-                {(story.origin || story.cost) && (
-                  <dl className="grid gap-4 sm:grid-cols-2 text-sm text-neutral-600">
-                    {story.origin && (
-                      <div>
-                        <dt className="text-xs uppercase tracking-[0.3em] text-neutral-500">Procedencia</dt>
-                        <dd className="mt-1 text-neutral-800">{story.origin}</dd>
-                      </div>
-                    )}
-                    {story.cost && (
-                      <div>
-                        <dt className="text-xs uppercase tracking-[0.3em] text-neutral-500">Coste / dedicación</dt>
-                        <dd className="mt-1 text-neutral-800">{story.cost}</dd>
-                      </div>
-                    )}
-                  </dl>
-                )}
-                {story.body && <p className="text-neutral-700">{story.body}</p>}
-              </div>
-              {story.images.length > 0 && (
-                <div className="grid grid-cols-2 gap-3">
-                  {story.images.map(url => (
-                    <div
-                      key={url}
-                      className="relative h-32 overflow-hidden rounded-2xl border border-neutral-100 bg-white"
-                    >
-                      <ProductImage
-                        imagePath={url}
-                        alt={`Historia ${product.name}`}
-                        fill
-                        className="object-cover"
-                        sizes="180px"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-      )}
-
       {lightboxOpen && gallery.length > 0 && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 px-4">
           <button
@@ -931,7 +916,12 @@ export function ProductShowcase({
             <ProductImage
               imagePath={activeImage}
               variant="full"
-              alt={`${product.name} ampliada ${activeIndex + 1}`}
+              alt={buildProductAltText({
+                name: product.name,
+                color: product.color,
+                category: product.category,
+                viewIndex: activeIndex
+              })}
               fill
               className="object-contain"
               sizes="(min-width: 1024px) 50vw, 90vw"
@@ -986,7 +976,10 @@ export function ProductShowcase({
                         <ProductImage
                           imagePath={item.image}
                           variant="thumb"
-                          alt={item.name}
+                          alt={buildProductAltText({
+                            name: item.name,
+                            category: item.category
+                          })}
                           fill
                           className="object-contain transition-transform duration-500 group-hover:scale-105"
                           sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, 45vw"
@@ -1044,7 +1037,10 @@ export function ProductShowcase({
                         <ProductImage
                           imagePath={item.image}
                           variant="thumb"
-                          alt={item.name}
+                          alt={buildProductAltText({
+                            name: item.name,
+                            category: item.category
+                          })}
                           fill
                           className="object-contain transition-transform duration-500 group-hover:scale-105"
                           sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, 45vw"

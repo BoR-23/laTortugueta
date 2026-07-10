@@ -11,6 +11,11 @@ const remotePatterns = [
     protocol: 'https',
     hostname: 'pub-6d7cc19d77b44520a5ac19e77cb47c4e.r2.dev',
     pathname: '/**'
+  },
+  {
+    protocol: 'https',
+    hostname: 'upload.wikimedia.org',
+    pathname: '/**'
   }
 ]
 

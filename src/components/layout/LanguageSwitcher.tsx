@@ -21,6 +21,7 @@ export function LanguageSwitcher() {
         .replace(/\/$/, '') // Remove trailing slash
 
     const isSupportedRoute =
+        cleanPath === '/calcetines-tradicionales' ||
         cleanPath === '/blog' ||
         cleanPath.startsWith('/blog/') ||
         cleanPath === '/quienes-somos' ||
@@ -74,4 +75,3 @@ export function LanguageSwitcher() {
         </div>
     )
 }
-

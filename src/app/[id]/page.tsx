@@ -7,8 +7,10 @@ import {
   absoluteUrl,
   buildProductBreadcrumbJsonLd,
   buildProductJsonLd,
+  buildProductAltText,
   getPrimaryProductImage
 } from '@/lib/seo'
+import { buildProductMetaDescription } from '@/lib/productEditorial'
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs'
 import { getSiteSettings } from '@/lib/settings'
 
@@ -33,17 +35,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     // SEO: Título específico para producto
     const title = `${product.name} | Calcetines Tradicionales`
 
-    // SEO: Descripción enriquecida para evitar "thin content" / duplicidad
-    // SEO: Descripción enriquecida. Si la de base de datos es muy corta (<60 chars) o inexistente, generamos una completa.
-    let description = product.description || ''
-
-    const isThinContent = description.length < 60
-
-    if (isThinContent) {
-      description = `Calcetines tradicionales valencianos modelo ${product.name}. Reproducción artesanal${product.color ? ` en color ${product.color}` : ''}. Perfectos para indumentaria tradicional y bailes regionales. Confección en Alcoi de alta calidad.`
-    }
-
-    description = description.slice(0, 160)
+    const description = buildProductMetaDescription(product)
 
     const url = absoluteUrl(`/${product.id}`)
     const image = getPrimaryProductImage(product)
@@ -63,7 +55,11 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
           ? [
             {
               url: image,
-              alt: `Calcetines valencianos modelo ${product.name}`
+              alt: buildProductAltText({
+                name: product.name,
+                color: product.color,
+                category: product.category
+              })
             }
           ]
           : undefined

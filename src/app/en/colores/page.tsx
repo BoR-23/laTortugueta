@@ -1,11 +1,27 @@
 import React from 'react';
+import Link from 'next/link';
 import { YARN_COLORS } from '@/lib/colors/constants';
 import { ColorCatalogGrid } from '@/components/catalog/ColorCatalogGrid';
 import { Metadata } from 'next';
+import { absoluteUrl, siteMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = {
-    title: 'Color Catalog | La Tortugueta',
-    description: 'Explore our full color chart. Find the perfect shade for your custom socks.',
+    title: 'Color Chart | Traditional Valencian Socks',
+    description: 'Explore La Tortugueta’s color chart to choose tones and combinations for traditional Valencian socks and bespoke designs.',
+    alternates: {
+        canonical: absoluteUrl('/en/colores'),
+        languages: {
+            es: '/colores',
+            en: '/en/colores',
+            ca: '/ca/colores'
+        }
+    },
+    openGraph: {
+        title: `${siteMetadata.name} · Color chart`,
+        description: 'Review La Tortugueta’s color chart and choose the right shades for traditional Valencian socks and custom combinations.',
+        url: absoluteUrl('/en/colores'),
+        type: 'website'
+    }
 };
 
 export default function ColorCatalogPage() {
@@ -25,6 +41,17 @@ export default function ColorCatalogPage() {
                             </p>
                             <p>
                                 And do you know what&apos;s best? How it absorbs dye. The colors remain vivid, intense, and withstand wash after wash without losing that joy and without pilling. We bring it from far away, yes, but we dye and knit it here, in our land, in trusted workshops of a lifetime. Because to do things right, you have to mix the best from abroad with the mastery of home.
+                            </p>
+                        </div>
+
+                        <div className="rounded-3xl border border-gray-200 bg-white px-6 py-5 text-left max-w-3xl mx-auto">
+                            <p className="text-xs uppercase tracking-[0.3em] text-gray-500">Recommended guide</p>
+                            <p className="mt-2 text-base text-gray-800">
+                                Before choosing combinations, visit our page about{' '}
+                                <Link href="/en/calcetines-tradicionales" className="underline underline-offset-4">
+                                    traditional Valencian socks
+                                </Link>{' '}
+                                to understand styles, materials and how each model fits within the full outfit.
                             </p>
                         </div>
 

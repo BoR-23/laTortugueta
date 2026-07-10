@@ -1,14 +1,31 @@
 import React from 'react';
+import Link from 'next/link';
 import { YARN_COLORS } from '@/lib/colors/constants';
 import { ColorBrowser } from '@/components/catalog/ColorBrowser';
 import { Metadata } from 'next';
-import { absoluteUrl, buildBreadcrumbJsonLd } from '@/lib/seo';
+import { absoluteUrl, buildBreadcrumbJsonLd, siteMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = {
-    title: 'Catálogo de Colores | La Tortugueta',
-    description: 'Explora nuestra carta de colores completa. Encuentra el tono perfecto para tus calcetines personalizados.',
+    title: 'Carta de Colores | Calcetines Tradicionales Valencianos',
+    description: 'Explora la carta de colores de La Tortugueta para elegir combinaciones de calcetines tradicionales valencianos, tonos personalizados y referencias textiles.',
     alternates: {
-        canonical: absoluteUrl('/colores')
+        canonical: absoluteUrl('/colores'),
+        languages: {
+            es: '/colores',
+            en: '/en/colores',
+            ca: '/ca/colores'
+        }
+    },
+    openGraph: {
+        title: `${siteMetadata.name} · Carta de colores`,
+        description: 'Consulta la carta de colores de La Tortugueta y encuentra el tono ideal para tus calcetines tradicionales valencianos personalizados.',
+        url: absoluteUrl('/colores'),
+        type: 'website'
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: `${siteMetadata.name} · Carta de colores`,
+        description: 'Carta de colores para calcetines tradicionales valencianos: tonos, combinaciones y guía para elegir mejor.'
     }
 };
 
@@ -40,6 +57,20 @@ export default function ColorCatalogPage() {
                             </p>
                             <p>
                                 ¿Y sabes qué es lo mejor? Cómo absorbe el tinte. Los colores quedan vivos, intensos, y aguantan lavado tras lavado sin perder esa alegría y sin hacer esas bolitas molestas que tanto afean. Lo traemos de muy lejos, sí, pero lo tintamos y lo tejemos aquí, en nuestra tierra, en talleres de confianza de toda la vida. Porque para hacer las cosas bien, hay que mezclar lo mejor de fuera con la maestría de casa.
+                            </p>
+                        </div>
+
+                        <div className="rounded-3xl border border-gray-200 bg-white px-6 py-5 text-left max-w-3xl mx-auto">
+                            <p className="text-xs uppercase tracking-[0.3em] text-gray-500">Guía recomendada</p>
+                            <p className="mt-2 text-base text-gray-800">
+                                Antes de elegir combinaciones, puedes leer nuestra página sobre{' '}
+                                <Link href="/calcetines-tradicionales" className="underline underline-offset-4">
+                                    calcetines tradicionales valencianos
+                                </Link>{' '}
+                                para entender mejor estilos, materiales y cómo encaja cada modelo en la indumentaria.
+                            </p>
+                            <p className="mt-2 text-sm text-gray-600">
+                                Si vienes desde Google buscando colores para fallera, danses o encargos personalizados, aquí tienes el punto de partida más útil antes de cerrar tu combinación.
                             </p>
                         </div>
 

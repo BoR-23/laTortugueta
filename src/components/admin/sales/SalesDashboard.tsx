@@ -80,6 +80,16 @@ export function SalesDashboard() {
         setEditForm({ ...sale })
     }
 
+    const getCatalogPrice = (sale: any) => {
+        const catalogPrice = typeof sale.catalog_price === 'number' ? sale.catalog_price : null
+        if (catalogPrice !== null && !Number.isNaN(catalogPrice)) {
+            return catalogPrice
+        }
+
+        const currentPrice = typeof sale.product_price === 'number' ? sale.product_price : 0
+        return sale.is_wholesale ? currentPrice * 2 : currentPrice
+    }
+
     const saveEdit = async () => {
         if (!editingId) return
         try {
@@ -245,13 +255,8 @@ export function SalesDashboard() {
                                                             value={editForm.is_wholesale ? 'wholesale' : 'retail'}
                                                             onChange={e => {
                                                                 const isWholesale = e.target.value === 'wholesale'
-                                                                let newPrice = parseFloat(editForm.product_price) || 0
-
-                                                                if (isWholesale && !editForm.is_wholesale) {
-                                                                    newPrice = newPrice * 0.5
-                                                                } else if (!isWholesale && editForm.is_wholesale) {
-                                                                    newPrice = newPrice * 2
-                                                                }
+                                                                const catalogPrice = getCatalogPrice(editForm)
+                                                                const newPrice = isWholesale ? catalogPrice * 0.5 : catalogPrice
 
                                                                 setEditForm({
                                                                     ...editForm,
@@ -301,13 +306,8 @@ export function SalesDashboard() {
                                                                 if (!confirm(`¿Cambiar a ${sale.is_wholesale ? 'Por menor' : 'Por mayor'}? El precio se actualizará.`)) return
 
                                                                 const newIsWholesale = !sale.is_wholesale
-                                                                let newPrice = sale.product_price || 0
-
-                                                                if (newIsWholesale) {
-                                                                    newPrice = newPrice * 0.5
-                                                                } else {
-                                                                    newPrice = newPrice * 2
-                                                                }
+                                                                const catalogPrice = getCatalogPrice(sale)
+                                                                const newPrice = newIsWholesale ? catalogPrice * 0.5 : catalogPrice
 
                                                                 try {
                                                                     const res = await fetch(`/api/admin/sales/${sale.id}`, {

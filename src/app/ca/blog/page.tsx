@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 
 export default async function BlogIndexPageCa() {
     const posts = await getAllPosts('ca')
-    const blogJsonLd = buildBlogListingJsonLd(posts)
+    const blogJsonLd = buildBlogListingJsonLd(posts, 'ca')
 
     return (
         <>
