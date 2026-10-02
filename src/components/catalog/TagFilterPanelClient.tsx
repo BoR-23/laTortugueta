@@ -1,7 +1,7 @@
 'use client'
 // Enabling SSR for SEO visibility
 
-import dynamic from 'next/dynamic'
+import { Suspense } from 'react'
 
 import { CatalogPanelSkeleton } from '@/components/catalog/CatalogPanelSkeleton'
 import type { CatalogProductSummary } from '@/components/catalog/prepareCatalogProducts'
@@ -24,11 +24,13 @@ export function TagFilterPanelClient({
   settings
 }: TagFilterPanelClientProps) {
   return (
-    <TagFilterPanel
-      products={products}
-      headerCategories={headerCategories}
-      filterCategories={filterCategories}
-      showPopularityBadges={settings.enableCatalogBadges}
-    />
+    <Suspense fallback={<CatalogPanelSkeleton />}>
+      <TagFilterPanel
+        products={products}
+        headerCategories={headerCategories}
+        filterCategories={filterCategories}
+        showPopularityBadges={settings.enableCatalogBadges}
+      />
+    </Suspense>
   )
 }
