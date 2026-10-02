@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname, useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Locale } from '@/i18n/dictionaries'
 
 export function LanguageSwitcher() {
@@ -21,6 +21,7 @@ export function LanguageSwitcher() {
         .replace(/\/$/, '') // Remove trailing slash
 
     const isSupportedRoute =
+        cleanPath === '' ||
         cleanPath === '/blog' ||
         cleanPath.startsWith('/blog/') ||
         cleanPath === '/quienes-somos' ||
@@ -74,4 +75,3 @@ export function LanguageSwitcher() {
         </div>
     )
 }
-
