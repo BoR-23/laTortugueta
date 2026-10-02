@@ -6,7 +6,7 @@ import { CATALOG_PRODUCT_COLUMNS } from '../catalogQuery'
 describe('catalog query egress guard', () => {
   it('uses an explicit lightweight column allowlist', () => {
     expect(CATALOG_PRODUCT_COLUMNS).toBe(
-      'id,name,color,type,price,description,tags,material,care,origin,content,sizes,available,priority,view_count,image,image_tags,photos'
+      'id,name,price,tags,sizes,available,priority,view_count,updated_at,image,photos,image_tags'
     )
     expect(CATALOG_PRODUCT_COLUMNS).not.toContain('*')
     expect(CATALOG_PRODUCT_COLUMNS).not.toContain('media_assets')
