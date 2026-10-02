@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { getAllProducts } from "@/lib/products"
+import { getCatalogProducts } from "@/lib/products"
 // import { getAllProducts } from "@/lib/products/mock_repository"
 import { TagFilterPanelClient } from "@/components/catalog/TagFilterPanelClient"
 import { prepareCatalogProducts } from "@/components/catalog/prepareCatalogProducts"
@@ -64,7 +64,7 @@ export const revalidate = 300
 
 export default async function EnglishHome() {
     const [products, allCategories, siteSettings, slides] = await Promise.all([
-        getAllProducts(),
+        getCatalogProducts(),
         getCategories(),
         getSiteSettings(),
         getHeroSlides()

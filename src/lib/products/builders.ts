@@ -138,3 +138,34 @@ export const buildProductFromSupabase = (
     mediaAssets: Array.isArray(record.media_assets) ? (record.media_assets as MediaAssetRecord[]) : []
   }
 }
+
+export const buildCatalogProductFromSupabase = (record: Record<string, any>): Product => {
+  const image = typeof record.image === 'string' ? record.image : ''
+  const imageTags = toStringArray(record.image_tags)
+  const mediaAssets: MediaAssetRecord[] = image
+    ? [{ url: image, position: 0, tags: imageTags }]
+    : []
+
+  return {
+    id: String(record.id ?? ''),
+    name: String(record.name ?? ''),
+    color: '',
+    type: DEFAULT_PRODUCT_TYPE,
+    price: Number(record.price) || 0,
+    image,
+    description: '',
+    tags: toStringArray(record.tags),
+    material: '',
+    care: '',
+    origin: '',
+    content: '',
+    photos: Number(record.photos) || 0,
+    gallery: image ? [image] : [],
+    sizes: toStringArray(record.sizes),
+    available: Boolean(record.available),
+    priority: normalisePriority(record.priority),
+    viewCount: Number(record.view_count) || 0,
+    updatedAt: typeof record.updated_at === 'string' ? record.updated_at : undefined,
+    mediaAssets
+  }
+}

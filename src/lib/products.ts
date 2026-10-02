@@ -11,6 +11,7 @@ export {
   getAllProductIds,
   getProductData,
   getAllProducts,
+  getCatalogProducts,
   getProductsByTag,
   getProductsByType,
   invalidateProductDataCache

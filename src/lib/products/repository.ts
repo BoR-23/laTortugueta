@@ -5,7 +5,11 @@ import { createSupabaseServerClient } from '../supabaseClient'
 import { getCategories } from '../categories'
 import { CACHE_TAGS } from '../cacheTags'
 
-import { buildProductFromSupabase, compareByPriority } from './builders'
+import {
+  buildCatalogProductFromSupabase,
+  buildProductFromSupabase,
+  compareByPriority
+} from './builders'
 import type { Product } from './types'
 
 const CATALOG_CACHE_REVALIDATE_SECONDS = 300
@@ -53,6 +57,21 @@ const fetchAllProductsFromSupabase = async () => {
   }
 
   return mapRecords(data, lookup).sort(compareByPriority)
+}
+
+const fetchCatalogProductsFromSupabase = async () => {
+  const client = createSupabaseServerClient()
+  const { data, error } = await client
+    .from('catalog_products')
+    .select('*')
+    .order('priority', { ascending: true, nullsFirst: false })
+    .order('name', { ascending: true })
+
+  if (error || !data) {
+    throw error || new Error('Supabase returned no catalog data')
+  }
+
+  return data.map(buildCatalogProductFromSupabase).sort(compareByPriority)
 }
 
 const fetchProductByIdFromSupabase = async (id: string) => {
@@ -148,6 +167,15 @@ const cachedGetAllProducts = unstable_cache(
   }
 )
 
+const cachedGetCatalogProducts = unstable_cache(
+  fetchCatalogProductsFromSupabase,
+  ['catalog-products-lightweight'],
+  {
+    tags: [CACHE_TAGS.products, CACHE_TAGS.categories],
+    revalidate: CATALOG_CACHE_REVALIDATE_SECONDS
+  }
+)
+
 const cachedGetProductsByTag = unstable_cache(
   fetchProductsByTagFromSupabase,
   ['catalog-products-by-tag'],
@@ -168,6 +196,7 @@ const cachedGetProductsByType = unstable_cache(
 
 const memoizedGetProduct = cache(cachedGetProduct)
 const memoizedGetAllProducts = cache(cachedGetAllProducts)
+const memoizedGetCatalogProducts = cache(cachedGetCatalogProducts)
 const memoizedGetProductsByTag = cache(cachedGetProductsByTag)
 const memoizedGetProductsByType = cache(cachedGetProductsByType)
 
@@ -181,6 +210,10 @@ export async function getProductData(id: string): Promise<Product> {
 
 export async function getAllProducts(): Promise<Product[]> {
   return memoizedGetAllProducts()
+}
+
+export async function getCatalogProducts(): Promise<Product[]> {
+  return memoizedGetCatalogProducts()
 }
 
 export async function getProductsByTag(tag: string): Promise<Product[]> {
