@@ -1,6 +1,17 @@
 import { describe, expect, it } from 'vitest'
 
 import { buildCatalogProductFromSupabase } from '../builders'
+import { CATALOG_PRODUCT_COLUMNS } from '../catalogQuery'
+
+describe('catalog query egress guard', () => {
+  it('uses an explicit lightweight column allowlist', () => {
+    expect(CATALOG_PRODUCT_COLUMNS).toBe(
+      'id,name,color,type,price,description,tags,material,care,origin,content,sizes,available,priority,view_count,image,image_tags,photos'
+    )
+    expect(CATALOG_PRODUCT_COLUMNS).not.toContain('*')
+    expect(CATALOG_PRODUCT_COLUMNS).not.toContain('media_assets')
+  })
+})
 
 describe('buildCatalogProductFromSupabase', () => {
   it('builds a lightweight catalog product with the primary image and aggregated image tags', () => {

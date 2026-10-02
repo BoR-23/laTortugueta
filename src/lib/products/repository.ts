@@ -10,6 +10,7 @@ import {
   buildProductFromSupabase,
   compareByPriority
 } from './builders'
+import { CATALOG_PRODUCT_COLUMNS } from './catalogQuery'
 import type { Product } from './types'
 
 const CATALOG_CACHE_REVALIDATE_SECONDS = 300
@@ -63,7 +64,7 @@ const fetchCatalogProductsFromSupabase = async () => {
   const client = createSupabaseServerClient()
   const { data, error } = await client
     .from('catalog_products')
-    .select('*')
+    .select(CATALOG_PRODUCT_COLUMNS)
     .order('priority', { ascending: true, nullsFirst: false })
     .order('name', { ascending: true })
 
